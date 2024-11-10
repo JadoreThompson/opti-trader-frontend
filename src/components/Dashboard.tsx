@@ -4,9 +4,8 @@ import { FC, useEffect } from "react"
 import Sidebar from "./Sidebar";
 import Chart from "./Chart";
 
-const Dashboard: FC = (() => {
-    useEffect(() => { console.log('Loaded Dashboard'); });
 
+const Dashboard: FC = (() => {
     return (
         <>
             <div className="main-container">

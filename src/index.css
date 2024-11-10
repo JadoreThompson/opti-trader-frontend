@@ -32,7 +32,7 @@ i {
   color: white;
 }
 
-input {
+input, select {
   width: 100%;
   padding-top: 0.55rem;
   background-color: rgba(0, 0, 0, 0);
@@ -42,7 +42,7 @@ input {
   color: white !important;
 }
 
-input:focus {
+input:focus, select:focus {
   outline: transparent;
   background-color: rgba(0, 0, 0, 0) !important;
 }
@@ -54,8 +54,13 @@ input:-webkit-autofill:active{
     -webkit-box-shadow: 0 0 0 30px var(--dark-secondary-bg-color) inset !important;
 }
 
-form input {
+form input,
+form select {
   margin-bottom: 2rem;
+}
+
+option {
+  background-color: var(--dark-secondary-bg-color);
 }
 
 .row {
@@ -171,7 +176,7 @@ form input {
 }
 
 .main-content {  
-  width: 100%;
+  flex: 1;
   height: 100vh;
   margin-left: 5%;
 }
@@ -199,7 +204,6 @@ form input {
 }
 
 .auth-container .auth-card {
-  /* height: 50%; */
   width: 20%;
 }
 
@@ -210,5 +214,63 @@ form input {
   justify-content: flex-end;
   align-items: center;
   position: fixed;
+  padding: 0.5rem 0 0.5rem 0.5rem;
   background-color: red;
+  z-index: 1000;
+}
+
+#orderType {
+  text-align: left;
+  padding-left: 0.2rem;
+  border-radius: 0.25rem;
+  background-color: transparent;
+  border: 1px solid white;
+  margin-bottom: 2rem;
+}
+
+#orderType:hover {
+  box-shadow: 0px 0px 3px 2px var(--primary-color);
+  
+}
+
+#orderType.active {
+  margin-bottom: 0;
+}
+
+.options-container {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  margin-bottom: 2rem;
+  border-radius: 0.5rem;
+  background-color: var(--dark-primary-bg-color);
+  box-shadow: 0px 0px 3px 2px var(--primary-color);
+}
+
+.option button {
+  border: none;
+  background-color: transparent;
+  font-weight: 750 !important;
+  font-size: 1rem;
+  text-align: left;
+}
+
+.option button:hover {
+  background-color: #34324a;
+}
+
+.alert-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  height: 100px;
+  width: 100%;
+  background-color: transparent;
+  z-index: 1000;
+}
+
+#alertMessage {
+  padding: 1rem;
+  border-radius: 0.25rem;
 }

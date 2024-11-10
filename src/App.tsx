@@ -1,9 +1,7 @@
 import { FC, useEffect, useState } from 'react';
-import axios from 'axios';
 import { getCookie } from 'typescript-cookie';
 
 // Local
-import { Users } from './App.types';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
@@ -29,6 +27,7 @@ const App: FC = () => {
   const switchToRegister = () => { setIsRegistering(true); };
   const switchToLogin = () => { setIsRegistering(false); };
   const isRegistered = () => { setIsLoggedIn(true) };
+
 
   return (
     <>
