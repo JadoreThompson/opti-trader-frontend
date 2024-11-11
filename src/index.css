@@ -66,6 +66,11 @@ option {
   background-color: var(--dark-secondary-bg-color);
 }
 
+td {
+  padding: 1rem;
+  text-align: center;
+}
+
 .row {
   gap: 1rem;
 }
@@ -283,4 +288,44 @@ option {
 .stat-card .container {
   display: flex;
   justify-content: space-between;
+}
+
+.orders-card .btn-container {
+  display: inline-flex;
+  align-items: center;
+  flex-direction: row;
+  width: 100%;
+  padding-left: 1rem;
+}
+
+.orders-card .modal-container {
+  height: auto;
+  width: auto;
+  display: flex;
+  border: 1px solid grey;
+  border-radius: 0.5rem;
+  background-color: var(--dark-primary-bg-color);
+}
+
+.orders-card .btn {
+  border-radius: 0.5rem;
+  background-color: transparent;
+}
+
+.orders-card .btn.active {
+  border: 1px solid var(--primary-color);
+  box-shadow: 0px 0px 3px 2px var(--primary-color);
+  background-color: var(--dark-primary-bg-color);
+}
+
+.orders-card .modal {
+}
+
+.orders-card .card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow-x: auto;
+  white-space: nowrap;
 }

@@ -7,6 +7,8 @@ import { getCookie } from "typescript-cookie";
 import DashboardLayout from "./DashboardLayout";
 
 
+const BASE_URL = "http://127.0.0.1:8000"
+
 const Portfolio: FC = () => {
     useEffect(() => {
         /* --------------------
@@ -77,32 +79,150 @@ const Portfolio: FC = () => {
     const [stats, setStats] = useState<Record<string, string | Number>>({});
 
     useEffect(() => {
-        const fetchData = async () => {
+        /* 
+            Fetches the Performance data for the stat card from the microservice
+        */
+        const fetchStatData = async () => {
             try {
-                const { data } = await axios.get("http://127.0.0.1:8000/portfolio/performance", {
-                    headers: {
-                        'Authorization': `Bearer ${getCookie('jwt')}`
-                    }
+                const { data } = await axios.get(BASE_URL + '/portfolio/performance', {
+                    headers: { 'Authorization': `Bearer ${getCookie('jwt')}` }
                 });
-                
                 setStats(data);
             } catch(e) {
                 console.error(e);
             }
         };
-
-        fetchData();
+        
+        fetchStatData();
     }, []);
+    
+    
+    /* ----------------------
+            Orders Table
+    ------------------------ */
+    const closedOrderTableHeaders: Record<string, string> = {
+        ticker: 'Ticker',
+        order_type: 'Order Type',
+        quantity: 'Quantity',
+        price: 'Price',
+        filled_price: 'Filled Price',
+        stop_loss: 'Stop Loss',
+        take_profit: 'Take Profit',
+        limit_price: 'Limit Price',
+        created_at: 'Open Time',
+        closed_at: 'Closed Time',
+        close_price: 'Close Price',
+        order_status: 'Order Status'
+    };
 
+    const openOrderTableHeaders: Record<string, string> = {
+        ticker: 'Ticker',
+        order_type: 'Order Type',
+        quantity: 'Quantity',
+        price: 'Price',
+        filled_price: 'Filled Price',
+        stop_loss: 'Stop Loss',
+        take_profit: 'Take Profit',
+        limit_price: 'Limit Price',
+        created_at: 'Open Time',
+        order_status: 'Order Status'
+    }
+    
+    const [closedOrderData, setClosedOrderData] = useState<Array<Record<string, string | Number>>>([]);
+    const [openOrderData, setOpenOrderData] = useState<Array<Record<string, string | Number>>>([]);
+    const [showClosedOrders, setShowClosedOrders] = useState<boolean>(true);
+
+    const enableClosedOrders = () => { setShowClosedOrders(true); };
+    const disableClosedOrders = () => { setShowClosedOrders(false); };
+
+    useEffect(() => {
+        /*
+        Fetches the data for the orders table
+        */
+       const fetchTableData = async () => {
+           try {
+               const { data } = await axios.get(BASE_URL + '/portfolio/orders', 
+               { headers: { 'Authorization': `Bearer ${getCookie('jwt')}`}});
+               
+               const openOrders = data.filter((item: Record<string, string | Number>) => !item.closed_at);
+               const closedOrders = data.filter((item: Record<string, string | Number>) => item.closed_at);
+               
+               setOpenOrderData(openOrders);
+               setClosedOrderData(closedOrders);
+    
+            } catch(e) {
+                console.error('Table Fetch Error: ', e);
+            }
+        };
+
+        fetchTableData();
+    }, []);
     
     return (
         <DashboardLayout leftContent={
-            <div className="chart-card card">
-                <div className="chart-container">
-                    <div id="chart-container"></div>
+            <>
+                <div className="chart-card card">
+                    <div className="chart-container">
+                        <div id="chart-container"></div>
+                    </div>
+                    <div className="card-footer"></div>
                 </div>
-                <div className="card-footer"></div>
-            </div>
+                <div className="card orders-card">
+                    <div className="card-title">
+                    </div>
+                    <div className="card-body">
+                        <div className="btn-container">
+                            <div className="modal-container">
+                                <div className="modal">
+                                    <button className={`btn ${showClosedOrders ? 'active': ''}`} onClick={enableClosedOrders}>Close</button>
+                                </div>
+                                <div className="modal">
+                                    <button className={`btn ${showClosedOrders ? '' : 'active'}`} onClick={disableClosedOrders}>Open</button>
+                                </div>
+                            </div>
+                        </div>
+                        { showClosedOrders ? (
+                            <table>
+                                <thead>
+                                    <tr>
+                                        {Object.keys(closedOrderTableHeaders).map((key) => (
+                                            <td key={key}>{closedOrderTableHeaders[key]}</td>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {closedOrderData.map((record, index) => (
+                                    <tr key={index}>
+                                        {Object.keys(closedOrderTableHeaders).map((key) => (
+                                            <td key={key}>{record[key]}</td>
+                                        ))}
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <table>
+                                <thead>
+                                    <tr>
+                                        {Object.keys(openOrderTableHeaders).map((key) => (
+                                            <td key={key}>{openOrderTableHeaders[key]}</td>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {openOrderData.map((record, index) => (
+                                    <tr key={index}>
+                                        {Object.keys(openOrderTableHeaders).map((key) => (
+                                            <td key={key}>{record[key]}</td>
+                                        ))}
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                </div>
+            </>
 
         } rightContent={
             <div className="card stat-card">
