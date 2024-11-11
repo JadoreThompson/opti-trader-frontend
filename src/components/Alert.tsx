@@ -9,13 +9,13 @@ export enum AlertTypes {
 }
 
 
-export interface AlertOptions {
+export interface AlertProps {
     message: string,
     type: AlertTypes | null
 }
 
 
-const Alert: FC<AlertOptions> = ({message, type}) => {
+const Alert: FC<AlertProps> = ({message, type}) => {
     
     const sleep = async (ms: number): Promise<void> => {
         return new Promise(resolve => setTimeout(resolve, ms));
@@ -23,7 +23,8 @@ const Alert: FC<AlertOptions> = ({message, type}) => {
 
     const displayMessage = async (alertMessage: string) => {
         /*
-            Displays the alert
+            Displays the alert button with custom background
+            color and message depending on type
         */
        
         const alertContainer = (document.querySelector('.alert-container') as HTMLElement);

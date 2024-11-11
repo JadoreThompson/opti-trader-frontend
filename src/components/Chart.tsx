@@ -5,7 +5,8 @@ import { getCookie } from 'typescript-cookie';
 
 // Local
 import Alert from './Alert';
-import { AlertOptions, AlertTypes } from './Alert';
+import { AlertTypes } from './Alert';
+import DashboardLayout from './DashboardLayout';
 
 
 enum OrderType {
@@ -174,63 +175,42 @@ const Chart: FC = () => {
         }
     };
 
-    
-    /* -------------------
-            Styles
-    ------------------- */
-    const containerStyles = {
-        width: "auto"
-    };
-
 
     /* --------------------
         Return Content
     -------------------- */
     return (
         <>
-            {/* <div className='chart-header'>
-                <div style={containerStyles} className="container">
-                    <div className="loading-container">
-                        <span className="circle"></span>
-                    </div>
-                    <span>Connected</span>
-                </div>
-            </div> */}
             <Alert message={alertMessage} type={alertType}/>
-            <div className="container">
-                <div className="inner-container">
-                    <div className="col left-col">
-                        <div className="chart-card card">
-                            <div className="chart-container">
-                                <div id="chart-container"></div>
-                            </div>
-                            <div className="card-footer"></div>
-                        </div>
+            <DashboardLayout leftContent={
+                <div className="chart-card card">
+                    <div className="chart-container">
+                        <div id="chart-container"></div>
                     </div>
-
-                    <div className="col right-col">
-                        <div className="card">
-                            <form id='orderForm' onSubmit={formSubmit}>
-                                <input type="text" name='ticker' placeholder='Ticker' pattern="[A-Za-z]+" required/>
-                                <input type="number" name='quantity' placeholder='Quantity'required/>
-                                <button type='button' id='orderType' className="container" onClick={toggleOrderTypes}>Order Type</button>
-                                <div className="options-container container" style={{display: showOrderTypes ? 'block': 'none'}}>
-                                    <div className="option">
-                                        <button onClick={disableLimitOptions} type="button" value={OrderType.MARKET_ORDER}>Market</button>
-                                    </div>
-                                    <div className="option">
-                                        <button onClick={enableLimitOptions} type="button" value={OrderType.LIMIT_ORDER}>Limit</button>
-                                    </div>
-                                </div>
-                                <div className="container limit-options" style={{display: showLimitOptions ? 'block': 'none'}}>
-                                    <input type="number" name='limit_price' placeholder='Limit Price' required={showLimitOptions}/>
-                                </div>
-                                <button type='submit' className='btn btn-primary'>Open Order</button>
-                            </form>
-                        </div>
-                    </div>
+                    <div className="card-footer"></div>
                 </div>
-            </div>
+
+            } rightContent={
+                <div className="card">
+                    <form id='orderForm' onSubmit={formSubmit}>
+                        <input type="text" name='ticker' placeholder='Ticker' pattern="[A-Za-z]+" required/>
+                        <input type="number" name='quantity' placeholder='Quantity'required/>
+                        <button type='button' id='orderType' className="container" onClick={toggleOrderTypes}>Order Type</button>
+                        <div className="options-container container" style={{display: showOrderTypes ? 'block': 'none'}}>
+                            <div className="option">
+                                <button onClick={disableLimitOptions} type="button" value={OrderType.MARKET_ORDER}>Market</button>
+                            </div>
+                            <div className="option">
+                                <button onClick={enableLimitOptions} type="button" value={OrderType.LIMIT_ORDER}>Limit</button>
+                            </div>
+                        </div>
+                        <div className="container limit-options" style={{display: showLimitOptions ? 'block': 'none'}}>
+                            <input type="number" name='limit_price' placeholder='Limit Price' required={showLimitOptions}/>
+                        </div>
+                        <button type='submit' className='btn btn-primary'>Open Order</button>
+                    </form>
+                </div>
+            }/>
         </>
     );
 };

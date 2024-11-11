@@ -18,6 +18,8 @@
 * {
   margin: 0;
   color: var(--dark-text-color);
+  font-weight: 750;
+  font-size: 1rem;
 }
 
 body {
@@ -26,6 +28,7 @@ body {
 
 h1 {
   text-align: center;
+  font-size: 2rem;
 }
 
 i {
@@ -135,6 +138,8 @@ option {
 
 .main-container {
   display: flex;
+  width: 100vw;
+  height: 100vh;
 }
 
 .sidebar {
@@ -273,4 +278,9 @@ option {
 #alertMessage {
   padding: 1rem;
   border-radius: 0.25rem;
+}
+
+.stat-card .container {
+  display: flex;
+  justify-content: space-between;
 }

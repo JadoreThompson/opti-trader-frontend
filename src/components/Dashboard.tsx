@@ -1,17 +1,23 @@
-import { FC, useEffect } from "react"
+import { FC, useEffect, useState } from "react"
 
 // Local
 import Sidebar from "./Sidebar";
 import Chart from "./Chart";
+import Portfolio from "./Portfolio";
 
 
 const Dashboard: FC = (() => {
+    const [showChartScreen, setShowChartScreen] = useState<boolean>(true);
+
+    const enableChartScreen = () => { setShowChartScreen(true); }
+    const disableChartScreen = () => { setShowChartScreen(false); }
+
     return (
         <>
             <div className="main-container">
-                <Sidebar />
+                <Sidebar showChart={enableChartScreen} disableChart={disableChartScreen}/>
                 <div className="main-content">
-                    <Chart />
+                    { showChartScreen ? (<Chart />) : (<Portfolio />)}
                 </div>
             </div>
         </>
