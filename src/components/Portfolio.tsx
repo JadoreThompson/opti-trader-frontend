@@ -56,6 +56,8 @@ const Portfolio: FC = () => {
                 { time: '2018-12-30', value: 22.68 },
                 { time: '2018-12-31', value: 22.67 },
             ]);
+
+            chart.timeScale().fitContent();
         };
 
         renderChart();
@@ -101,8 +103,8 @@ const Portfolio: FC = () => {
             Orders Table
     ------------------------ */
     const closedOrderTableHeaders: Record<string, string> = {
-        ticker: 'Ticker',
         order_type: 'Order Type',
+        ticker: 'Ticker',
         quantity: 'Quantity',
         price: 'Price',
         filled_price: 'Filled Price',

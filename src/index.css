@@ -290,6 +290,10 @@ td {
   justify-content: space-between;
 }
 
+.orders-card {
+  width: 100%;
+}
+
 .orders-card .btn-container {
   display: inline-flex;
   align-items: center;
@@ -318,14 +322,16 @@ td {
   background-color: var(--dark-primary-bg-color);
 }
 
-.orders-card .modal {
-}
-
 .orders-card .card-body {
+  width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   overflow-x: auto;
   white-space: nowrap;
+}
+
+table {
+  width: 100%;
 }

@@ -14,9 +14,15 @@ enum OrderType {
     LIMIT_ORDER = 'limit_order'
 }
 
+enum SocketMessageType {
+    PRICE = 'price',
+}
 
 const Chart: FC = () => {
     let chart;
+
+    const candlestickSeriesRef = useRef<any>();
+    const candlestickSeriesData = [{ open: 10, high: 10.63, low: 9.49, close: 9.55, time: 1642427876 }, { open: 9.55, high: 10.30, low: 9.42, close: 9.94, time: 1642514276 }, { open: 9.94, high: 10.17, low: 9.92, close: 9.78, time: 1642600676 }, { open: 9.78, high: 10.59, low: 9.18, close: 9.51, time: 1642687076 }, { open: 9.51, high: 10.46, low: 9.10, close: 10.17, time: 1642773476 }, { open: 10.17, high: 10.96, low: 10.16, close: 10.47, time: 1642859876 }, { open: 10.47, high: 11.39, low: 10.40, close: 10.81, time: 1642946276 }, { open: 10.81, high: 11.60, low: 10.30, close: 10.75, time: 1643032676 }, { open: 10.75, high: 11.60, low: 10.49, close: 10.93, time: 1643119076 }, { open: 10.93, high: 11.53, low: 10.76, close: 10.96, time: 1643205476 }];
 
     useEffect(() => {
         /* --------------------
@@ -40,20 +46,12 @@ const Chart: FC = () => {
                     horzLines: { visible: false }
                 }
             };
+
             chart = createChart(document.getElementById('chart-container')!, chartOptions);
-            const areaSeries = chart.addAreaSeries();
-            areaSeries.setData([
-                { time: '2018-12-22', value: 32.51 },
-                { time: '2018-12-23', value: 31.11 },
-                { time: '2018-12-24', value: 27.02 },
-                { time: '2018-12-25', value: 27.32 },
-                { time: '2018-12-26', value: 25.17 },
-                { time: '2018-12-27', value: 28.89 },
-                { time: '2018-12-28', value: 25.46 },
-                { time: '2018-12-29', value: 23.92 },
-                { time: '2018-12-30', value: 22.68 },
-                { time: '2018-12-31', value: 22.67 },
-            ]);
+            candlestickSeriesRef.current = chart.addCandlestickSeries({ upColor: '#26a69a', downColor: '#ef5350', borderVisible: false, wickUpColor: '#26a69a', wickDownColor: '#ef5350' });
+            candlestickSeriesRef.current.setData(candlestickSeriesData);
+
+            chart.timeScale().fitContent();
         };
 
         renderChart();
@@ -82,12 +80,57 @@ const Chart: FC = () => {
     const [alertType, setAlertType] = useState<AlertTypes | null>(null);
     const [alertMessage, setAlertMessage] = useState<string>('');
 
+    let lastUpdateTime = 1643205476;
 
     useEffect(() => {
         /*
             Initialises and configures the functionality of the websocket
             object
         */
+
+        // Updates the chart
+        const updateChartPrice = (newPrice: number, newTime: number) => {            
+            if (candlestickSeriesRef.current) {
+                
+                let newCandle;
+                if (Number(String(newTime).slice(-3)) % 60 === 0 || newTime > (lastUpdateTime + 60)) {
+                    newCandle = {
+                        time: newTime,
+                        open: newPrice,
+                        low: newPrice,
+                        high: newPrice,
+                        close: newPrice
+                    };
+
+                    console.log(newTime);
+                    lastUpdateTime = newTime;
+                    candlestickSeriesData.push(newCandle);
+
+                    // if (newTime >= (lastUpdateTime + 60) && newTime !== lastUpdateTime) {
+                    //     console.log(0);
+                    //     newCandle = {
+                    //         time: newTime,
+                    //         open: newPrice,
+                    //         low: newPrice,
+                    //         high: newPrice,
+                    //         close: newPrice
+                    //     };
+                    // }
+                } else {
+                    console.log(1);
+                    const oldCandle = candlestickSeriesData[candlestickSeriesData.length - 1];
+                    newCandle = oldCandle;
+                
+                    newCandle.high = Math.max(oldCandle.high, newPrice);
+                    newCandle.close = Math.max(oldCandle.high, newPrice);
+                    candlestickSeriesData.push(newCandle);
+                }
+                
+                console.log(newCandle);
+                candlestickSeriesRef.current.update(newCandle);
+            }
+        };
+
         socketRef.current = new WebSocket("ws://127.0.0.1:8000/stream/trade");
 
         socketRef.current.onopen = () => {
@@ -103,16 +146,22 @@ const Chart: FC = () => {
 
         socketRef.current.onmessage = (e) => {
             const socketMessage = JSON.parse(e.data);
-            setAlertType(
-                Object.values(AlertTypes).includes(socketMessage.status) 
-                ? socketMessage.status as AlertTypes : null 
-            );
-            setAlertMessage(socketMessage.message);
             
+            if (Object.values(AlertTypes).includes(socketMessage.status)) {
+                setAlertType(socketMessage.status as AlertTypes);
+                setAlertMessage(socketMessage.message);
+            }
+
+            // Routing
+            if (socketMessage.status === SocketMessageType.PRICE){
+                updateChartPrice(socketMessage.message.price, socketMessage.message.time);
+            }
         };
 
         return () => {
-            if (socketRef.current) { socketRef.current.close(); }
+            if (socketRef.current) { 
+                socketRef.current.close(); 
+            }
         };
     }, []);
 
