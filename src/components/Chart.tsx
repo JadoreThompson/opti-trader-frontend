@@ -93,7 +93,7 @@ const Chart: FC = () => {
             if (candlestickSeriesRef.current) {
                 
                 let newCandle;
-                if (Number(String(newTime).slice(-3)) % 60 === 0 || newTime > (lastUpdateTime + 60)) {
+                if (newTime > (lastUpdateTime + 60)) {
                     newCandle = {
                         time: newTime,
                         open: newPrice,
@@ -105,17 +105,20 @@ const Chart: FC = () => {
                     console.log(newTime);
                     lastUpdateTime = newTime;
                     candlestickSeriesData.push(newCandle);
+                
+                } else if (newTime % 60 === 0 && newTime > lastUpdateTime) {
+                    newCandle = {
+                        time: newTime,
+                        open: newPrice,
+                        low: newPrice,
+                        high: newPrice,
+                        close: newPrice
+                    };
 
-                    // if (newTime >= (lastUpdateTime + 60) && newTime !== lastUpdateTime) {
-                    //     console.log(0);
-                    //     newCandle = {
-                    //         time: newTime,
-                    //         open: newPrice,
-                    //         low: newPrice,
-                    //         high: newPrice,
-                    //         close: newPrice
-                    //     };
-                    // }
+                    console.log(newTime);
+                    lastUpdateTime = newTime;
+                    candlestickSeriesData.push(newCandle);
+                
                 } else {
                     console.log(1);
                     const oldCandle = candlestickSeriesData[candlestickSeriesData.length - 1];
