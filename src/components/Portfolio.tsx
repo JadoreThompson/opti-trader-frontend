@@ -1,21 +1,224 @@
 import { FC, useEffect, useState } from "react";
-import { createChart, LayoutOptions, GridOptions, ColorType } from "lightweight-charts";
+import { createChart, LayoutOptions, GridOptions, ColorType, TimeScaleOptions } from "lightweight-charts";
 import axios from "axios";
 import { getCookie } from "typescript-cookie";
+
+
+import * as echarts from 'echarts';
 
 // Local
 import DashboardLayout from "./DashboardLayout";
 
 
-const BASE_URL = "http://127.0.0.1:8000"
+const BASE_URL = "http://127.0.0.1:8000";
+type EChartsOption = echarts.EChartOption;
+
 
 const Portfolio: FC = () => {
+    /* --------------------
+        Render charts
+    -------------------- */
+    const [chartData, setChartData] = useState<Array<Record<string, number>>>([]);
+    const [distributionData, setDistributionData] = useState<Array<Record<string, string | number>>>([]);
+    const [winnerLoserData, setWinnerLoserData] = useState<Record<string, Array<number>>>({});
+
+    // Winners Loses Per Day Data
     useEffect(() => {
-        /* --------------------
-            Render chart
-        -------------------- */
+        const fetchData = async () => {
+            const { data } = await axios.get('http://127.0.0.1:8000/portfolio/weekday-results', {
+                headers: { "Authorization": `Bearer ${getCookie('jwt')}` }
+            });
+            console.log('Requested Data', data);
+            setWinnerLoserData(data);
+        };
+
+        fetchData();
+    }, []);
+
+    // Winners Losers Per Day
+    useEffect(() => {
+        const loadChart = () => {
+            if (Object.keys(winnerLoserData).length > 0) {
+                
+                
+                var chartDom = document.getElementById('barChart')!;
+                var myChart = echarts.init(chartDom);
+                var option: EChartsOption;
+                
+                var series = [
+                    {
+                        data: winnerLoserData.wins,
+                        type: 'bar',
+                        stack: 'a',
+                        name: 'Wins',
+                        itemStyle: {
+                            color: '#11ae1f'
+                        }
+                    },
+                    {
+                        data: winnerLoserData.losses,
+                        type: 'bar',
+                        stack: 'a',
+                        name: 'Losses',
+                        itemStyle: {
+                            color: 'red'
+                        }
+                    },
+                ];
+                
+                const stackInfo: {
+                    [key: string]: { stackStart: number[]; stackEnd: number[] };
+                } = {};
+                for (let i = 0; i < series[0].data.length; ++i) {
+                    for (let j = 0; j < series.length; ++j) {
+                        const stackName = series[j].stack;
+                        if (!stackName) {
+                            continue;
+                        }
+                        if (!stackInfo[stackName]) {
+                            stackInfo[stackName] = {
+                                stackStart: [],
+                                stackEnd: []
+                            };
+                        }
+                        const info = stackInfo[stackName];
+                        const data = series[j].data[i];
+                        if (data && data !== 0) {
+                            if (info.stackStart[i] == null) {
+                                info.stackStart[i] = j;
+                            }
+                            info.stackEnd[i] = j;
+                        }
+                    }
+                }
+                for (let i = 0; i < series.length; ++i) {
+                    const data = series[i].data as
+                        | number[]
+                        | { value: number; itemStyle: object }[];
+                    const info = stackInfo[series[i].stack];
+                    for (let j = 0; j < series[i].data.length; ++j) {
+                        const isEnd = info.stackEnd[j] === i;
+                        const topBorder = isEnd ? 5 : 0;
+                        const bottomBorder = 0;
+                        data[j] = {
+                            value: data[j] as number,
+                            itemStyle: {
+                                borderRadius: [topBorder, topBorder, bottomBorder, bottomBorder]
+                            }
+                        }
+                    }
+                }
+                
+                option = {
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: (params: any) => {
+                            return `${params.seriesName}: ${params.value}`;
+                        }
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        splitLine: { show: false }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        splitLine: { show: false }
+                    },
+                    series: series as any
+                };
+                
+                console.log(stackInfo);
+                option && myChart.setOption(option); 
+            }
+        };
+        loadChart();
+
+    }, [winnerLoserData]);
+
+    // Distribution Growth Pie Chart Data
+    useEffect(() => {
+        const fetchData = async () => {
+            const { data } = await axios.get("http://127.0.0.1:8000/portfolio/distribution", {
+                headers: { "Authorization": `Bearer ${getCookie('jwt')}` }
+            });
+            setDistributionData(data);
+        };
+
+        fetchData();
+    }, []);
+
+    // Distribution Growth Pie Chart
+    useEffect(() => {
+        const loadChart = () => {
+            var chartDom = document.getElementById('distributionChart')!;
+            var myChart = echarts.init(chartDom);
+            var option: EChartsOption;
+
+            option = {
+                title: {
+                    textStyle: {
+                        color: "white"
+                    }
+                },
+                tooltip: {
+                  trigger: 'item'
+                },
+                legend: {
+                  top: '5%',
+                  left: 'center',
+                  textStyle: {
+                    color: "white"
+                  }
+                },
+                series: [
+                  {
+                    name: 'Portfolio Distribution',
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    avoidLabelOverlap: false,
+                    label: {
+                      show: false,
+                      position: 'center'
+                    },
+                    emphasis: {
+                      label: {
+                        show: true,
+                        fontSize: 40,
+                        fontWeight: 'bold',
+                        color: "white"
+                      }
+                    },
+                    labelLine: {
+                      show: false
+                    },
+                    data: distributionData
+                  }
+                ]
+              };
+
+            option && myChart.setOption(option);
+        };
+        loadChart();
+    }, [distributionData]);
+
+
+    // Portfolio Growth Chart Data
+    useEffect(() => {
+        const fetchData = async () => {
+            const { data } = await axios.get(`http://127.0.0.1:8000/portfolio/growth?interval=1y`, {
+                headers: { 'Authorization': `Bearer ${getCookie('jwt')}` }
+            });
+            setChartData(data);
+        };
+        fetchData();
+    }, []);
+
+
+    // Portfolio Growth Chart
+    useEffect(() => {
         const renderChart = () => {
-            const chartOptions: { autoSize: boolean, layout: LayoutOptions, grid: GridOptions } = {
+            const chartOptions: { autoSize: boolean, layout: LayoutOptions, grid: GridOptions, timeScale: TimeScaleOptions } = {
                 autoSize: true,
                 layout: {
                     background: {
@@ -30,9 +233,15 @@ const Portfolio: FC = () => {
                 grid: {
                     vertLines: { visible: false },
                     horzLines: { visible: false }
+                },
+                timeScale: {
+                    timeVisible: true
                 }
             };
-            const chart = createChart(document.getElementById('chart-container')!, chartOptions);
+            
+            const chartContainer = document.getElementById('growth-chart-container') as HTMLElement;
+            chartContainer.innerHTML = '';
+            const chart = createChart(chartContainer, chartOptions);
             
             // const areaSeries = chart.addAreaSeries({ lineColor: "#56398f", topColor: "#63469c", bottomColor: "#826bb0" });
 
@@ -42,26 +251,12 @@ const Portfolio: FC = () => {
                 bottomColor: 'rgba(43, 1, 137, 0.01)'
             });
             
-            
-
-            areaSeries.setData([
-                { time: '2018-12-22', value: 32.51 },
-                { time: '2018-12-23', value: 31.11 },
-                { time: '2018-12-24', value: 27.02 },
-                { time: '2018-12-25', value: 27.32 },
-                { time: '2018-12-26', value: 25.17 },
-                { time: '2018-12-27', value: 28.89 },
-                { time: '2018-12-28', value: 25.46 },
-                { time: '2018-12-29', value: 23.92 },
-                { time: '2018-12-30', value: 22.68 },
-                { time: '2018-12-31', value: 22.67 },
-            ]);
-
+            areaSeries.setData(chartData);
             chart.timeScale().fitContent();
         };
 
         renderChart();
-    }, []);
+    }, [chartData]);
 
 
     /* ---------------------
@@ -165,7 +360,7 @@ const Portfolio: FC = () => {
             <>
                 <div className="chart-card card">
                     <div className="chart-container">
-                        <div id="chart-container"></div>
+                        <div id="growth-chart-container" className="chart"></div>
                     </div>
                     <div className="card-footer"></div>
                 </div>
@@ -224,6 +419,15 @@ const Portfolio: FC = () => {
                         )}
                     </div>
                 </div>
+
+                <div className="container metric-container">
+                    <div className="card distribution-card">
+                        <div id="distributionChart" className="chart"></div>
+                    </div>
+                    <div className="card bar-card">
+                        <div id="barChart" className="chart"></div>
+                    </div>
+                </div>
             </>
 
         } rightContent={
@@ -233,7 +437,7 @@ const Portfolio: FC = () => {
                 </div>
                 <div className="card-body">
                     {Object.keys(statTitles).map((key) => (
-                        <div className="container">
+                        <div className="container" key={key}>
                             <div className="title">{statTitles[key]}</div>
                             <div className="value">{stats[key]}</div>
                         </div>

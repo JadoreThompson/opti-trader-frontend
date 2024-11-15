@@ -9,14 +9,14 @@ const Register: FC<{ switchToLogin: () => void, setIsLoggedIn: () => void }> = (
 
         try {
             const { data } = await axios.post(
-                "http://127.0.0.1:8000/accounts/login", 
-                Object.fromEntries(new FormData(e.target).entries())
+                "http://127.0.0.1:8000/accounts/register", 
+                Object.fromEntries(new FormData(e.target as HTMLFormElement).entries())
             );
             
             const token = data?.token;
             if (token) {
                 setCookie('jwt', token) // TODO: In production set secure: true and the same for login
-                setIsLoggedIn;
+                setIsLoggedIn();
             }
         } catch(e) {
             console.error(e);
@@ -36,7 +36,7 @@ const Register: FC<{ switchToLogin: () => void, setIsLoggedIn: () => void }> = (
                     <button type="submit" className='btn btn-primary'>Register</button>
                 </form>
                 <div className="card-footer">
-                    <p>Already have an account? <a href="" onClick={switchToLogin}>Login</a></p>
+                    <p>Already have an account? <a href="#" onClick={(e) => {e.preventDefault(); switchToLogin();}}>Login</a></p>
                 </div>
             </div>
         </div>

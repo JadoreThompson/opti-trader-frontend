@@ -11,11 +11,12 @@ export enum AlertTypes {
 
 export interface AlertProps {
     message: string,
-    type: AlertTypes | null
+    type: AlertTypes | null,
+    counter: number
 }
 
 
-const Alert: FC<AlertProps> = ({message, type}) => {
+const Alert: FC<AlertProps> = ({message, type, counter}) => {
     
     const sleep = async (ms: number): Promise<void> => {
         return new Promise(resolve => setTimeout(resolve, ms));
@@ -46,7 +47,7 @@ const Alert: FC<AlertProps> = ({message, type}) => {
 
     useEffect(() => {
         displayMessage(message);
-    }, [message]);
+    }, [counter]);
 
     return (
         <div className='alert-container'>

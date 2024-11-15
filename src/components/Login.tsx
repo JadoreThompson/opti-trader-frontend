@@ -11,7 +11,7 @@ const Login: FC<{ switchToRegister: () => void, setIsLoggedIn: () => void }> = (
         try {
             const { data } = await axios.post(
                 "http://127.0.0.1:8000/accounts/login", 
-                Object.fromEntries(new FormData(e.target).entries())
+                Object.fromEntries(new FormData(e.target as HTMLFormElement).entries())
             );
             
             const token = data?.token;
@@ -36,7 +36,7 @@ const Login: FC<{ switchToRegister: () => void, setIsLoggedIn: () => void }> = (
                     <button className='btn btn-primary'>Login</button>
                 </form>
                 <div className="card-footer">
-                    <p>Don't have an account? <a href="" onClick={switchToRegister}>Register</a></p>
+                    <p>Don't have an account? <a href="#" onClick={(e) => {e.preventDefault(); switchToRegister();}}>Register</a></p>
                 </div>
             </div>
         </div>
