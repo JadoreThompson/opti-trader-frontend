@@ -7,7 +7,7 @@ import Portfolio from "./Portfolio";
 
 
 const Dashboard: FC = (() => {
-    const [showChartScreen, setShowChartScreen] = useState<boolean>(true);
+    const [showChartScreen, setShowChartScreen] = useState<boolean>(false);
 
     const enableChartScreen = () => { setShowChartScreen(true); }
     const disableChartScreen = () => { setShowChartScreen(false); }

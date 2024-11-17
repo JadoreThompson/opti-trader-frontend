@@ -42,7 +42,7 @@ const Chart: FC = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const { data } = await axios.get(`http://127.0.0.1:8000/instrument/?ticker=APPL&interval=${currentInterval}`, {
+            const { data } = await axios.get(`http://127.0.0.1:8000/instruments/?ticker=APPL&interval=${currentInterval}`, {
                 headers: { 'Authorization': `Bearer ${getCookie('jwt')}` }
             });
             setCandlestickSeriesData(data);
@@ -278,7 +278,7 @@ const Chart: FC = () => {
                 <div className="chart-card card">
                     <div className="btn-container">
                       {Object.values(IntervalEnum).map((value) => (
-                        <button key={value} className='btn btn-secondary' value={value} onClick={changeTimeFrame}>{value}</button>
+                        <button key={value} className={`btn btn-secondary ${value === '1m' ? 'active': ''}`} value={value} onClick={changeTimeFrame}>{value}</button>
                       ))}
                     </div>
                     <div className="chart-container">

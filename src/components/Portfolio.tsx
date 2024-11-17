@@ -28,7 +28,6 @@ const Portfolio: FC = () => {
             const { data } = await axios.get('http://127.0.0.1:8000/portfolio/weekday-results', {
                 headers: { "Authorization": `Bearer ${getCookie('jwt')}` }
             });
-            console.log('Requested Data', data);
             setWinnerLoserData(data);
         };
 
@@ -128,7 +127,6 @@ const Portfolio: FC = () => {
                     series: series as any
                 };
                 
-                console.log(stackInfo);
                 option && myChart.setOption(option); 
             }
         };
@@ -206,9 +204,10 @@ const Portfolio: FC = () => {
     // Portfolio Growth Chart Data
     useEffect(() => {
         const fetchData = async () => {
-            const { data } = await axios.get(`http://127.0.0.1:8000/portfolio/growth?interval=1y`, {
+            const { data } = await axios.get(`http://127.0.0.1:8000/portfolio/growth?interval=1m`, {
                 headers: { 'Authorization': `Bearer ${getCookie('jwt')}` }
             });
+            console.log(data);
             setChartData(data);
         };
         fetchData();
@@ -218,41 +217,40 @@ const Portfolio: FC = () => {
     // Portfolio Growth Chart
     useEffect(() => {
         const renderChart = () => {
-            const chartOptions: { autoSize: boolean, layout: LayoutOptions, grid: GridOptions, timeScale: TimeScaleOptions } = {
-                autoSize: true,
-                layout: {
-                    background: {
-                        type: ColorType.Solid,
-                        color: getComputedStyle(document.documentElement).getPropertyValue('--dark-secondary-bg-color'),
+            if (chartData.length >= 1) {
+                const chartOptions: { autoSize: boolean, layout: LayoutOptions, grid: GridOptions, timeScale: TimeScaleOptions } = {
+                    autoSize: true,
+                    layout: {
+                        background: {
+                            type: ColorType.Solid,
+                            color: getComputedStyle(document.documentElement).getPropertyValue('--dark-secondary-bg-color'),
+                        },
+                        textColor: getComputedStyle(document.documentElement).getPropertyValue('--dark-text-color'),
+                        fontSize: 12,
+                        fontFamily: getComputedStyle(document.documentElement).getPropertyValue("font-family"),
+                        attributionLogo: false
                     },
-                    textColor: getComputedStyle(document.documentElement).getPropertyValue('--dark-text-color'),
-                    fontSize: 12,
-                    fontFamily: getComputedStyle(document.documentElement).getPropertyValue("font-family"),
-                    attributionLogo: false
-                },
-                grid: {
-                    vertLines: { visible: false },
-                    horzLines: { visible: false }
-                },
-                timeScale: {
-                    timeVisible: true
-                }
-            };
-            
-            const chartContainer = document.getElementById('growth-chart-container') as HTMLElement;
-            chartContainer.innerHTML = '';
-            const chart = createChart(chartContainer, chartOptions);
-            
-            // const areaSeries = chart.addAreaSeries({ lineColor: "#56398f", topColor: "#63469c", bottomColor: "#826bb0" });
+                    grid: {
+                        vertLines: { visible: false },
+                        horzLines: { visible: false }
+                    },
+                    timeScale: {
+                        timeVisible: true
+                    }
+                };
+                
+                const chartContainer = document.getElementById('growth-chart-container') as HTMLElement;
+                chartContainer.innerHTML = '';
+                const chart = createChart(chartContainer, chartOptions);
+    
+                const areaSeries = chart.addAreaSeries({ 
+                    lineColor: 'rgba(124, 72, 235, 1)',
+                    topColor: 'rgba(124, 72, 235, 1.0)',
+                    bottomColor: 'rgba(43, 1, 137, 0.01)'
+                });
 
-            const areaSeries = chart.addAreaSeries({ 
-                lineColor: 'rgba(124, 72, 235, 1)',
-                topColor: 'rgba(124, 72, 235, 1.0)',
-                bottomColor: 'rgba(43, 1, 137, 0.01)'
-            });
-            
-            areaSeries.setData(chartData);
-            chart.timeScale().fitContent();
+                areaSeries.setData(chartData);
+            }
         };
 
         renderChart();
@@ -284,6 +282,7 @@ const Portfolio: FC = () => {
                 const { data } = await axios.get(BASE_URL + '/portfolio/performance', {
                     headers: { 'Authorization': `Bearer ${getCookie('jwt')}` }
                 });
+                
                 setStats(data);
             } catch(e) {
                 console.error(e);
@@ -328,25 +327,32 @@ const Portfolio: FC = () => {
     const [closedOrderData, setClosedOrderData] = useState<Array<Record<string, string | Number>>>([]);
     const [openOrderData, setOpenOrderData] = useState<Array<Record<string, string | Number>>>([]);
     const [showClosedOrders, setShowClosedOrders] = useState<boolean>(true);
+    const [maxClosedOrderTablePages, setClosedOrdersTableMaxPages] = useState<number>(0);
+    const [openOrdersTableMaxPages, setOpenOrdersTableMaxPages] = useState<number>(0);
+    const [currentTableIndex, setCurrentTableIndex] = useState<number>(0);
+    const maxRows: number = 10;
 
-    const enableClosedOrders = () => { setShowClosedOrders(true); };
-    const disableClosedOrders = () => { setShowClosedOrders(false); };
+    const enableClosedOrders = () => { setShowClosedOrders(true); setCurrentTableIndex(0); };
+    const disableClosedOrders = () => { setShowClosedOrders(false); setCurrentTableIndex(0); };
 
     useEffect(() => {
         /*
         Fetches the data for the orders table
         */
        const fetchTableData = async () => {
-           try {
-               const { data } = await axios.get(BASE_URL + '/portfolio/orders', 
-               { headers: { 'Authorization': `Bearer ${getCookie('jwt')}`}});
-               
-               const openOrders = data.filter((item: Record<string, string | Number>) => !item.closed_at);
-               const closedOrders = data.filter((item: Record<string, string | Number>) => item.closed_at);
-               
-               setOpenOrderData(openOrders);
-               setClosedOrderData(closedOrders);
-    
+            try {
+                const { data } = await axios.get(BASE_URL + '/portfolio/orders', 
+                { headers: { 'Authorization': `Bearer ${getCookie('jwt')}`}});
+                
+                const openOrders = data.filter((item: Record<string, string | Number>) => !item.closed_at);
+                const closedOrders = data.filter((item: Record<string, string | Number>) => item.closed_at);
+                
+                setOpenOrderData(openOrders);
+                setOpenOrdersTableMaxPages(Math.floor(openOrders.length / maxRows));
+                
+                setClosedOrderData(closedOrders);
+                setClosedOrdersTableMaxPages(Math.floor(closedOrders.length / maxRows));
+
             } catch(e) {
                 console.error('Table Fetch Error: ', e);
             }
@@ -355,10 +361,43 @@ const Portfolio: FC = () => {
         fetchTableData();
     }, []);
     
+    const nextPageHandler = () => {
+        setCurrentTableIndex((prev) => {const newIndex = prev + 1; return newIndex;});
+    };
+
+    const prevPageHandler = () => {
+        setCurrentTableIndex((prev) => {const newIndex = prev - 1; return newIndex;});
+    };
+
+    const queryOrders = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const query = new FormData(e.target as HTMLFormElement).get('query');
+        
+    }
+
+
+    /* ----------------
+        Styles
+    -------------------*/
+    // const chartHeaderStyles = {
+    //     display: 'flex',
+    //     backgroundColor: 'red'
+    // }
+
     return (
         <DashboardLayout leftContent={
             <>
                 <div className="chart-card card">
+                    <div className='chart-header'>
+                        <div className="container chart-header-stat">
+                            <div className="">
+                                <span>Balance</span>
+                            </div>
+                            <div className="">
+                                <span className="stat">{stats.balance}</span>
+                            </div>
+                        </div>
+                    </div>
                     <div className="chart-container">
                         <div id="growth-chart-container" className="chart"></div>
                     </div>
@@ -377,6 +416,11 @@ const Portfolio: FC = () => {
                                     <button className={`btn ${showClosedOrders ? '' : 'active'}`} onClick={disableClosedOrders}>Open</button>
                                 </div>
                             </div>
+                            {/* <div className="search-container">
+                                <form onSubmit={queryOrders} id='search'>
+                                    <input name="query" type="text" placeholder="Search..."/>
+                                </form>
+                            </div> */}
                         </div>
                         { showClosedOrders ? (
                             <table>
@@ -407,7 +451,7 @@ const Portfolio: FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                {openOrderData.map((record, index) => (
+                                {openOrderData.slice(currentTableIndex, currentTableIndex + maxRows).map((record, index) => (
                                     <tr key={index}>
                                         {Object.keys(openOrderTableHeaders).map((key) => (
                                             <td key={key}>{record[key]}</td>
@@ -417,6 +461,17 @@ const Portfolio: FC = () => {
                                 </tbody>
                             </table>
                         )}
+                        <div className="btn-container pagination-controls">
+                            <button onClick={prevPageHandler} disabled={currentTableIndex === 0} className="btn btn-primary">
+                                <i className="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <span id='page'>{currentTableIndex + 1}</span>
+                            <button onClick={nextPageHandler} disabled={
+                                showClosedOrders
+                                ? currentTableIndex === maxClosedOrderTablePages
+                                : currentTableIndex === openOrdersTableMaxPages
+                            } className="btn btn-primary"><i className="fa-solid fa-chevron-right"></i></button>
+                        </div>
                     </div>
                 </div>
 
