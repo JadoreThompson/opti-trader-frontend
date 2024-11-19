@@ -12,14 +12,17 @@ const Register: FC<{ switchToLogin: () => void, setIsLoggedIn: () => void }> = (
                 "http://127.0.0.1:8000/accounts/register", 
                 Object.fromEntries(new FormData(e.target as HTMLFormElement).entries())
             );
-            
+
             const token = data?.token;
             if (token) {
                 setCookie('jwt', token) // TODO: In production set secure: true and the same for login
                 setIsLoggedIn();
             }
         } catch(e) {
-            console.error(e);
+            if (e.response.status === 409) {
+                const errorElement = document.getElementById("errorMessage") as HTMLElement
+                errorElement.textContent = e.response.data.error;
+            }
         }
     };
     
@@ -37,6 +40,7 @@ const Register: FC<{ switchToLogin: () => void, setIsLoggedIn: () => void }> = (
                 </form>
                 <div className="card-footer">
                     <p>Already have an account? <a href="#" onClick={(e) => {e.preventDefault(); switchToLogin();}}>Login</a></p>
+                    <p style={{ color: "red" }} id="errorMessage"></p>
                 </div>
             </div>
         </div>

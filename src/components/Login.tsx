@@ -20,7 +20,10 @@ const Login: FC<{ switchToRegister: () => void, setIsLoggedIn: () => void }> = (
                 setIsLoggedIn();
             }
         } catch(e) {
-            console.error(e);
+            if (e.response.status === 401) {
+                const errorElement = document.getElementById("errorMessage") as HTMLElement
+                errorElement.textContent = e.response.data.error;
+            }
         }
     };
     
@@ -37,6 +40,7 @@ const Login: FC<{ switchToRegister: () => void, setIsLoggedIn: () => void }> = (
                 </form>
                 <div className="card-footer">
                     <p>Don't have an account? <a href="#" onClick={(e) => {e.preventDefault(); switchToRegister();}}>Register</a></p>
+                    <p style={{ color: "red" }} id="errorMessage"></p>
                 </div>
             </div>
         </div>
