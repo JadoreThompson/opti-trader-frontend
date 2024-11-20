@@ -20,7 +20,6 @@ const Dashboard: FC = (() => {
     };
 
     const sidebarStyles = {
-        // backgroundColor: "pink",
         width: "auto",
         height: "100%",
         position: "fixed"
