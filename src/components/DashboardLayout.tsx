@@ -7,17 +7,24 @@ interface DashboardLayoutProps {
 
 
 const DashboardLayout: FC<DashboardLayoutProps> = ({ leftContent, rightContent }) => {
+    const main = {
+        display: "flex",
+        flexDirection: 'row',
+        width: "100%",
+        gap: "0.5rem"
+    };
+
     return (
-        <div className="container">
-            <div className="inner-container">
-                <div className="col left-col">
+        <>
+            <div className="i" style={main}>
+                <div className="left side">
                     {leftContent}
                 </div>
-                <div className="col right-col">
+                <div className="right side">
                     {rightContent}
                 </div>
             </div>
-        </div>
+        </>
     )
 };
 

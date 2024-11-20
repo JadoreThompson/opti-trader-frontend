@@ -17,13 +17,16 @@
 
 * {
   margin: 0;
+  padding: 0;
   color: var(--dark-text-color);
   font-weight: 750;
   font-size: 1rem;
+  box-sizing: border-box;
 }
 
 body {
   background-color: var(--dark-primary-bg-color);
+  width: 100%;
 }
 
 h1 {
@@ -44,6 +47,74 @@ input, select {
   border-bottom: 1px solid grey;
   color: white !important;
 }
+
+/*------------------------------------*/
+/*------------------------------------*/
+.side {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  padding: 1rem;
+  box-sizing: border-box;
+  height: auto;
+}
+
+.left.side {
+  display: flex;
+  flex-direction: column;
+}
+
+
+@media (min-width: 900px) {
+  .left.side {
+    flex: 5;
+  }
+
+  .right.side {
+    flex: 1;
+  }
+}
+
+
+@media (max-width: 900px) {
+  .left.side {
+    flex: 2;
+  }
+
+  .right.side {
+    flex: 1;
+  }
+}
+
+.cr {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 10rem;
+  min-width: 0;
+}
+
+#growth-chart-container {
+  height: 100%;
+  width: 100%;
+  min-width: 0;
+}
+
+.stat-card {
+  width: 100%;
+  height: auto;
+  align-self: flex-start;
+}
+
+@media (max-width: 950px) {
+  .stat-card {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
+/*------------------------------------*/
+/*------------------------------------*/
 
 input:focus, select:focus {
   outline: transparent;
@@ -103,11 +174,12 @@ td {
 }
 
 .card {
-  height: auto;
+  height: auto !important;
   padding: 1rem;
   margin-bottom: 1rem;
   border-radius: 1rem;
   background-color: var(--dark-secondary-bg-color) /* white */;
+  align-self: flex-start;
 }
 
 .card button {
@@ -164,12 +236,6 @@ td {
   .sidebar {
     width: 5%;
   }
-
-  .main-content {
-    /* margin-left: 7% !important;
-    height: auto; */
-    flex: 1;
-  }
 }
 
 .sidebar-icon-container {
@@ -184,17 +250,10 @@ td {
   color: var(--primary-color);
 }
 
-.main-content {  
-  /* flex: 1; */
-  /* height: auto; */
-  margin-left: 5%;
-  /* max-width: 100%; */
-}
-
 
 .chart-card {
   height: auto;
-  width: ;
+  width: 100%;
 }
 
 .chart-card .btn-container {
@@ -213,9 +272,10 @@ td {
   border: 1px solid var(--primary-color);
 }
 
-.chart-container { 
-  height: 30rem;
-  width: 100%;
+.chart-header {
+  height: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .chart {
@@ -235,24 +295,10 @@ td {
   width: 20%;
 }
 
-.chart-container .chart-header {
-  display: 'flex';
-  background-color: 'red' !important;
-}
-
-.chart-header-stat {
-  display: 'flex';
-  flex-direction: 'column';
-  height: auto;
-}
-
-.chart-header-stat span {
-  font-weight: 300;
-}
-
-.stat {
-  font-size: 1.5rem;
-  font-weight: 700 !important;
+.chart-container{
+  display: flex;
+  flex-direction: column;
+  height: 30rem;
 }
 
 #orderType {
@@ -363,14 +409,39 @@ table {
 }
 
 .metric-container {
-  display: flex;
-  gap: 1rem;
-  width: 100%;
-  height: 500px;
+  height: 20rem !important;
 }
 
 .metric-container .card {
-  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100% !important;
+}
+
+.metric-container .chart {
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center !important;
+  margin: auto;
+}
+
+@media(min-width: 900px){
+  .metric-container {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .metric-container .card {
+    flex: 1;
+  }
+}
+
+@media (max-width: 900px) {
+  .metric-container {
+    grid-template-columns: 1fr;
+  }
 }
 
 .btn-container.pagination-controls {

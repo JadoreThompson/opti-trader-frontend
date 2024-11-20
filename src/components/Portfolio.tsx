@@ -250,6 +250,7 @@ const Portfolio: FC = () => {
                 });
 
                 areaSeries.setData(chartData);
+                console.log(chartContainer);
             }
         };
 
@@ -372,7 +373,6 @@ const Portfolio: FC = () => {
     const queryOrders = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const query = new FormData(e.target as HTMLFormElement).get('query');
-        
     }
 
 
@@ -385,106 +385,26 @@ const Portfolio: FC = () => {
     // }
 
     return (
-        <DashboardLayout leftContent={
+        <DashboardLayout leftContent={    
             <>
-                <div className="chart-card card">
-                    <div className='chart-header'>
-                        <div className="container chart-header-stat">
-                            <div className="">
-                                <span>Balance</span>
-                            </div>
-                            <div className="">
-                                <span className="stat">{stats.balance}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="chart-container">
-                        <div id="growth-chart-container" className="chart"></div>
-                    </div>
-                    <div className="card-footer"></div>
+            <div className="cr card">
+                <div className="chart-header">
+                    <span>Balance</span>
+                    <span style={{ fontSize: "2rem"}}>{stats.balance}</span>
                 </div>
-                <div className="card orders-card">
-                    <div className="card-title">
-                    </div>
-                    <div className="card-body">
-                        <div className="btn-container">
-                            <div className="modal-container">
-                                <div className="modal">
-                                    <button className={`btn ${showClosedOrders ? 'active': ''}`} onClick={enableClosedOrders}>Close</button>
-                                </div>
-                                <div className="modal">
-                                    <button className={`btn ${showClosedOrders ? '' : 'active'}`} onClick={disableClosedOrders}>Open</button>
-                                </div>
-                            </div>
-                            {/* <div className="search-container">
-                                <form onSubmit={queryOrders} id='search'>
-                                    <input name="query" type="text" placeholder="Search..."/>
-                                </form>
-                            </div> */}
-                        </div>
-                        { showClosedOrders ? (
-                            <table>
-                                <thead>
-                                    <tr>
-                                        {Object.keys(closedOrderTableHeaders).map((key) => (
-                                            <td key={key}>{closedOrderTableHeaders[key]}</td>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                {closedOrderData.map((record, index) => (
-                                    <tr key={index}>
-                                        {Object.keys(closedOrderTableHeaders).map((key) => (
-                                            <td key={key}>{record[key]}</td>
-                                        ))}
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        ) : (
-                            <table>
-                                <thead>
-                                    <tr>
-                                        {Object.keys(openOrderTableHeaders).map((key) => (
-                                            <td key={key}>{openOrderTableHeaders[key]}</td>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                {openOrderData.slice(currentTableIndex, currentTableIndex + maxRows).map((record, index) => (
-                                    <tr key={index}>
-                                        {Object.keys(openOrderTableHeaders).map((key) => (
-                                            <td key={key}>{record[key]}</td>
-                                        ))}
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        )}
-                        <div className="btn-container pagination-controls">
-                            <button onClick={prevPageHandler} disabled={currentTableIndex === 0} className="btn btn-primary">
-                                <i className="fa-solid fa-chevron-left"></i>
-                            </button>
-                            <span id='page'>{currentTableIndex + 1}</span>
-                            <button onClick={nextPageHandler} disabled={
-                                showClosedOrders
-                                ? currentTableIndex === maxClosedOrderTablePages
-                                : currentTableIndex === openOrdersTableMaxPages
-                            } className="btn btn-primary"><i className="fa-solid fa-chevron-right"></i></button>
-                        </div>
-                    </div>
+                <div className="chart-container">
+                    <div id="growth-chart-container"></div>
                 </div>
-
-                <div className="container metric-container">
-                    <div className="card distribution-card">
-                        <div id="distributionChart" className="chart"></div>
-                    </div>
-                    <div className="card bar-card">
-                        <div id="barChart" className="chart"></div>
-                    </div>
+            </div>
+            <div className="container metric-container">
+                <div className="card distribution-card">
+                    <div id="distributionChart" className="chart"></div>
                 </div>
+                <div className="card bar-card">
+                    <div id="barChart" className="chart"></div>
+                </div>
+            </div>
             </>
-
         } rightContent={
             <div className="card stat-card">
                 <div className="card-title">

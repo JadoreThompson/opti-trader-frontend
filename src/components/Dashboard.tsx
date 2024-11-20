@@ -4,6 +4,7 @@ import { FC, useEffect, useState } from "react"
 import Sidebar from "./Sidebar";
 import Chart from "./Chart";
 import Portfolio from "./Portfolio";
+import { getComputedStyle } from "echarts/types/src/component/tooltip/helper.js";
 
 
 const Dashboard: FC = (() => {
@@ -12,11 +13,33 @@ const Dashboard: FC = (() => {
     const enableChartScreen = () => { setShowChartScreen(true); }
     const disableChartScreen = () => { setShowChartScreen(false); }
 
+    const rootStyles = {
+        display: "flex",
+        height: "100%",
+        width: "100%"
+    };
+
+    const sidebarStyles = {
+        // backgroundColor: "pink",
+        width: "auto",
+        height: "100%",
+        position: "fixed"
+    }
+
+    const mainStyles = {
+        backgroundColor: "#131415",
+        width: "100%",
+        padding: "1rem",
+        marginLeft: "3%"
+    }
+
     return (
         <>
-            <div className="main-container">
-                <Sidebar showChart={enableChartScreen} disableChart={disableChartScreen}/>
-                <div className="main-content">
+            <div style={rootStyles} className="">
+                <div style={sidebarStyles} className="sidebar">
+                    <Sidebar showChart={enableChartScreen} disableChart={disableChartScreen}/>
+                </div>
+                <div style={mainStyles} className="c">
                     { showChartScreen ? (<Chart />) : (<Portfolio />)}
                 </div>
             </div>

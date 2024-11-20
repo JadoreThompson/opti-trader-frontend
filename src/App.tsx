@@ -8,7 +8,7 @@ import Dashboard from './components/Dashboard';
 
 
 const App: FC = () => {
-  const [isRegistering, setIsRegistering] = useState<boolean>(false);
+  const [isRegistering, setIsRegistering] = useState<boolean>(true);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
   useEffect(() => {
