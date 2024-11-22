@@ -48,6 +48,10 @@ input, select {
   color: white !important;
 }
 
+thead {
+  white-space: nowrap;
+}
+
 /*------------------------------------*/
 /*------------------------------------*/
 .side {
@@ -68,10 +72,12 @@ input, select {
 @media (min-width: 900px) {
   .left.side {
     flex: 5;
+    max-width: 80%;
   }
 
   .right.side {
     flex: 1;
+    max-width: 20%;
   }
 }
 
@@ -405,11 +411,36 @@ td {
 }
 
 table {
+  table-layout: fixed;
   width: 100%;
+  max-width: 100%;
+  margin: 0;
 }
 
+td {
+  white-space: wrap;
+}
+
+thead td {
+  white-space: nowrap;
+}
+
+tbody td {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+tr {
+  display: flex;
+  justify-content: space-around;
+}
+
+
 .metric-container {
-  height: 20rem !important;
+  display: flex;
+  min-height: 20rem !important;
+  margin-bottom: 1rem;
 }
 
 .metric-container .card {
@@ -417,49 +448,130 @@ table {
   align-items: center;
   justify-content: center;
   height: 100% !important;
-}
-
-.metric-container .chart {
-  width: 100%;
-  height: 100%;
-  align-items: center;
-  justify-content: center !important;
-  margin: auto;
+  width: 50%;
 }
 
 @media(min-width: 900px){
   .metric-container {
-    display: flex;
     gap: 1rem;
+    max-width: 100% !important;
+    width: 100% !important;
   }
 
   .metric-container .card {
-    flex: 1;
+    /* flex: 1; */
+    width: 50%;
+  }
+
+  .metric-container .chart {  
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
   }
 }
 
 @media (max-width: 900px) {
-  .metric-container {
+  /* .metric-container {
     grid-template-columns: 1fr;
+  } */
+  
+  .metric-container {
+    flex-direction: column !important;
+    max-width: 100% !important;
+    width: 100% !important;
   }
+  
+  .metric-container .card {
+    width: 100%;
+    height: 20rem !important;
+  }
+
+  .metric-container .chart {
+    display: flex;
+    align-items: center;
+    justify-content: center !important;
+  }
+
+  .metric-container canvas {
+    width: 100%;
+  }
+
+  /* .metric-container canvas {
+    height: 100% !important;
+    width: 100% !important;
+  } */
 }
 
-.btn-container.pagination-controls {
+.pagination-controls {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 1rem;
   padding: 1rem;
 }
 
-.btn-container.pagination-controls .btn {
+.pagination-controls button {
   width: auto;
-  color: white;
+  background-color: transparent;
 }
 
-.btn-container.pagination-controls .btn:disabled i{
+.pagination-controls button:disabled i{
   color: grey !important;
 }
 
-.btn-container.pagination-controls .btn:disabled:hover {
-  box-shadow: none;
+.porfolio-container-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.table-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0% !important;
+  max-width: 100% !important;
+  width: 100%;
+}
+
+.table-card .btn-container {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 1rem;
+}
+
+.table-card .btn-container .container {
+  width: auto;
+  background-color: var(--dark-primary-bg-color);
+  padding: 0.1rem;
+  border-radius: 0.5rem;
+}
+
+.table-card .btn-container .btn {
+  width: auto;
+  border: none;
+  background-color: transparent !important;
+}
+
+.table-card .btn:hover,
+.table-card .btn.active {
+  border-radius:  0.5rem;
+}
+
+.table-card .btn.active {
+  border:  1px solid var(--primary-color);
+}
+
+.table-card .table-container {
+  width: 100%;
+  max-width: 100%;  
+  overflow-y: auto; 
+}
+
+.win {
+  background-color: rgba(39, 171, 39, 0.192);
+}
+.loss {
+  background-color: rgba(255, 0, 0, 0.192);
 }

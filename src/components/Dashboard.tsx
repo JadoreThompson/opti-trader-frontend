@@ -8,16 +8,18 @@ import { getComputedStyle } from "echarts/types/src/component/tooltip/helper.js"
 
 
 const Dashboard: FC = (() => {
-    const [showChartScreen, setShowChartScreen] = useState<boolean>(true);
+    const [showChartScreen, setShowChartScreen] = useState<boolean>(false);
 
     const enableChartScreen = () => { setShowChartScreen(true); }
     const disableChartScreen = () => { setShowChartScreen(false); }
 
     const rootStyles = {
         display: "flex",
+        flexDirection: 'row',
         height: "100%",
-        width: "100%"
-    };
+        width: "100%",
+        gap: '1rem'
+    }
 
     const sidebarStyles = {
         width: "auto",
@@ -27,6 +29,7 @@ const Dashboard: FC = (() => {
 
     const mainStyles = {
         backgroundColor: "#131415",
+        maxWidth: "100%",
         width: "100%",
         padding: "1rem",
         marginLeft: "3%"
@@ -34,11 +37,11 @@ const Dashboard: FC = (() => {
 
     return (
         <>
-            <div style={rootStyles} className="">
+            <div style={rootStyles}>
                 <div style={sidebarStyles} className="sidebar">
                     <Sidebar showChart={enableChartScreen} disableChart={disableChartScreen}/>
                 </div>
-                <div style={mainStyles} className="c">
+                <div style={mainStyles}>
                     { showChartScreen ? (<Chart />) : (<Portfolio />)}
                 </div>
             </div>

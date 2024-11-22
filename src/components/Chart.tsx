@@ -126,12 +126,10 @@ const Chart: FC = () => {
 
     const updateChartPrice = (newPrice: number, newTime: number) => {
         if (candlestickSeriesRef.current) {
-            console.log('Start: ', candlestickSeriesDataRef.current.length)
             let lastCandle = candlestickSeriesDataRef.current[candlestickSeriesDataRef.current.length - 1];      
             let existingCandle: Record<string, number> | any = lastCandle;
             const timespan = Math.floor((newTime - lastCandle.time) / currentIntervalSecondsRef.current);
             let timePointer = lastCandle.time;
-            console.log(lastCandle);
 
             if (timespan >= 1 && lastCandle) {
                 const oldPrice = lastCandle.close;

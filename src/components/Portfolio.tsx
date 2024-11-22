@@ -207,7 +207,6 @@ const Portfolio: FC = () => {
             const { data } = await axios.get(`http://127.0.0.1:8000/portfolio/growth?interval=1m`, {
                 headers: { 'Authorization': `Bearer ${getCookie('jwt')}` }
             });
-            console.log(data);
             setChartData(data);
         };
         fetchData();
@@ -250,7 +249,6 @@ const Portfolio: FC = () => {
                 });
 
                 areaSeries.setData(chartData);
-                console.log(chartContainer);
             }
         };
 
@@ -309,7 +307,8 @@ const Portfolio: FC = () => {
         created_at: 'Open Time',
         closed_at: 'Closed Time',
         close_price: 'Close Price',
-        order_status: 'Order Status'
+        order_status: 'Order Status',
+        realised_pnl:'Realised PnL'
     };
 
     const openOrderTableHeaders: Record<string, string> = {
@@ -327,9 +326,9 @@ const Portfolio: FC = () => {
     
     const [closedOrderData, setClosedOrderData] = useState<Array<Record<string, string | Number>>>([]);
     const [openOrderData, setOpenOrderData] = useState<Array<Record<string, string | Number>>>([]);
-    const [showClosedOrders, setShowClosedOrders] = useState<boolean>(true);
+    const [showClosedOrders, setShowClosedOrders] = useState<boolean>(false);
     const [maxClosedOrderTablePages, setClosedOrdersTableMaxPages] = useState<number>(0);
-    const [openOrdersTableMaxPages, setOpenOrdersTableMaxPages] = useState<number>(0);
+    const [maxOpenOrderTablePages, setOpenOrdersTableMaxPages] = useState<number>(0);
     const [currentTableIndex, setCurrentTableIndex] = useState<number>(0);
     const maxRows: number = 10;
 
@@ -345,15 +344,15 @@ const Portfolio: FC = () => {
                 const { data } = await axios.get(BASE_URL + '/portfolio/orders', 
                 { headers: { 'Authorization': `Bearer ${getCookie('jwt')}`}});
                 
-                const openOrders = data.filter((item: Record<string, string | Number>) => !item.closed_at);
-                const closedOrders = data.filter((item: Record<string, string | Number>) => item.closed_at);
+                const openOrders = data.filter((item: Record<string, string | Number>) => item.order_status === 'filled');
+                const closedOrders = data.filter((item: Record<string, string | Number>) => item.order_status === 'closed');
                 
                 setOpenOrderData(openOrders);
                 setOpenOrdersTableMaxPages(Math.floor(openOrders.length / maxRows));
+                console.log(maxOpenOrderTablePages);
                 
                 setClosedOrderData(closedOrders);
                 setClosedOrdersTableMaxPages(Math.floor(closedOrders.length / maxRows));
-
             } catch(e) {
                 console.error('Table Fetch Error: ', e);
             }
@@ -387,6 +386,7 @@ const Portfolio: FC = () => {
     return (
         <DashboardLayout leftContent={    
             <>
+            {/* <div className="container portfolio-container-left"> */}
             <div className="cr card">
                 <div className="chart-header">
                     <span>Balance</span>
@@ -402,6 +402,70 @@ const Portfolio: FC = () => {
                 </div>
                 <div className="card bar-card">
                     <div id="barChart" className="chart"></div>
+                </div>
+            </div>
+            <div className="card table-card">
+                <div className="btn-container">
+                    <div className="container">
+                        <button onClick={disableClosedOrders} className={`btn btn-secondary ${showClosedOrders ? '': 'active'}`}>Open</button>
+                        <button onClick={enableClosedOrders} className={`btn btn-secondary ${showClosedOrders ? 'active': ''}`}>Closed</button>
+                    </div>
+                </div>
+                <div className="table-container">
+                    { showClosedOrders ? (
+                        <table>
+                            <thead>
+                                <tr>
+                                    {Object.values(closedOrderTableHeaders).map((value) => (
+                                        <td key={value}>{value}</td>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {closedOrderData.slice(currentTableIndex * maxRows, (maxRows * (currentTableIndex + 1))).map((order, index) => (
+                                    <tr key={index}>
+                                        {Object.keys(closedOrderTableHeaders).map((key) => (
+                                            <td key={key} className={key === 'realised_pnl' ? (order[key] > 0 ? 'win': 'loss') : ''}>
+                                                {key === 'realised_pnl' ? `$${order[key]}`: order[key]}
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    ): (
+                        <table>
+                            <thead>
+                                <tr>
+                                    {Object.values(openOrderTableHeaders).map((value) => (
+                                        <td key={value}>{value}</td>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {openOrderData.slice(currentTableIndex * maxRows, (maxRows * (currentTableIndex + 1))).map((order, index) => (
+                                    <tr key={index}>
+                                        {Object.keys(openOrderTableHeaders).map((key) => (
+                                            <td key={key}>{order[key]}</td>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}                    
+                </div>
+                <div className="pagination-controls">
+                    <button className="btn" disabled={currentTableIndex === 0 ? true: false}>
+                        <i onClick={prevPageHandler} className="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <span>{currentTableIndex + 1}</span>    
+                    <button className="btn" disabled={
+                        showClosedOrders 
+                        ? (currentTableIndex + 1 >= maxClosedOrderTablePages ? true : false)
+                        : (currentTableIndex + 1 >= maxOpenOrderTablePages ? true : false)
+                    }>
+                        <i onClick={nextPageHandler} className="fa-solid fa-chevron-right"></i>
+                    </button>
                 </div>
             </div>
             </>
