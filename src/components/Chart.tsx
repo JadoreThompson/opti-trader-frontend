@@ -126,17 +126,20 @@ const Chart: FC = () => {
 
     const updateChartPrice = (newPrice: number, newTime: number) => {
         if (candlestickSeriesRef.current) {
+            console.log('Start: ', candlestickSeriesDataRef.current.length)
             let lastCandle = candlestickSeriesDataRef.current[candlestickSeriesDataRef.current.length - 1];      
             let existingCandle: Record<string, number> | any = lastCandle;
-            const timespan = Math.floor((newTime - lastUpdateTimeRef.current) / currentIntervalSecondsRef.current);
+            const timespan = Math.floor((newTime - lastCandle.time) / currentIntervalSecondsRef.current);
+            let timePointer = lastCandle.time;
+            console.log(lastCandle);
 
             if (timespan >= 1 && lastCandle) {
                 const oldPrice = lastCandle.close;
                 
                 for (let i = 0; i < timespan; i++) {
-                    lastUpdateTimeRef.current += currentIntervalSecondsRef.current;
+                    timePointer += currentIntervalSecondsRef.current;
                     const newCandle: Record<string, number | null> = {
-                        time: lastUpdateTimeRef.current,
+                        time: timePointer,
                         open: oldPrice,
                         high: oldPrice,
                         low: oldPrice,
@@ -153,6 +156,8 @@ const Chart: FC = () => {
             newCandle.high = Math.max(existingCandle.high, newPrice);
             newCandle.low = Math.min(existingCandle.low, newPrice);
             newCandle.close = newPrice;
+            candlestickSeriesDataRef.current.push(newCandle);
+            console.log('End: ', candlestickSeriesDataRef.current.length)
             candlestickSeriesRef.current.update(newCandle);
         }
     };
@@ -177,6 +182,7 @@ const Chart: FC = () => {
 
         socketRef.current.onmessage = (e) => {
             const socketMessage = JSON.parse(e.data);
+            console.log("Incoming socket message: ", socketMessage);
             
             if (Object.values(AlertTypes).includes(socketMessage.status)) {
                 addMessage(socketMessage.message, socketMessage.status as AlertTypes);
