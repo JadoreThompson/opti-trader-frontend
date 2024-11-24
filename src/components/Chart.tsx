@@ -36,10 +36,6 @@ const Chart: FC = () => {
         clickedButton.classList.add('active');
     };
 
-    // useEffect(() => {
-    //     setCurrentIntervalSeconds(IntervalType.toSeconds(currentInterval));
-    // }, [currentInterval]);
-
     useEffect(() => {
         const fetchData = async () => {
             const { data } = await axios.get(`http://127.0.0.1:8000/instruments/?ticker=APPL&interval=${currentInterval}`, {
@@ -98,17 +94,6 @@ const Chart: FC = () => {
     /* --------------------
             Websocket
     -------------------- */
-    // useEffect(() => {
-    //     const updateCandle = (newCandle: Record<string, number>) => {
-    //         setcandlestickSeriesData((prevData) => {
-                
-    //         });
-    //     };
-
-    //     updateCandle();
-    // }, [candlestickSeriesData]);
-    
-
     const socketRef = useRef<WebSocket | null>(null);
     const [isConnected, setIsConnected] = useState<boolean>(false);
     
@@ -257,14 +242,18 @@ const Chart: FC = () => {
             Array.from(new FormData(e.target as HTMLFormElement).entries())
             .filter(([_, v]) => v !== '')
             .map(([k, v]) => {
-                if (['quantity', 'limit_price'].includes(k)) { return [k, Number(v)]; }
+                if (['quantity', 'limit_price'].includes(k)) {
+                    return [k, Number(v)]; 
+                } else if (['take_profit', 'stop_loss'].includes(k)) {
+                    return [k, { price: Number(v) }];
+                }
                 return [k, v];
             })
         );
         
         payload['type'] = selectedOrderType;
         payload[selectedOrderType] = orderData;
-        
+        console.log(payload);
         if (isConnected && socketRef?.current) { 
             socketRef.current.send(JSON.stringify(payload)); 
             (e.target as HTMLFormElement).reset();
@@ -296,6 +285,8 @@ const Chart: FC = () => {
                     <form id='orderForm' onSubmit={formSubmit}>
                         <input type="text" name='ticker' placeholder='Ticker' value='APPL' pattern="[A-Za-z]+" readOnly/>
                         <input type="number" name='quantity' placeholder='Quantity'required/>
+                        <input type="number" name='take_profit' placeholder='Take Profit'/>
+                        <input type="number" name='stop_loss' placeholder='Stop Loss'/>
                         <button type='button' id='orderType' className="container" onClick={toggleOrderTypes}>Market Order</button>
                         <div className="options-container container" style={{display: showOrderTypes ? 'block': 'none'}}>
                             <div className="option">
