@@ -8,7 +8,7 @@ import * as echarts from 'echarts';
 
 // Local
 import DashboardLayout from "./DashboardLayout";
-
+import OrderTable from "./OrdersTable";
 
 const BASE_URL = "http://127.0.0.1:8000";
 type EChartsOption = echarts.EChartOption;
@@ -39,8 +39,8 @@ const Portfolio: FC = () => {
         const loadChart = () => {
             if (Object.keys(winnerLoserData).length > 0) {
                 
-                
-                var chartDom = document.getElementById('barChart')!;
+                const container = document.getElementById('barChart')!;
+                var chartDom = container;
                 var myChart = echarts.init(chartDom);
                 var option: EChartsOption;
                 
@@ -128,6 +128,7 @@ const Portfolio: FC = () => {
                 };
                 
                 option && myChart.setOption(option); 
+                // window.onresize = () => { myChart.resize({ width: container.offsetWidth, height: container.offsetHeight}); };
             }
         };
         loadChart();
@@ -149,7 +150,8 @@ const Portfolio: FC = () => {
     // Distribution Growth Pie Chart
     useEffect(() => {
         const loadChart = () => {
-            var chartDom = document.getElementById('distributionChart')!;
+            const container = document.getElementById('distributionChart') as HTMLElement;
+            var chartDom = container;
             var myChart = echarts.init(chartDom);
             var option: EChartsOption;
 
@@ -196,6 +198,8 @@ const Portfolio: FC = () => {
               };
 
             option && myChart.setOption(option);
+            
+            // window.onresize = () => { myChart.resize({ width: container.offsetWidth, height: container.offsetHeight }); };
         };
         loadChart();
     }, [distributionData]);
@@ -273,9 +277,6 @@ const Portfolio: FC = () => {
     const [stats, setStats] = useState<Record<string, string | Number>>({});
 
     useEffect(() => {
-        /* 
-            Fetches the Performance data for the stat card from the microservice
-        */
         const fetchStatData = async () => {
             try {
                 const { data } = await axios.get(BASE_URL + '/portfolio/performance', {
@@ -291,102 +292,10 @@ const Portfolio: FC = () => {
         fetchStatData();
     }, []);
     
-    
-    /* ----------------------
-            Orders Table
-    ------------------------ */
-    const closedOrderTableHeaders: Record<string, string> = {
-        order_type: 'Order Type',
-        ticker: 'Ticker',
-        quantity: 'Quantity',
-        price: 'Price',
-        filled_price: 'Filled Price',
-        stop_loss: 'Stop Loss',
-        take_profit: 'Take Profit',
-        limit_price: 'Limit Price',
-        created_at: 'Open Time',
-        closed_at: 'Closed Time',
-        close_price: 'Close Price',
-        order_status: 'Order Status',
-        realised_pnl:'Realised PnL'
-    };
-
-    const openOrderTableHeaders: Record<string, string> = {
-        ticker: 'Ticker',
-        order_type: 'Order Type',
-        quantity: 'Quantity',
-        price: 'Price',
-        filled_price: 'Filled Price',
-        stop_loss: 'Stop Loss',
-        take_profit: 'Take Profit',
-        limit_price: 'Limit Price',
-        created_at: 'Open Time',
-        order_status: 'Order Status'
-    }
-    
-    const [closedOrderData, setClosedOrderData] = useState<Array<Record<string, string | Number>>>([]);
-    const [openOrderData, setOpenOrderData] = useState<Array<Record<string, string | Number>>>([]);
-    const [showClosedOrders, setShowClosedOrders] = useState<boolean>(false);
-    const [maxClosedOrderTablePages, setClosedOrdersTableMaxPages] = useState<number>(0);
-    const [maxOpenOrderTablePages, setOpenOrdersTableMaxPages] = useState<number>(0);
-    const [currentTableIndex, setCurrentTableIndex] = useState<number>(0);
-    const maxRows: number = 10;
-
-    const enableClosedOrders = () => { setShowClosedOrders(true); setCurrentTableIndex(0); };
-    const disableClosedOrders = () => { setShowClosedOrders(false); setCurrentTableIndex(0); };
-
-    useEffect(() => {
-        /*
-        Fetches the data for the orders table
-        */
-       const fetchTableData = async () => {
-            try {
-                const { data } = await axios.get(BASE_URL + '/portfolio/orders', 
-                { headers: { 'Authorization': `Bearer ${getCookie('jwt')}`}});
-                
-                const openOrders = data.filter((item: Record<string, string | Number>) => item.order_status === 'filled');
-                const closedOrders = data.filter((item: Record<string, string | Number>) => item.order_status === 'closed');
-                
-                setOpenOrderData(openOrders);
-                setOpenOrdersTableMaxPages(Math.floor(openOrders.length / maxRows));
-                console.log(maxOpenOrderTablePages);
-                
-                setClosedOrderData(closedOrders);
-                setClosedOrdersTableMaxPages(Math.floor(closedOrders.length / maxRows));
-            } catch(e) {
-                console.error('Table Fetch Error: ', e);
-            }
-        };
-
-        fetchTableData();
-    }, []);
-    
-    const nextPageHandler = () => {
-        setCurrentTableIndex((prev) => {const newIndex = prev + 1; return newIndex;});
-    };
-
-    const prevPageHandler = () => {
-        setCurrentTableIndex((prev) => {const newIndex = prev - 1; return newIndex;});
-    };
-
-    const queryOrders = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const query = new FormData(e.target as HTMLFormElement).get('query');
-    }
-
-
-    /* ----------------
-        Styles
-    -------------------*/
-    // const chartHeaderStyles = {
-    //     display: 'flex',
-    //     backgroundColor: 'red'
-    // }
 
     return (
         <DashboardLayout leftContent={    
             <>
-            {/* <div className="container portfolio-container-left"> */}
             <div className="cr card">
                 <div className="chart-header">
                     <span>Balance</span>
@@ -404,70 +313,7 @@ const Portfolio: FC = () => {
                     <div id="barChart" className="chart"></div>
                 </div>
             </div>
-            <div className="card table-card">
-                <div className="btn-container">
-                    <div className="container">
-                        <button onClick={disableClosedOrders} className={`btn btn-secondary ${showClosedOrders ? '': 'active'}`}>Open</button>
-                        <button onClick={enableClosedOrders} className={`btn btn-secondary ${showClosedOrders ? 'active': ''}`}>Closed</button>
-                    </div>
-                </div>
-                <div className="table-container">
-                    { showClosedOrders ? (
-                        <table>
-                            <thead>
-                                <tr>
-                                    {Object.values(closedOrderTableHeaders).map((value) => (
-                                        <td key={value}>{value}</td>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {closedOrderData.slice(currentTableIndex * maxRows, (maxRows * (currentTableIndex + 1))).map((order, index) => (
-                                    <tr key={index}>
-                                        {Object.keys(closedOrderTableHeaders).map((key) => (
-                                            <td key={key} className={key === 'realised_pnl' ? (order[key] > 0 ? 'win': 'loss') : ''}>
-                                                {key === 'realised_pnl' ? `$${order[key]}`: order[key]}
-                                            </td>
-                                        ))}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    ): (
-                        <table>
-                            <thead>
-                                <tr>
-                                    {Object.values(openOrderTableHeaders).map((value) => (
-                                        <td key={value}>{value}</td>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {openOrderData.slice(currentTableIndex * maxRows, (maxRows * (currentTableIndex + 1))).map((order, index) => (
-                                    <tr key={index}>
-                                        {Object.keys(openOrderTableHeaders).map((key) => (
-                                            <td key={key}>{order[key]}</td>
-                                        ))}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    )}                    
-                </div>
-                <div className="pagination-controls">
-                    <button className="btn" disabled={currentTableIndex === 0 ? true: false}>
-                        <i onClick={prevPageHandler} className="fa-solid fa-chevron-left"></i>
-                    </button>
-                    <span>{currentTableIndex + 1}</span>    
-                    <button className="btn" disabled={
-                        showClosedOrders 
-                        ? (currentTableIndex + 1 >= maxClosedOrderTablePages ? true : false)
-                        : (currentTableIndex + 1 >= maxOpenOrderTablePages ? true : false)
-                    }>
-                        <i onClick={nextPageHandler} className="fa-solid fa-chevron-right"></i>
-                    </button>
-                </div>
-            </div>
+            {/* <OrderTable showClosed={true}/> */}
             </>
         } rightContent={
             <div className="card stat-card">

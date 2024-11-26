@@ -5,7 +5,8 @@ export enum OrderType {
 }
 
 export enum SocketMessageType {
-    PRICE = 'price'
+    PRICE = 'price',
+    SUCCESS = 'success'
 }
 
 export enum IntervalEnum {
