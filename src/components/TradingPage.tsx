@@ -8,6 +8,7 @@ import Alert from './Alert';
 import { AlertTypes } from './Alert';
 import DashboardLayout from './DashboardLayout';
 import { OrderType, IntervalEnum, SocketMessageType, IntervalType } from '../types/Chart.types';
+import OrderTable from './OrdersTable';
 
 
 const Chart: FC = () => {
@@ -16,12 +17,10 @@ const Chart: FC = () => {
     const candlestickSeriesRef = useRef<any>();
     const [candlestickSeriesData, setCandlestickSeriesData] = useState<Array<Record<string, number | null>>>([]);
     const [currentInterval, setCurrentInterval] = useState<IntervalEnum>(IntervalEnum.M1);
-    // const [currentIntervalSeconds, setCurrentIntervalSeconds] = useState<number>(IntervalType.toSeconds(IntervalEnum.M1));
     
     const currentIntervalSecondsRef = useRef<number>(IntervalType.toSeconds(IntervalEnum.M1));
     const candlestickSeriesDataRef = useRef<Array<Record<string, number>>>([]);
     const lastUpdateTimeRef = useRef<number | null>(null);
-
 
     /* --------------------
         Render chart
@@ -101,7 +100,7 @@ const Chart: FC = () => {
     const [alertMessage, setAlertMessage] = useState<string>('');
     const [alertCounter, setAlertCounter] = useState<number>(0);
 
-    const addMessage = (message: string, messageType: string) => {
+    const displayAlert = (message: string, messageType: string) => {
         if (Object.values(AlertTypes).includes(messageType)){
             setAlertMessage(message);
             setAlertType(messageType as AlertTypes);
@@ -109,7 +108,10 @@ const Chart: FC = () => {
         }
     }; 
 
-    const updateChartPrice = (newPrice: number, newTime: number) => {
+    const updateChartPrice = (data: Record<string, any>): void => {
+        const newPrice = data.message.price;
+        const newTime = data.message.time;
+
         if (candlestickSeriesRef.current) {
             let lastCandle = candlestickSeriesDataRef.current[candlestickSeriesDataRef.current.length - 1];      
             let existingCandle: Record<string, number> | any = lastCandle;
@@ -140,18 +142,20 @@ const Chart: FC = () => {
             newCandle.low = Math.min(existingCandle.low, newPrice);
             newCandle.close = newPrice;
             candlestickSeriesDataRef.current.push(newCandle);
-            console.log('End: ', candlestickSeriesDataRef.current.length)
             candlestickSeriesRef.current.update(newCandle);
         }
     };
 
-    useEffect(() => {
-        /*
-            Initialises and configures the functionality of the websocket
-            object
-        */
+    const updateOrderData = (data: Record<string, any>): void => {
+        const message = data.details;
+        setOpenOrderData((prev) => {
+            const prevData = [...prev]; 
+            prevData.push(message); 
+            return prevData;
+        });
+    };
 
-        // Updates the chart
+    useEffect(() => {
         socketRef.current = new WebSocket("ws://127.0.0.1:8000/stream/trade");
 
         socketRef.current.onopen = () => {
@@ -168,13 +172,13 @@ const Chart: FC = () => {
             console.log("Incoming socket message: ", socketMessage);
             
             if (Object.values(AlertTypes).includes(socketMessage.status)) {
-                addMessage(socketMessage.message, socketMessage.status as AlertTypes);
+                displayAlert(socketMessage.message, socketMessage.status as AlertTypes);
             }
 
-            // Routing
-            if (socketMessage.status === SocketMessageType.PRICE){
-                updateChartPrice(socketMessage.message.price, socketMessage.message.time);
-            }
+            const option: any = {
+                [SocketMessageType.PRICE]: updateChartPrice,
+                [SocketMessageType.SUCCESS]: updateOrderData
+            }[socketMessage.status as SocketMessageType](socketMessage);
         };
 
 
@@ -230,10 +234,6 @@ const Chart: FC = () => {
 
 
     const formSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        /*
-            Sends form data over to the engine
-        */
-
         e.preventDefault();
 
         let payload: Record<string, any> = {};
@@ -260,6 +260,40 @@ const Chart: FC = () => {
         }
     };
 
+    const orderIdRef = useRef<string>('');
+    const modifyFormHandler = (e: React.FormEvent<HTMLFormElement>): void => {
+        e.preventDefault();
+        if (socketRef.current) {
+            const data: Record<string, null | number | string> = Object.fromEntries(
+                Array.from(new FormData(e.target as HTMLFormElement).entries()).map(
+                    (([k, v]) => [k, parseFloat(v as string) || null])
+                )
+            );
+            data['order_id'] = orderIdRef.current;
+            socketRef.current.send(JSON.stringify({ type: 'modify_order', modify_order: data} ));
+            (e.target as HTMLFormElement).reset();
+            (document.querySelector(('.modify-order-card')) as HTMLElement).style.display = 'none';
+            document.querySelector('')
+        }
+    }
+
+
+    const [openOrderData, setOpenOrderData] = useState<Array<Record<string, null | number | string>>>([]);
+
+    useEffect(() => {
+        const fetchTableData = async () => {
+             try {
+                 const { data } = await axios.get('http://127.0.0.1:8000/portfolio/orders?order_status=filled', 
+                 { headers: { 'Authorization': `Bearer ${ getCookie('jwt') }`}});                 
+                 setOpenOrderData(data);
+             } catch(e) {
+                 console.error('Table Fetch Error: ', e);
+             }
+         };
+ 
+         fetchTableData();
+     }, []);
+
 
     /* --------------------
         Return Content
@@ -268,17 +302,25 @@ const Chart: FC = () => {
         <>
             <Alert message={alertMessage} type={alertType} counter={alertCounter}/>
             <DashboardLayout leftContent={
-                <div className="chart-card card">
-                    <div className="btn-container">
-                      {Object.values(IntervalEnum).map((value) => (
-                        <button key={value} className={`btn btn-secondary ${value === '1m' ? 'active': ''}`} value={value} onClick={changeTimeFrame}>{value}</button>
-                      ))}
+                <>
+                    <div className="chart-card card">
+                        <div className="btn-container">
+                        {Object.values(IntervalEnum).map((value) => (
+                            <button key={value} className={`btn btn-secondary ${value === '1m' ? 'active': ''}`} value={value} onClick={changeTimeFrame}>{value}</button>
+                        ))}
+                        </div>
+                        <div className="chart-container">
+                            <div id="chart-container" className='chart'></div>
+                        </div>
+                        <div className="card-footer"></div>
                     </div>
-                    <div className="chart-container">
-                        <div id="chart-container" className='chart'></div>
-                    </div>
-                    <div className="card-footer"></div>
-                </div>
+                    <OrderTable 
+                        showClosed={false} 
+                        openOrders={openOrderData} 
+                        orderIdRef={orderIdRef} 
+                        formSubmissionHandler={modifyFormHandler}
+                    />
+                </>
 
             } rightContent={
                 <div className="card">

@@ -2,8 +2,8 @@ import { FC, useEffect, useState } from "react"
 
 // Local
 import Sidebar from "./Sidebar";
-import Chart from "./Chart";
-import Portfolio from "./Portfolio";
+import Chart from "./TradingPage";
+import Portfolio from "./PortfolioPage";
 import { getComputedStyle } from "echarts/types/src/component/tooltip/helper.js";
 
 
