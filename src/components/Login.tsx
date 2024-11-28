@@ -40,7 +40,7 @@ const Login: FC<{ switchToRegister: () => void, setIsLoggedIn: () => void }> = (
                 </form>
                 <div className="card-footer">
                     <p>Don't have an account? <a href="#" onClick={(e) => {e.preventDefault(); switchToRegister();}}>Register</a></p>
-                    <p style={{ color: "red" }} id="errorMessage"></p>
+                    <p style={{ color: "red", textAlign: 'center' }} id="errorMessage"></p>
                 </div>
             </div>
         </div>

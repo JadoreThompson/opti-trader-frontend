@@ -44,10 +44,6 @@ const TableBody: FC<TableBodyOptions> = ({ orders, tableIndex, maxRows, tableHea
                             <i className="fa-solid fa-pencil"></i>
                         </button>
                     </div>
-                    <div className="tooltip-container">        
-                        <span className="tooltip">Close</span>
-                        <i className="tooltip-icon fa-solid fa-xmark"></i>
-                    </div>
                 </td>
             ) : (null)}
         </tr>

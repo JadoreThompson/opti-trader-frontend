@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { createChart, LayoutOptions, GridOptions, ColorType, TimeScaleOptions } from "lightweight-charts";
 import axios from "axios";
 import { getCookie } from "typescript-cookie";
@@ -128,7 +128,7 @@ const Portfolio: FC = () => {
                 };
                 
                 option && myChart.setOption(option); 
-                // window.onresize = () => { myChart.resize({ width: container.offsetWidth, height: container.offsetHeight}); };
+                window.addEventListener('resize', () => { myChart.resize(); });
             }
         };
         loadChart();
@@ -198,8 +198,7 @@ const Portfolio: FC = () => {
               };
 
             option && myChart.setOption(option);
-            
-            // window.onresize = () => { myChart.resize({ width: container.offsetWidth, height: container.offsetHeight }); };
+            window.addEventListener('resize', () => { myChart.resize(); });
         };
         loadChart();
     }, [distributionData]);
@@ -291,29 +290,47 @@ const Portfolio: FC = () => {
         
         fetchStatData();
     }, []);
+
+
+    // const closedOrdersRef = useRef<Array<Record<string, any | null>>>([]);
+    const [closedOrders, setClosedOrders] = useState([]);
+    useEffect(() => {
+        const fetchData = async () => {
+            const { data } = await axios.get('http://127.0.0.1:8000/portfolio/orders?order_status=closed', {
+                headers: { Authorization: `Bearer ${getCookie('jwt')}` }
+            });
+            console.log('Portfolio page: ', data);
+            setClosedOrders(data);
+        };
+
+        fetchData();
+    }, []);
     
 
     return (
         <DashboardLayout leftContent={    
             <>
-            <div className="cr card">
-                <div className="chart-header">
-                    <span>Balance</span>
-                    <span style={{ fontSize: "2rem"}}>{stats.balance}</span>
+                <div className="cr card">
+                    <div className="chart-header">
+                        <span>Balance</span>
+                        <span style={{ fontSize: "2rem"}}>{stats.balance}</span>
+                    </div>
+                    <div className="chart-container">
+                        <div id="growth-chart-container"></div>
+                    </div>
                 </div>
-                <div className="chart-container">
-                    <div id="growth-chart-container"></div>
+                <div className="container metric-container">
+                    <div className="card distribution-card">
+                        <div id="distributionChart" className="chart"></div>
+                    </div>
+                    <div className="card bar-card">
+                        <div id="barChart" className="chart"></div>
+                    </div>
                 </div>
-            </div>
-            <div className="container metric-container">
-                <div className="card distribution-card">
-                    <div id="distributionChart" className="chart"></div>
-                </div>
-                <div className="card bar-card">
-                    <div id="barChart" className="chart"></div>
-                </div>
-            </div>
-            {/* <OrderTable showClosed={true}/> */}
+                <OrderTable 
+                    showClosed={true}
+                    closedOrders={closedOrders}
+                />
             </>
         } rightContent={
             <div className="card stat-card">

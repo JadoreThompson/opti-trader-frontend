@@ -164,12 +164,11 @@ const Chart: FC = () => {
         };
 
         socketRef.current.onclose = (e) => {
-            console.log(e.reason);
+            console.log('Socket closed: ', e.reason);
         };
 
         socketRef.current.onmessage = (e) => {
             const socketMessage = JSON.parse(e.data);
-            console.log("Incoming socket message: ", socketMessage);
             
             if (Object.values(AlertTypes).includes(socketMessage.status)) {
                 displayAlert(socketMessage.message, socketMessage.status as AlertTypes);
@@ -253,7 +252,7 @@ const Chart: FC = () => {
         
         payload['type'] = selectedOrderType;
         payload[selectedOrderType] = orderData;
-        console.log(payload);
+
         if (isConnected && socketRef?.current) { 
             socketRef.current.send(JSON.stringify(payload)); 
             (e.target as HTMLFormElement).reset();
@@ -285,6 +284,7 @@ const Chart: FC = () => {
              try {
                  const { data } = await axios.get('http://127.0.0.1:8000/portfolio/orders?order_status=filled', 
                  { headers: { 'Authorization': `Bearer ${ getCookie('jwt') }`}});                 
+                 
                  setOpenOrderData(data);
              } catch(e) {
                  console.error('Table Fetch Error: ', e);
