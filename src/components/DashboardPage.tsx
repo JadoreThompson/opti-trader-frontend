@@ -8,7 +8,7 @@ import { getComputedStyle } from "echarts/types/src/component/tooltip/helper.js"
 
 
 const Dashboard: FC = (() => {
-    const [showChartScreen, setShowChartScreen] = useState<boolean>(false);
+    const [showChartScreen, setShowChartScreen] = useState<boolean>(true);
 
     const enableChartScreen = () => { setShowChartScreen(true); }
     const disableChartScreen = () => { setShowChartScreen(false); }

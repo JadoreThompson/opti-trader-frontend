@@ -6,7 +6,10 @@ export enum OrderType {
 
 export enum SocketMessageType {
     PRICE = 'price',
-    SUCCESS = 'success'
+    MARKET = 'market_order',
+    CLOSE = 'close_order',
+    LIMIT = 'limit_order',
+    ERROR = 'error'
 }
 
 export enum IntervalEnum {

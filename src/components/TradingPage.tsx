@@ -7,7 +7,7 @@ import axios from 'axios';
 import Alert from './Alert';
 import { AlertTypes } from './Alert';
 import DashboardLayout from './DashboardLayout';
-import { OrderType, IntervalEnum, SocketMessageType, IntervalType } from '../types/Chart.types';
+import { OrderType, IntervalEnum, SocketMessageType, IntervalType } from '../types/TradingPageTypes';
 import OrderTable from './OrdersTable';
 
 
@@ -146,13 +146,26 @@ const Chart: FC = () => {
         }
     };
 
-    const updateOrderData = (data: Record<string, any>): void => {
-        const message = data.details;
-        setOpenOrderData((prev) => {
-            const prevData = [...prev]; 
-            prevData.push(message); 
-            return prevData;
-        });
+    const updateOrders: (data: Record<string, any>) => void = (data: Record<string, any>): void => {
+        const dataDetails = data.details;
+        const messageType = data.internal;
+
+        if (messageType == SocketMessageType.MARKET || messageType == SocketMessageType.LIMIT)
+        {
+            setOpenOrderData((prev) => {
+                const prevData = [...prev]; 
+                prevData.push(dataDetails); 
+                return prevData;
+            });
+        }
+        else if (messageType == SocketMessageType.CLOSE)
+        {
+            setOpenOrderData((prev) => {
+                let prevData = [...prev];
+                prevData = prevData.filter(item => item.order_id != dataDetails.order_id)
+                return prevData;
+            });
+        }
     };
 
     useEffect(() => {
@@ -169,15 +182,28 @@ const Chart: FC = () => {
 
         socketRef.current.onmessage = (e) => {
             const socketMessage = JSON.parse(e.data);
-            
-            if (Object.values(AlertTypes).includes(socketMessage.status)) {
-                displayAlert(socketMessage.message, socketMessage.status as AlertTypes);
-            }
+            console.log('Socket Message: ', socketMessage);
 
-            const option: any = {
-                [SocketMessageType.PRICE]: updateChartPrice,
-                [SocketMessageType.SUCCESS]: updateOrderData
-            }[socketMessage.status as SocketMessageType](socketMessage);
+            displayAlert(socketMessage.message, socketMessage.status as AlertTypes);
+
+            if (socketMessage.status == SocketMessageType.ERROR) { return; }
+
+            if (socketMessage.status == SocketMessageType.PRICE) { 
+                updateChartPrice(socketMessage);
+                return;
+            }
+            
+            try
+            {
+                const action: Record<string, (data: Record<string, any>) => void> = {
+                    [SocketMessageType.MARKET]: updateOrders,
+                    [SocketMessageType.CLOSE]: updateOrders
+                };
+                action[socketMessage?.internal as SocketMessageType](socketMessage);
+            } catch(e)
+            {
+                if(!(e instanceof TypeError)) { throw e; }
+            }
         };
 
 
@@ -284,7 +310,7 @@ const Chart: FC = () => {
              try {
                  const { data } = await axios.get('http://127.0.0.1:8000/portfolio/orders?order_status=filled', 
                  { headers: { 'Authorization': `Bearer ${ getCookie('jwt') }`}});                 
-                 
+                 console.log(data[data.length - 1])
                  setOpenOrderData(data);
              } catch(e) {
                  console.error('Table Fetch Error: ', e);
