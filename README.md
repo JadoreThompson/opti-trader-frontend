@@ -4,8 +4,6 @@ Behold a React Ts trading dashboard, it features real time charts, insights pagi
 
 Partnered with the [backend application](https://github.com/JadoreThompson/opti-trader/tree/release) to provide the experience
 
-https://github.com/JadoreThompson/order-matcher-frontend.git
-
 ## Prerequisites
 
 - TypeScript
