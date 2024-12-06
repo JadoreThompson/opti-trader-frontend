@@ -100,7 +100,7 @@ const Chart: FC = () => {
     const [alertMessage, setAlertMessage] = useState<string>('');
     const [alertCounter, setAlertCounter] = useState<number>(0);
 
-    const displayAlert = (message: string, messageType: string) => {
+    const displayAlert = (message: string, messageType: string): void => {
         if (Object.values(AlertTypes).includes(messageType)){
             setAlertMessage(message);
             setAlertType(messageType as AlertTypes);
@@ -162,7 +162,7 @@ const Chart: FC = () => {
         {
             setOpenOrderData((prev) => {
                 let prevData = [...prev];
-                prevData = prevData.filter(item => item.order_id != dataDetails.order_id)
+                prevData = prevData.filter(item => item.order_id != dataDetails.order_id);
                 return prevData;
             });
         }
@@ -170,7 +170,7 @@ const Chart: FC = () => {
 
     useEffect(() => {
         socketRef.current = new WebSocket("ws://127.0.0.1:8000/stream/trade");
-
+        
         socketRef.current.onopen = () => {
             socketRef.current?.send(JSON.stringify({ token: getCookie('jwt') }));
             setIsConnected(true);
@@ -182,8 +182,8 @@ const Chart: FC = () => {
 
         socketRef.current.onmessage = (e) => {
             const socketMessage = JSON.parse(e.data);
-            console.log('Socket Message: ', socketMessage);
-
+            console.log(socketMessage);
+            
             displayAlert(socketMessage.message, socketMessage.status as AlertTypes);
 
             if (socketMessage.status == SocketMessageType.ERROR) { return; }

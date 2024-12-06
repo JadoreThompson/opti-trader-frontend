@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react"
+import { FC, ReactNode, useEffect, useState } from "react"
 
 // Local
 import Sidebar from "./Sidebar";
@@ -8,10 +8,15 @@ import { getComputedStyle } from "echarts/types/src/component/tooltip/helper.js"
 
 
 const Dashboard: FC = (() => {
-    const [showChartScreen, setShowChartScreen] = useState<boolean>(true);
+    const [currentModal, setShowModal] = useState<number>(0);
+    const modalOptions: Record<number, ReactNode> = {
+        0: <Portfolio />,
+        1: <Chart />
+    };
 
-    const enableChartScreen = () => { setShowChartScreen(true); }
-    const disableChartScreen = () => { setShowChartScreen(false); }
+    const changeModal: (arg: number) => void = (arg: number): void => {
+        setShowModal(arg);
+    };
 
     const rootStyles = {
         display: "flex",
@@ -39,10 +44,10 @@ const Dashboard: FC = (() => {
         <>
             <div style={rootStyles}>
                 <div style={sidebarStyles} className="sidebar">
-                    <Sidebar showChart={enableChartScreen} disableChart={disableChartScreen}/>
+                    <Sidebar showModal={changeModal}/>
                 </div>
                 <div style={mainStyles}>
-                    { showChartScreen ? (<Chart />) : (<Portfolio />)}
+                    {modalOptions[currentModal]}
                 </div>
             </div>
         </>
