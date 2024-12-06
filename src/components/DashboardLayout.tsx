@@ -7,7 +7,7 @@ interface DashboardLayoutProps {
 
 
 const DashboardLayout: FC<DashboardLayoutProps> = ({ leftContent, rightContent }) => {
-    const main = {
+    const main: Record<string, string> = {
         display: "flex",
         flexDirection: 'row',
         width: "100%",
@@ -16,7 +16,7 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ leftContent, rightContent }
 
     return (
         <>
-            <div className="i" style={main}>
+            <div style={main}>
                 <div className="left side">
                     {leftContent}
                 </div>

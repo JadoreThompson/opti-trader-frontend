@@ -628,3 +628,28 @@ button.transparent {
   background-color: rgb(33, 59, 230);
   transition: 0.1s ease-in;
 }
+
+.leaderboard-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+}
+
+.leaderboard-container .card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50%;
+  margin-top: 2rem !important;
+  margin-bottom: 2rem !important;
+}
+
+.leaderboard-container .card table {
+  width: 100%;
+}
+
+.btn.follow-btn {
+  border-radius: 0.5rem;
+  border: 1px solid var(--primary-color)
+}

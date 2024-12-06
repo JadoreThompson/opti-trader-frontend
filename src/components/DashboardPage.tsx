@@ -1,17 +1,18 @@
-import { FC, ReactNode, useEffect, useState } from "react"
+import { FC, ReactNode, useState } from "react"
 
 // Local
 import Sidebar from "./Sidebar";
 import Chart from "./TradingPage";
 import Portfolio from "./PortfolioPage";
-import { getComputedStyle } from "echarts/types/src/component/tooltip/helper.js";
+import LeaderBoard from "./Leaderboard";
 
 
 const Dashboard: FC = (() => {
     const [currentModal, setShowModal] = useState<number>(0);
     const modalOptions: Record<number, ReactNode> = {
         0: <Portfolio />,
-        1: <Chart />
+        1: <Chart />,
+        2: <LeaderBoard />,
     };
 
     const changeModal: (arg: number) => void = (arg: number): void => {
