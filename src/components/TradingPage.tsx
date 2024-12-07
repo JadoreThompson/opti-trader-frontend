@@ -147,51 +147,59 @@ const Chart: FC = () => {
     };
 
     const updateOrders: (data: Record<string, any>) => void = (data: Record<string, any>): void => {
-        const dataDetails = data.details;
+        const messageDetails = data.details;
         const messageType = data.internal;
 
         if (messageType == SocketMessageType.MARKET || messageType == SocketMessageType.LIMIT)
         {
             setOpenOrderData((prev) => {
                 const prevData = [...prev]; 
-                prevData.push(dataDetails); 
+                prevData.push(messageDetails); 
                 return prevData;
             });
         }
         else if (messageType == SocketMessageType.CLOSE)
         {
-            setOpenOrderData((prev) => {
-                let prevData = [...prev];
-                prevData = prevData.filter(item => item.order_id != dataDetails.order_id);
-                return prevData;
-            });
+            console.log(data);
+            if (messageDetails['order_status'] === 'closed') 
+            {
+                setOpenOrderData((prev) => {
+                    let prevData = [...prev];
+                    prevData = prevData.filter(item => item.order_id != messageDetails.order_id);
+                    return prevData;
+                });
+            } else if (messageDetails['order_status'] === 'partially_closed_active')
+            {
+                setOpenOrderData((prev) => {
+                    let prevData = [...prev];
+                    prevData = prevData.map(item => item['order_id'] === messageDetails['order_id'] ? item = messageDetails : null);
+                    return prevData;
+                })
+            }
         }
     };
 
     useEffect(() => {
         socketRef.current = new WebSocket("ws://127.0.0.1:8000/stream/trade");
         
-        socketRef.current.onopen = () => {
+        socketRef.current.onopen = (): void => {
             socketRef.current?.send(JSON.stringify({ token: getCookie('jwt') }));
             setIsConnected(true);
         };
 
-        socketRef.current.onclose = (e) => {
+        socketRef.current.onclose = (e): void => {
             console.log('Socket closed: ', e.reason);
         };
 
-        socketRef.current.onmessage = (e) => {
+        socketRef.current.onmessage = (e): void => {
             const socketMessage = JSON.parse(e.data);
-            console.log(socketMessage);
+            console.log("Socket msg: ", socketMessage);
             
             displayAlert(socketMessage.message, socketMessage.status as AlertTypes);
 
             if (socketMessage.status == SocketMessageType.ERROR) { return; }
 
-            if (socketMessage.status == SocketMessageType.PRICE) { 
-                updateChartPrice(socketMessage);
-                return;
-            }
+            if (socketMessage.status == SocketMessageType.PRICE) { updateChartPrice(socketMessage); return; }
             
             try
             {

@@ -34,6 +34,7 @@ const Register: FC<{ switchToLogin: () => void, setIsLoggedIn: () => void }> = (
                     <h1>Register</h1>
                 </div>
                 <form id='registerForm' onSubmit={registerUser}>
+                    <input type="text" name="username" placeholder='Username'/>
                     <input type="text" name='email' placeholder='Email'/>
                     <input type="text" name='password' placeholder='Password'/>
                     <button type="submit" className='btn btn-primary'>Register</button>

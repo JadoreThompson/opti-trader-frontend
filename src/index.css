@@ -179,8 +179,13 @@ button.transparent {
   border: none;
   background-color: transparent;
   width: auto;
-  padding: 0;
+  padding: 0 !important;
   margin: 0;
+}
+
+button.transparent i {
+  margin: none !important;
+  padding: none !important;
 }
 
 .card {
@@ -202,6 +207,10 @@ button.transparent {
 
 .card button {
   width: 100%;
+}
+
+.error {
+  color: red;
 }
 
 .toggle-icon {
@@ -601,7 +610,7 @@ button.transparent {
   opacity: 1;
 }
 
-.modify-order-card {
+.overlay-card {
   background-color: rgba(0, 0, 0, 0.5);
   position: fixed;
   top: 0;
@@ -615,16 +624,16 @@ button.transparent {
   justify-content: center;
 }
 
-.modify-order-card .card {
+.overlay-card .card {
   margin-top: 30%;
   width: 20rem;
 }
 
-.modify-order-card .card button[type=submit] {
+.overlay-card .card button[type=submit] {
   background-color: rgb(57, 81, 235);
 }
 
-.modify-order-card .card button[type=submit]:hover {
+.overlay-card .card button[type=submit]:hover {
   background-color: rgb(33, 59, 230);
   transition: 0.1s ease-in;
 }
@@ -645,6 +654,19 @@ button.transparent {
   margin-bottom: 2rem !important;
 }
 
+@media(max-width: 900px)
+{
+  .leaderboard-container .card
+  {
+    width: 80%;
+    overflow-y: auto;
+  }
+
+  .leaderboard-container .card table {
+    width: 100%;
+  }
+}
+
 .leaderboard-container .card table {
   width: 100%;
 }
@@ -652,4 +674,34 @@ button.transparent {
 .btn.follow-btn {
   border-radius: 0.5rem;
   border: 1px solid var(--primary-color)
+}
+
+.follow-card input {
+  width: auto;
+}
+
+.follow-card label {
+  margin-left: 1rem;
+}
+
+.follow-card .card {
+  padding: 1rem;
+  min-width: 0;
+  width: auto;
+}
+
+.follow-card .card-title {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.follow-card .card-title button {
+  width: auto;
+}
+
+.follow-card .title h2 {
+  font-size: 1.5rem;
+  width: 100%;
 }

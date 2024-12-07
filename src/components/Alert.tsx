@@ -5,7 +5,8 @@ import { FC, useEffect, useState } from 'react';
 export enum AlertTypes {
     SUCCESS = 'success',
     UPDATE = 'update',
-    ERROR = 'error'
+    ERROR = 'error',
+    NOTIFICATION = 'notification',
 }
 
 

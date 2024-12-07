@@ -134,7 +134,7 @@ const OrderTable: FC<orderTableOptions>  =
         
 
         return <>
-            <div className="modify-order-card">
+            <div className="modify-order-card overlay-card">
                 <div className="container">
                     <div className="card">
                         <div className="card-title">
