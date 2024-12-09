@@ -11,8 +11,17 @@ const ProfilePage: FC = () => {
     const [isUsersProfile, setIsUsersProfile] = useState<boolean>(true);
     const [username, setUsername] = useState<string>('zenz');
 
-    const toggleOverlay: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>):void => {
-        const card = document.querySelector('.overlay-card') as HTMLElement;
+
+    const toggleEditProfileOverlay: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>):void => {
+        const card = document.querySelector('.overlay-card.edit-profile-card') as HTMLElement;
+        const styles = window.getComputedStyle(card);
+        
+        if (styles.display === 'none') { card.style.display= 'flex'; }
+        else if (styles.display === 'flex') { card.style.display= 'none'; }
+    };
+
+    const toggleSettingsOverlay: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>):void => {
+        const card = document.querySelector('.overlay-card.account-settings-card') as HTMLElement;
         const styles = window.getComputedStyle(card);
         
         if (styles.display === 'none') { card.style.display= 'flex'; }
@@ -71,13 +80,29 @@ const ProfilePage: FC = () => {
 
 
     return (<>
+        {/* Settings */}
+        <div className="overlay-card account-settings-card">
+            <div className="container">
+                <div className="card">
+                    <div className="card-title space-between">
+                        <h2>Settings</h2>
+                        <button className="transparent" onClick={toggleSettingsOverlay}>
+                            <i className="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div className="card-body">
+                    </div>
+                </div>
+            </div>
+        </div>
+        {/* Edit Profile */}
         <div className="overlay-card edit-profile-card">
             <div className="container">
                 <div className="card">
                     <div className="card-title" style={{ 
                         display: 'flex', flexDirection: 'row', justifyContent: 'space-between'
                     }}>
-                        <button className="transparent" onClick={toggleOverlay}>
+                        <button className="transparent" onClick={toggleEditProfileOverlay}>
                             <i className="fa-solid fa-xmark"></i>
                         </button>
                         <button className="btn btn-primary" style={{ width: 'auto' }}>Save</button>
@@ -117,6 +142,7 @@ const ProfilePage: FC = () => {
                 </div>
             </div>
         </div>
+        {/* Main Content */}
         <div className="container profile-container">
             <div className="inner-card">
                 <div className="card flex">
@@ -149,16 +175,24 @@ const ProfilePage: FC = () => {
                                 </div>
                             </div>
                             {
-                                isUsersProfile
+                                !isUsersProfile
                                 ? (
                                     <>
                                         <div className="container">
-                                            <button onClick={toggleOverlay} className="btn btn-secondary">Edit Profile</button>
-                                            <i className="fa-solid fa-gear"></i>
+                                            <button onClick={toggleEditProfileOverlay} className="btn btn-secondary">Edit Profile</button>
+                                            <button className="transparent" onClick={toggleSettingsOverlay}>
+                                                <i className="fa-solid fa-gear"></i>
+                                            </button>
                                         </div>
                                     </>
                                 )
-                                :null
+                                :(
+                                    <>
+                                        <div className="container">
+                                            <button className="btn btn-secondary follow-btn">Follow</button>
+                                        </div>
+                                    </>
+                                )
                             }
                         </div>
                     </div>

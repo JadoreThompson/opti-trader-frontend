@@ -6,15 +6,17 @@ import Chart from "./TradingPage";
 import Portfolio from "./PortfolioPage";
 import LeaderBoard from "./Leaderboard";
 import ProfilePage from "./Profile";
+import FollowPage from "./FollowPage";
 
 
 const Dashboard: FC = (() => {
-    const [currentModal, setShowModal] = useState<number>(0);
+    const [currentModal, setShowModal] = useState<number>(1);
     const modalOptions: Record<number, ReactNode> = {
         0: <Portfolio />,
         1: <Chart />,
         2: <LeaderBoard />,
-        3: <ProfilePage />
+        3: <ProfilePage />,
+        4: <FollowPage />,
     };
 
     const changeModal: (arg: number) => void = (arg: number): void => {
