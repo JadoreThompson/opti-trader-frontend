@@ -12,6 +12,7 @@
   --primary-color: #b796d8;
   --dark-primary-bg-color: #131415;
   --dark-secondary-bg-color: #1C1D1F;
+  --dark-tertiary-bg-color: rgba(37, 39, 41, 1);
   --dark-text-color: #F3F3F4;
 }
 
@@ -37,6 +38,8 @@ h1 {
 i {
   color: white;
 }
+
+i:hover { cursor: pointer; }
 
 input, select {
   width: 100%;
@@ -153,7 +156,7 @@ td {
   padding: 0.55rem;
   font-weight: 750 !important;
   font-size: 1rem;
-  border-radius: 2rem;
+  border-radius: 0.5rem;
 }
 
 .btn-primary {
@@ -162,6 +165,7 @@ td {
 }
 
 .btn-primary:hover {
+  transition: linear 0.2s;
   box-shadow: 0px 0px 3px 2px var(--primary-color);
 }
 
@@ -172,13 +176,14 @@ td {
 }
 
 .btn-secondary:hover {
+  transition: linear 0.2s;
   box-shadow: 0px 0px 3px 2px var(--primary-color);
 }
 
 button.transparent {
   border: none;
   background-color: transparent;
-  width: auto;
+  width: auto !important;
   padding: 0 !important;
   margin: 0;
 }
@@ -193,7 +198,7 @@ button.transparent i {
   padding: 1rem;
   margin-bottom: 1rem;
   border-radius: 1rem;
-  background-color: var(--dark-secondary-bg-color) /* white */;
+  background-color: var(--dark-secondary-bg-color);
   align-self: flex-start;
 }
 
@@ -240,19 +245,13 @@ button.transparent i {
   width: 20%;
 }
 
-.main-container {
-  display: flex;
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-}
-
 .sidebar {
   height: 100vh;
   position: fixed;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  gap: 1.2rem;
   margin: 0;
   padding: 0;
   width: 3%;
@@ -671,6 +670,28 @@ button.transparent i {
   width: 100%;
 }
 
+.card.flex {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 900px)
+{
+  .card.flex .card-title{
+    
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
+.card.flex .card-title h2 {
+  font-size: 1.75rem;
+}
+
+.card.flex .card-body {
+  width: 100%;
+}
+
 .btn.follow-btn {
   border-radius: 0.5rem;
   border: 1px solid var(--primary-color)
@@ -704,4 +725,117 @@ button.transparent i {
 .follow-card .title h2 {
   font-size: 1.5rem;
   width: 100%;
+}
+
+@media (min-width: 900px){
+  .inner-card {
+    width: 60%;
+    margin: auto;
+  }
+}
+
+.card.flex .card-title {
+  display: flex;
+  flex-direction: column;
+}
+
+.card.flex .card-title .row {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  align-items: flex-end;
+}
+
+.card.flex .card-title > .row:not(:last-of-type) {
+  margin-bottom: 3rem;
+}
+
+
+.card.flex .card-title .row.info {
+  justify-content: space-between;
+}
+
+.card.flex .card-title .row.info .container {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  align-items: center;
+}
+
+.card.flex .card-title .title-group span {
+  font-size: 3rem;
+}
+
+.profile-container .card {
+  background-color: transparent !important;
+}
+
+.profile-container {
+  margin-bottom: 3rem;
+  background-color: transparent !important;
+  position: relative;
+  width: 100% !important;
+}
+
+.main-content {
+  position: relative;
+}
+
+.main-content.profile::before {
+  /* background-image: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgDw7HXLDZfXQoJReyeHR8IqyPYAp6RWpjs4Dp9MwZ49HoJl2RsXRTGxqnUlzPgtFTbsA7a2upeCQeyPg-2w5qEmpBOxlPkqbfGv48AFW1OyNZ6WIuZt5dI-NVtflu1NPjqE8oJUi4I57oMVtiAStrRnmgjjAf5WQ6_sbd8UYoDhloMBdSRnpIgjY6EdOML/s1920/photo_6291852644980997101_w.jpg'); */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  content: '';
+  top: 0;
+  left: 0;
+  position: absolute;
+  width: 100%;
+  height: 10rem;
+  z-index: -1;
+  filter: brightness(40%);
+}
+
+.inner-card, 
+.inner-card .card.flex, 
+.inner-card .card-title,
+.inner-card .row
+{
+  background-color: transparent;
+}
+
+.profile.img-container {
+  width: fit-content;
+  height: 100% !important;
+  padding-bottom: 0 !important;
+}
+
+.profile.img-container img{
+  border-radius: 10rem;
+  width: 10rem;
+  height: 10rem;
+  object-fit: cover;
+  display: block;
+}
+
+
+.title-info-header span {
+  color: #bbc0c7;
+  font-size: 0.8rem;
+}
+
+.title-info-content span {
+  font-size: 1.5rem;
+}
+
+.overlay-card.edit-profile-card .card .container::before {
+  content: '';
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* top: 0;
+  left: 0; */
+  width: 100%;
+  height: 2rem;
+  position: absolute;
 }

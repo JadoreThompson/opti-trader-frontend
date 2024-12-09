@@ -1,7 +1,6 @@
 import { FC } from 'react';
 
 
-// const Sidebar: FC<{showChart?: () => void, disableChart?: () => void}> = ({showChart, disableChart}) => {
 const Sidebar: FC<{showModal: (num: number) => void}> = ({showModal}) => {
     return (
         <>
@@ -13,6 +12,9 @@ const Sidebar: FC<{showModal: (num: number) => void}> = ({showModal}) => {
             </div>
             <div className="sidebar-icon-container">
                 <i className="fa-solid fa-trophy" onClick={() => showModal(2)}></i>
+            </div>
+            <div className="sidebar-icon-container">
+                <i className="fa-solid fa-user" onClick={() => showModal(3)}></i>
             </div>
         </>
         

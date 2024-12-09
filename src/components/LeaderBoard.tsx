@@ -16,7 +16,6 @@ const LeaderBoard: FC = () => {
     ) => void = (
         e: MouseEventHandler<HTMLButtonElement> | React.MouseEvent<HTMLButtonElement, HTMLElement>
     ): void => {
-        console.log('hit');
         const tr = (e.target as HTMLElement).closest('tr');
         const card = document.querySelector(".follow-card") as HTMLElement;
         const cardStyles = window.getComputedStyle(card);
@@ -127,29 +126,34 @@ const LeaderBoard: FC = () => {
                 </div>
             </div>
             <div className="container leaderboard-container">
-                <div className="card">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Rank</th>
-                                <th>Username</th>
-                                <th>Earnings</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {Object.entries(leaderboard).map(([index, data]) => (
-                                <tr key={index}>
-                                    <td data-key='rank'>{data['rank']}</td>
-                                    <td data-key='username' >{data['username']}</td>
-                                    <td data-key='earnings' style={{ color: "#44c809"}} >{data['earnings']}</td>
-                                    <td>
-                                        <button onClick={toggleOverlay} className="btn btn-secondary follow-btn">Follow</button>
-                                    </td>
+                <div className="card flex">
+                    <div className="card-title">
+                        <h2>Weekly Leaderboard</h2>
+                    </div>
+                    <div className="card-body">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Username</th>
+                                    <th>Earnings</th>
+                                    <th>Action</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {Object.entries(leaderboard).map(([index, data]) => (
+                                    <tr key={index}>
+                                        <td data-key='rank'>{data['rank']}</td>
+                                        <td data-key='username' >{data['username']}</td>
+                                        <td data-key='earnings' style={{ color: "#44c809"}} >{data['earnings']}</td>
+                                        <td>
+                                            <button onClick={toggleOverlay} className="btn btn-secondary follow-btn">Follow</button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </>

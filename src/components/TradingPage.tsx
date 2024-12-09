@@ -316,7 +316,7 @@ const Chart: FC = () => {
     useEffect(() => {
         const fetchTableData = async () => {
              try {
-                 const { data } = await axios.get('http://127.0.0.1:8000/portfolio/orders?order_status=filled', 
+                 const { data } = await axios.get('http://127.0.0.1:8000/portfolio/orders?order_status=filled&order_status=partially_closed_active', 
                  { headers: { 'Authorization': `Bearer ${ getCookie('jwt') }`}});                 
                  console.log(data[data.length - 1])
                  setOpenOrderData(data);

@@ -5,6 +5,7 @@ import Sidebar from "./Sidebar";
 import Chart from "./TradingPage";
 import Portfolio from "./PortfolioPage";
 import LeaderBoard from "./Leaderboard";
+import ProfilePage from "./Profile";
 
 
 const Dashboard: FC = (() => {
@@ -13,6 +14,7 @@ const Dashboard: FC = (() => {
         0: <Portfolio />,
         1: <Chart />,
         2: <LeaderBoard />,
+        3: <ProfilePage />
     };
 
     const changeModal: (arg: number) => void = (arg: number): void => {
@@ -34,7 +36,7 @@ const Dashboard: FC = (() => {
     }
 
     const mainStyles = {
-        backgroundColor: "#131415",
+        // backgroundColor: "#131415",
         maxWidth: "100%",
         width: "100%",
         padding: "1rem",
@@ -47,7 +49,7 @@ const Dashboard: FC = (() => {
                 <div style={sidebarStyles} className="sidebar">
                     <Sidebar showModal={changeModal}/>
                 </div>
-                <div style={mainStyles}>
+                <div style={mainStyles} className="main-content">
                     {modalOptions[currentModal]}
                 </div>
             </div>

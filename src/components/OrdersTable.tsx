@@ -128,7 +128,7 @@ const OrderTable: FC<orderTableOptions>  =
             filterOption === 1 ? setOrders(sortedOrders.reverse()) : setOrders(sortedOrders);
         };
 
-        const enableFilter = (e: React.PointerEvent<HTMLTableHeaderCellElement>): void => {
+        const enableFilter = (e: React.PointerEvent<HTMLTableCellElement>): void => {
             sortData((e.target as HTMLElement).getAttribute('data-key') as string);
         }
         
@@ -171,9 +171,7 @@ const OrderTable: FC<orderTableOptions>  =
                                                     ? (
                                                         
                                                             filterOption === 0
-                                                            // ? (<button value={0} className="transparent"><i className="fa-solid fa-arrow-down"></i></button>)
                                                             ? (<i className="fa-solid fa-arrow-down toggle-icon"></i>)
-                                                            // : (<button value={1} className="transparent"><i className="fa-solid fa-arrow-up"></i></button>)
                                                             : (<i className="fa-solid fa-arrow-up toggle-icon"></i>)
                                                         
                                                     ) : (
