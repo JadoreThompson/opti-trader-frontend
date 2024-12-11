@@ -4,14 +4,14 @@ import { getCookie } from 'typescript-cookie';
 import axios from 'axios';
 
 // Local
-import Alert from './Alert';
-import { AlertTypes } from './Alert';
-import DashboardLayout from './DashboardLayout';
+import Alert from '../components/Alert';
+import { AlertTypes } from '../components/Alert';
+import DashboardLayout from '../components/DashboardLayout';
 import { OrderType, IntervalEnum, SocketMessageType, IntervalType } from '../types/TradingPageTypes';
-import OrderTable from './OrdersTable';
+import OrderTable from '../components/OrdersTable';
 
 
-const Chart: FC = () => {
+const Trade: FC = () => {
     let chart;
 
     const candlestickSeriesRef = useRef<any>();
@@ -316,10 +316,12 @@ const Chart: FC = () => {
     useEffect(() => {
         const fetchTableData = async () => {
              try {
-                 const { data } = await axios.get('http://127.0.0.1:8000/portfolio/orders?order_status=filled&order_status=partially_closed_active', 
-                 { headers: { 'Authorization': `Bearer ${ getCookie('jwt') }`}});                 
-                 console.log(data[data.length - 1])
-                 setOpenOrderData(data);
+                const { data } = await axios.post(
+                    'http://127.0.0.1:8000/portfolio/orders', 
+                    { order_status: ['filled', 'partially_closed_active'] },
+                    { headers: { 'Authorization': `Bearer ${ getCookie('jwt') }`}},
+                );                 
+                setOpenOrderData(data);
              } catch(e) {
                  console.error('Table Fetch Error: ', e);
              }
@@ -386,4 +388,4 @@ const Chart: FC = () => {
     );
 };
 
-export default Chart;
+export default Trade;

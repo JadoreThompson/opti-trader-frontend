@@ -10,29 +10,61 @@ import * as echarts from 'echarts';
 import DashboardLayout from "./DashboardLayout";
 import OrderTable from "./OrdersTable";
 
+
+interface PortfolioPageProps
+{
+    isUsersProfile: boolean,
+    username: null | string,
+}
+
+
 const BASE_URL = "http://127.0.0.1:8000";
 type EChartsOption = echarts.EChartOption;
 
 
-const Portfolio: FC = () => {
+const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
     /* --------------------
         Render charts
     -------------------- */
     const [chartData, setChartData] = useState<Array<Record<string, number>>>([]);
     const [distributionData, setDistributionData] = useState<Array<Record<string, string | number>>>([]);
     const [winnerLoserData, setWinnerLoserData] = useState<Record<string, Array<number>>>({});
+    const [bodyBuilder, setBodyBuilder] = useState<Record<string, null | Record<string, null | string | Array<string>>>>({});
+    
+    useEffect(() => {
+        setBodyBuilder({
+            orders: { 
+                order_status: ['filled'], 
+                username: username ? username : null 
+            },
+            username: username ? {username: username} : null,
+            growth: {
+                username: username ? username : null,
+                interval: "1m"
+            }
+        });
+    }, []);
 
     // Winners Loses Per Day Data
+
     useEffect(() => {
         const fetchData = async () => {
-            const { data } = await axios.get('http://127.0.0.1:8000/portfolio/weekday-results', {
-                headers: { "Authorization": `Bearer ${getCookie('jwt')}` }
-            });
-            setWinnerLoserData(data);
+            try
+            {
+                const { data } = await axios.post(
+                    'http://127.0.0.1:8000/portfolio/weekday-results', 
+                    bodyBuilder.username,
+                    { headers: { "Authorization": `Bearer ${getCookie('jwt')}` }},
+                );
+                setWinnerLoserData(data);
+            } catch(e)
+            {
+                console.error(e);
+            }
         };
 
         fetchData();
-    }, []);
+    }, [bodyBuilder]);
 
     // Winners Losers Per Day
     useEffect(() => {
@@ -138,14 +170,16 @@ const Portfolio: FC = () => {
     // Distribution Growth Pie Chart Data
     useEffect(() => {
         const fetchData = async () => {
-            const { data } = await axios.get("http://127.0.0.1:8000/portfolio/distribution", {
-                headers: { "Authorization": `Bearer ${getCookie('jwt')}` }
-            });
+            const { data } = await axios.post(
+                "http://127.0.0.1:8000/portfolio/distribution", 
+                bodyBuilder.username,
+                { headers: { "Authorization": `Bearer ${getCookie('jwt')}` }},
+            );
             setDistributionData(data);
         };
 
         fetchData();
-    }, []);
+    }, [bodyBuilder]);
 
     // Distribution Growth Pie Chart
     useEffect(() => {
@@ -162,40 +196,40 @@ const Portfolio: FC = () => {
                     }
                 },
                 tooltip: {
-                  trigger: 'item'
+                    trigger: 'item'
                 },
                 legend: {
-                  top: '5%',
-                  left: 'center',
-                  textStyle: {
+                    top: '5%',
+                    left: 'center',
+                    textStyle: {
                     color: "white"
-                  }
+                    }
                 },
                 series: [
-                  {
+                    {
                     name: 'Portfolio Distribution',
                     type: 'pie',
                     radius: ['40%', '70%'],
                     avoidLabelOverlap: false,
                     label: {
-                      show: false,
-                      position: 'center'
+                        show: false,
+                        position: 'center'
                     },
                     emphasis: {
-                      label: {
+                        label: {
                         show: true,
                         fontSize: 40,
                         fontWeight: 'bold',
                         color: "white"
-                      }
+                        }
                     },
                     labelLine: {
-                      show: false
+                        show: false
                     },
                     data: distributionData
-                  }
+                    }
                 ]
-              };
+                };
 
             option && myChart.setOption(option);
             window.addEventListener('resize', () => { myChart.resize(); });
@@ -207,13 +241,22 @@ const Portfolio: FC = () => {
     // Portfolio Growth Chart Data
     useEffect(() => {
         const fetchData = async () => {
-            const { data } = await axios.get(`http://127.0.0.1:8000/portfolio/growth?interval=1m`, {
-                headers: { 'Authorization': `Bearer ${getCookie('jwt')}` }
-            });
-            setChartData(data);
+            try
+            {
+                const { data } = await axios.post(
+                    `http://127.0.0.1:8000/portfolio/growth`, 
+                    bodyBuilder.growth,
+                    {headers: { 'Authorization': `Bearer ${getCookie('jwt')}` }},
+                );
+                setChartData(data);
+
+            } catch(e)
+            {
+                console.error(e);
+            }
         };
         fetchData();
-    }, []);
+    }, [bodyBuilder]);
 
 
     // Portfolio Growth Chart
@@ -278,10 +321,14 @@ const Portfolio: FC = () => {
     useEffect(() => {
         const fetchStatData = async () => {
             try {
-                const { data } = await axios.get(BASE_URL + '/portfolio/performance', {
-                    headers: { 'Authorization': `Bearer ${getCookie('jwt')}` }
-                });
+                const { data } = await axios.post(
+                    BASE_URL + '/portfolio/performance', 
+                    bodyBuilder.username,
+                    { headers: { 'Authorization': `Bearer ${getCookie('jwt')}` }},
+                );
                 
+                console.log(bodyBuilder.username);
+
                 setStats(data);
             } catch(e) {
                 console.error(e);
@@ -289,22 +336,25 @@ const Portfolio: FC = () => {
         };
         
         fetchStatData();
-    }, []);
+    }, [bodyBuilder]);
 
-
-    // const closedOrdersRef = useRef<Array<Record<string, any | null>>>([]);
+        
     const [closedOrders, setClosedOrders] = useState([]);
     useEffect(() => {
         const fetchData = async () => {
-            const { data } = await axios.get('http://127.0.0.1:8000/portfolio/orders?order_status=closed', {
-                headers: { Authorization: `Bearer ${getCookie('jwt')}` }
-            });
-            console.log('Portfolio page: ', data);
+            const { data } = await axios.post(
+                'http://127.0.0.1:8000/portfolio/orders', 
+                bodyBuilder.orders,
+                { headers: { Authorization: `Bearer ${getCookie('jwt')}` }}
+            );
+            
+            console.log(data);
             setClosedOrders(data);
         };
 
         fetchData();
-    }, []);
+    }, [bodyBuilder]);
+    
     
 
     return (
@@ -313,7 +363,7 @@ const Portfolio: FC = () => {
                 <div className="cr card">
                     <div className="chart-header">
                         <span>Balance</span>
-                        <span style={{ fontSize: "2rem"}}>{stats.balance}</span>
+                        <span style={{ fontSize: "2rem"}}>{String(stats.balance)}</span>
                     </div>
                     <div className="chart-container">
                         <div id="growth-chart-container"></div>
@@ -341,7 +391,7 @@ const Portfolio: FC = () => {
                     {Object.keys(statTitles).map((key) => (
                         <div className="container" key={key}>
                             <div className="title">{statTitles[key]}</div>
-                            <div className="value">{stats[key]}</div>
+                            <div className="value">{String(stats[key])}</div>
                         </div>
                     ))}
                 </div>

@@ -3,14 +3,12 @@ import { getCookie } from 'typescript-cookie';
 import axios from 'axios';
 
 // Local
-import PortfolioPage from './PortfolioPage';
+import Portfolio from '../components/Portfolio';
+
 
 const imgUrl: string = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgDw7HXLDZfXQoJReyeHR8IqyPYAp6RWpjs4Dp9MwZ49HoJl2RsXRTGxqnUlzPgtFTbsA7a2upeCQeyPg-2w5qEmpBOxlPkqbfGv48AFW1OyNZ6WIuZt5dI-NVtflu1NPjqE8oJUi4I57oMVtiAStrRnmgjjAf5WQ6_sbd8UYoDhloMBdSRnpIgjY6EdOML/s1920/photo_6291852644980997101_w.jpg";
 
-const ProfilePage: FC = () => {
-    const [isUsersProfile, setIsUsersProfile] = useState<boolean>(true);
-    const [username, setUsername] = useState<string>('zenz');
-
+const Profile: FC<{ isUsersProfile: boolean, user: string }> = ({ isUsersProfile, user }) => {
 
     const toggleEditProfileOverlay: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>):void => {
         const card = document.querySelector('.overlay-card.edit-profile-card') as HTMLElement;
@@ -135,7 +133,7 @@ const ProfilePage: FC = () => {
                         </div>
                         <div className="container">
                             <form>
-                                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)}/>
+                                <input type="text" value={user} onChange={(e) => setUsername(e.target.value)}/>
                             </form>
                         </div>
                     </div>
@@ -152,7 +150,7 @@ const ProfilePage: FC = () => {
                                 <img src={imgUrl} alt="" />
                             </div>
                             <div className="title-group">
-                                <span id="username">{username}</span>
+                                <span id="username">{user}</span>
                             </div>
                         </div>
                         <div className="row info">
@@ -175,7 +173,7 @@ const ProfilePage: FC = () => {
                                 </div>
                             </div>
                             {
-                                !isUsersProfile
+                                isUsersProfile
                                 ? (
                                     <>
                                         <div className="container">
@@ -199,9 +197,9 @@ const ProfilePage: FC = () => {
                 </div>
             </div>
         </div>
-        <PortfolioPage />
+        <Portfolio isUsersProfile={isUsersProfile} username={user}/>
     </>)
 };
 
 
-export default ProfilePage;
+export default Profile;

@@ -875,7 +875,9 @@ button.transparent i {
 
 .search-result {
   border-radius: 0.5rem;
-  padding: 0.5rem
+  padding: 0.5rem;
+  flex-direction: row;
+  gap: 2rem;
 }
 
 .search-result:hover {

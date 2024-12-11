@@ -1,46 +1,27 @@
 import { FC, useEffect, useState } from 'react';
 import { getCookie } from 'typescript-cookie';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 // Local
-import Login from './components/Login';
-import Register from './components/Register';
-import Dashboard from './components/DashboardPage';
+import Login from './pages/Login';
+import Register from './pages/Register';
+// import Dashboard from './pages/Dashboard';
+import Home from './pages/Home';
+import AuthRoutes from './routes/AuthRoutes';
+import ProtectedRoute from './components/ProtectedRoute';
+import DashboardRoutes from './routes/DashboardRoutes';
 
 
 const App: FC = () => {
-  const [isRegistering, setIsRegistering] = useState<boolean>(true);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-
-  useEffect(() => {
-    try {
-      if (getCookie('jwt')) { setIsLoggedIn(true); }
-    
-    } catch(e) {
-      console.error(e);
-    }
-  });
-
-
-  /* ------------------
-        Handlers
-  ------------------ */
-  const switchToRegister = () => { setIsRegistering(true); };
-  const switchToLogin = () => { setIsRegistering(false); };
-  const isRegistered = () => { setIsLoggedIn(true) };
-
-
   return (
-    <>
-      { isLoggedIn ? (
-          <Dashboard />
-        ) : isRegistering ? (
-          <Register switchToLogin={switchToLogin} setIsLoggedIn={isRegistered}/>
-        ) : (
-          <Login switchToRegister={switchToRegister} setIsLoggedIn={isRegistered}/>
-        )
-      }
-    </>
-  );
+    <BrowserRouter>
+      <Routes>
+        <Route index element={<Home />} />
+        <Route path="/auth/*" element={<AuthRoutes />} />
+        <Route path="/dashboard/*" element={<ProtectedRoute element={<DashboardRoutes />} />} />
+      </Routes>
+    </BrowserRouter>
+  )
 };
 
 export default App;
