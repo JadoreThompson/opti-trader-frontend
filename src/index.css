@@ -33,6 +33,7 @@ body {
 h1 {
   text-align: center;
   font-size: 2rem;
+  width: auto;
 }
 
 i {
@@ -211,12 +212,16 @@ button.transparent i {
 }
 
 .card-title.space-between {
-  display: flex;
-  justify-content: space-between;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
 }
 
 .card-title h2 {
   font-size: 1.5rem;
+  width: auto;
+  margin: 0;
+  padding: none;
 }
 
 .card button {
@@ -855,6 +860,10 @@ button.transparent i {
 
 .title-info-content span {
   font-size: 1.5rem;
+}
+
+.title-info-item:hover {
+  cursor: pointer;
 }
 
 .overlay-card.edit-profile-card .card .container::before {

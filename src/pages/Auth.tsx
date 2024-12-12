@@ -33,6 +33,7 @@ const Auth: FC = () => {
             );
             
             setCookie('jwt', data?.token);
+            localStorage.setItem('username', data?.username);
             setIsLoggedIn(true);
         } catch(e)
         {

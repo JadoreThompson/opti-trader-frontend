@@ -54,9 +54,8 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
             {
                 try
                 {
-                    const { data } = await axios.post(
-                        'http://127.0.0.1:8000/portfolio/weekday-results', 
-                        bodyBuilder?.username,
+                    const { data } = await axios.get(
+                        `http://127.0.0.1:8000/portfolio/weekday-results${bodyBuilder?.username ? `?username=${bodyBuilder?.username.username}` : ''}`, 
                         { headers: { "Authorization": `Bearer ${getCookie('jwt')}` }},
                     );
                     setWinnerLoserData(data);
@@ -178,9 +177,8 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
             if (bodyBuilder)
             {
 
-                const { data } = await axios.post(
-                    "http://127.0.0.1:8000/portfolio/distribution", 
-                    bodyBuilder?.username,
+                const { data } = await axios.get(
+                    `http://127.0.0.1:8000/portfolio/distribution${bodyBuilder?.username ? `?username=${bodyBuilder?.username.username}` : ''}`,
                     { headers: { "Authorization": `Bearer ${getCookie('jwt')}` }},
                 );
                 setDistributionData(data);
@@ -254,9 +252,11 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
             {
                 try
                 {
-                    const { data } = await axios.post(
-                        `http://127.0.0.1:8000/portfolio/growth`, 
-                        bodyBuilder?.growth,
+                    let url = `http://127.0.0.1:8000/portfolio/growth?interval=${bodyBuilder?.growth?.interval}`;
+                    url += bodyBuilder?.growth?.username ? `&username=${bodyBuilder?.growth?.username}` : '';
+
+                    const { data } = await axios.get(
+                        url, 
                         {headers: { 'Authorization': `Bearer ${getCookie('jwt')}` }},
                     );
                     setChartData(data);
@@ -265,6 +265,7 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
                 {
                     console.error(e);
                 }
+
             }
         };
         fetchData();
@@ -335,9 +336,8 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
             if (bodyBuilder)
             {
                 try {
-                    const { data } = await axios.post(
-                        BASE_URL + '/portfolio/performance', 
-                        bodyBuilder!.username,
+                    const { data } = await axios.get(
+                        BASE_URL + `/portfolio/performance${bodyBuilder?.username?.username ? `?username=${bodyBuilder?.username.username}` : ''}`, 
                         { headers: { 'Authorization': `Bearer ${getCookie('jwt')}` }},
                     );
                     
@@ -363,10 +363,12 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
             {
                 try
                 {
-                    const { data } = await axios.post(
-                        'http://127.0.0.1:8000/portfolio/orders', 
-                        bodyBuilder?.orders,
-                        { headers: { Authorization: `Bearer ${getCookie('jwt')}` }}
+                    let url = `http://127.0.0.1:8000/portfolio/orders?${bodyBuilder?.orders!.order_status!.map(item => `order_status=${item!}`)}`;
+                    url += bodyBuilder?.orders?.username ? `&username=${bodyBuilder?.orders?.username}` : '';
+
+                    const { data } = await axios.get(
+                        url,
+                        { headers: { Authorization: `Bearer ${getCookie('jwt')}` }},
                     );
                     
                     setClosedOrders(data);
@@ -391,7 +393,7 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
                 <div className="cr card">
                     <div className="chart-header">
                         <span>Balance</span>
-                        <span style={{ fontSize: "2rem"}}>{String(stats.balance)}</span>
+                        <span style={{ fontSize: "2rem"}}>{String(stats?.balance)}</span>
                     </div>
                     <div className="chart-container">
                         <div id="growth-chart-container"></div>

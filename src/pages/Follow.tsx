@@ -18,6 +18,13 @@ const Follow: FC = () => {
         setUsername(username);
     };    
 
+    const users = [
+        { username: 'zenz', imgUrl },
+        { username: 'Moreno', imgUrl },
+        { username: 'max', imgUrl },
+        { username: 'alan', imgUrl },
+    ];
+
     return (
         <Sidebar mainContent={
             <>
@@ -34,34 +41,18 @@ const Follow: FC = () => {
                                 </button>
                             </div>
                             <div className="container body">
-                                <Link to="/dashboard/profile/zenz">    
-                                    <div className="container flex w-100 search-result">
-                                        <div className="profile img-container title-group small">
-                                            <img src={imgUrl} alt="" />
+                                {users.map((user) => (
+                                    <Link key={user.username} to={`/dashboard/profile/${user.username}`}>
+                                        <div className="container flex w-100 search-result">
+                                            <div className="profile img-container title-group small">
+                                                <img src={user.imgUrl} alt={user.username} />
+                                            </div>
+                                            <div className="username">
+                                                <span>{user.username}</span>
+                                            </div>
                                         </div>
-                                        <div className="username">
-                                            <span>zenz</span>
-                                        </div>
-                                    </div>
-                                </Link>
-                                <div className="container flex w-100 search-result" onClick={showProfile}>
-                                    <div className="profile img-container title-group small">
-                                        <img src={imgUrl} alt="" />
-                                    </div>
-                                    <div className="username"><span>Moreno</span></div>
-                                </div>
-                                <div className="container flex w-100 search-result" onClick={showProfile}>
-                                    <div className="profile img-container title-group small">
-                                        <img src={imgUrl} alt="" />
-                                    </div>
-                                    <div className="username"><span>max</span></div>
-                                </div>
-                                <div className="container flex w-100 search-result" onClick={showProfile}>
-                                    <div className="profile img-container title-group small">
-                                        <img src={imgUrl} alt="" />
-                                    </div>
-                                    <div className="username"><span>alan</span></div>
-                                </div>
+                                    </Link>
+                                ))}
                             </div>
                         </div>
                     </div>

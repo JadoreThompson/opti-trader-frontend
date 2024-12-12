@@ -1,13 +1,11 @@
 import { FC, ReactElement, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Location } from 'react-router-dom';
 
 
 const Sidebar: FC<{ mainContent: ReactElement }> = ({ mainContent }) => {
     const location = useLocation();
 
     useEffect(() => {
-        localStorage.setItem('username', 'zenz');
         const options: Record<string, string> = {
             follow: 'follow',
             profile: 'profile',
@@ -15,7 +13,7 @@ const Sidebar: FC<{ mainContent: ReactElement }> = ({ mainContent }) => {
             trade: 'trade',
         };
         
-        document.getElementById(location.pathname.split("/")[2])?.classList.add('active');
+        document.getElementById(options[location.pathname.split("/")[2]])?.classList.add('active');
 
     }, [location.pathname]);
 
