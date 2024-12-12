@@ -12,7 +12,7 @@ import Dashboard from '../pages/Dashboard';
 const DashboardRoutes: FC = () => {
     return (
         <Routes>
-            <Route path="profile/*" element={<Profile isUsersProfile={false} user='zenz'/>}/>
+            <Route path="profile/:user" element={<Profile />}/>
             <Route path="trade" element={<Trade />} />
             <Route path="follow" element={<Follow />} />
         </Routes>

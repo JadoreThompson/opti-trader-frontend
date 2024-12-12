@@ -4,11 +4,15 @@ import axios from 'axios';
 
 // Local
 import Portfolio from '../components/Portfolio';
+import { useParams } from 'react-router-dom';
 
 
 const imgUrl: string = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgDw7HXLDZfXQoJReyeHR8IqyPYAp6RWpjs4Dp9MwZ49HoJl2RsXRTGxqnUlzPgtFTbsA7a2upeCQeyPg-2w5qEmpBOxlPkqbfGv48AFW1OyNZ6WIuZt5dI-NVtflu1NPjqE8oJUi4I57oMVtiAStrRnmgjjAf5WQ6_sbd8UYoDhloMBdSRnpIgjY6EdOML/s1920/photo_6291852644980997101_w.jpg";
 
-const Profile: FC<{ isUsersProfile: boolean, user: string }> = ({ isUsersProfile, user }) => {
+const Profile: FC = () => {
+    const { user } = useParams();
+    const [username, setUsername] = useState<string | null>(null);
+    const [isUsersProfile, setIsUsersProfile] = useState<boolean | null>(null);
 
     const toggleEditProfileOverlay: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>):void => {
         const card = document.querySelector('.overlay-card.edit-profile-card') as HTMLElement;
@@ -26,10 +30,16 @@ const Profile: FC<{ isUsersProfile: boolean, user: string }> = ({ isUsersProfile
         else if (styles.display === 'flex') { card.style.display= 'none'; }
     };
 
+    useEffect(() => {
+        user === localStorage.getItem('username') 
+        ? setIsUsersProfile(true) 
+        : setIsUsersProfile(false);
+    }, []);
+
 
     useEffect(() => {
         const header: HTMLElement = document.querySelector('.main-content') as HTMLElement;
-        header.classList.add('profile');
+        header?.classList.add('profile');
         const styles: Array<HTMLElement> = [];
 
         const style = document.createElement('style');
@@ -61,21 +71,10 @@ const Profile: FC<{ isUsersProfile: boolean, user: string }> = ({ isUsersProfile
         styles.forEach(item => document.head.appendChild(item));
 
         return () => {
-            header.classList.remove('profile');
+            header?.classList.remove('profile');
             styles.forEach(item => document.head.removeChild(item));
         }
-    }, []);
-
-    // useEffect(() => {
-    //     const fetchData: () => void = async (): Promise<void> => {
-    //         const { data } = await axios.get("", {
-    //             headers: { 'Authorization': `Bearer ${getCookie('jwt')}`}
-    //         })
-    //     };
-
-    //     fetchData();
-    // }, []);
-
+    }, [isUsersProfile]);
 
     return (<>
         {/* Settings */}
@@ -122,7 +121,7 @@ const Profile: FC<{ isUsersProfile: boolean, user: string }> = ({ isUsersProfile
                                     display: 'flex', 
                                     justifyContent: 'center', 
                                     alignItems: 'center'
-                            }}>
+                                }}>
                                 <i className="fa-solid fa-camera" style={{ fontSize: '2rem' }}></i>
                             </div>                        
                     </div>
@@ -197,7 +196,11 @@ const Profile: FC<{ isUsersProfile: boolean, user: string }> = ({ isUsersProfile
                 </div>
             </div>
         </div>
-        <Portfolio isUsersProfile={isUsersProfile} username={user}/>
+        { 
+            isUsersProfile !== null 
+            ? <Portfolio isUsersProfile={isUsersProfile} username={user!}/> 
+            : null
+        }
     </>)
 };
 

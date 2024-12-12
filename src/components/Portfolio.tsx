@@ -29,38 +29,41 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
     const [chartData, setChartData] = useState<Array<Record<string, number>>>([]);
     const [distributionData, setDistributionData] = useState<Array<Record<string, string | number>>>([]);
     const [winnerLoserData, setWinnerLoserData] = useState<Record<string, Array<number>>>({});
-    const [bodyBuilder, setBodyBuilder] = useState<Record<string, null | Record<string, null | string | Array<string>>>>({});
+    const [bodyBuilder, setBodyBuilder] = useState<null | Record<string, null | Record<string, null | string | Array<string>>>>(null);
     
     useEffect(() => {
         setBodyBuilder({
             orders: { 
-                order_status: ['filled'], 
-                username: username ? username : null 
+                order_status: ['closed'], 
+                username: isUsersProfile ? null : username
             },
-            username: username ? {username: username} : null,
+            username: isUsersProfile ? null : {username: username},
             growth: {
-                username: username ? username : null,
+                username: isUsersProfile ? null : username,
                 interval: "1m"
             }
         });
     }, []);
 
     // Winners Loses Per Day Data
-
     useEffect(() => {
         const fetchData = async () => {
-            try
+            if (bodyBuilder)
             {
-                const { data } = await axios.post(
-                    'http://127.0.0.1:8000/portfolio/weekday-results', 
-                    bodyBuilder.username,
-                    { headers: { "Authorization": `Bearer ${getCookie('jwt')}` }},
-                );
-                setWinnerLoserData(data);
-            } catch(e)
-            {
-                console.error(e);
+                try
+                {
+                    const { data } = await axios.post(
+                        'http://127.0.0.1:8000/portfolio/weekday-results', 
+                        bodyBuilder?.username,
+                        { headers: { "Authorization": `Bearer ${getCookie('jwt')}` }},
+                    );
+                    setWinnerLoserData(data);
+                } catch(e)
+                {
+                    console.error(e);
+                }
             }
+
         };
 
         fetchData();
@@ -170,12 +173,16 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
     // Distribution Growth Pie Chart Data
     useEffect(() => {
         const fetchData = async () => {
-            const { data } = await axios.post(
-                "http://127.0.0.1:8000/portfolio/distribution", 
-                bodyBuilder.username,
-                { headers: { "Authorization": `Bearer ${getCookie('jwt')}` }},
-            );
-            setDistributionData(data);
+            if (bodyBuilder)
+            {
+
+                const { data } = await axios.post(
+                    "http://127.0.0.1:8000/portfolio/distribution", 
+                    bodyBuilder?.username,
+                    { headers: { "Authorization": `Bearer ${getCookie('jwt')}` }},
+                );
+                setDistributionData(data);
+            }
         };
 
         fetchData();
@@ -241,18 +248,21 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
     // Portfolio Growth Chart Data
     useEffect(() => {
         const fetchData = async () => {
-            try
+            if (bodyBuilder)
             {
-                const { data } = await axios.post(
-                    `http://127.0.0.1:8000/portfolio/growth`, 
-                    bodyBuilder.growth,
-                    {headers: { 'Authorization': `Bearer ${getCookie('jwt')}` }},
-                );
-                setChartData(data);
-
-            } catch(e)
-            {
-                console.error(e);
+                try
+                {
+                    const { data } = await axios.post(
+                        `http://127.0.0.1:8000/portfolio/growth`, 
+                        bodyBuilder?.growth,
+                        {headers: { 'Authorization': `Bearer ${getCookie('jwt')}` }},
+                    );
+                    setChartData(data);
+    
+                } catch(e)
+                {
+                    console.error(e);
+                }
             }
         };
         fetchData();
@@ -320,36 +330,43 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
 
     useEffect(() => {
         const fetchStatData = async () => {
-            try {
-                const { data } = await axios.post(
-                    BASE_URL + '/portfolio/performance', 
-                    bodyBuilder.username,
-                    { headers: { 'Authorization': `Bearer ${getCookie('jwt')}` }},
-                );
-                
-                console.log(bodyBuilder.username);
-
-                setStats(data);
-            } catch(e) {
-                console.error(e);
+            if (bodyBuilder)
+            {
+                try {
+                    const { data } = await axios.post(
+                        BASE_URL + '/portfolio/performance', 
+                        bodyBuilder!.username,
+                        { headers: { 'Authorization': `Bearer ${getCookie('jwt')}` }},
+                    );
+                    
+                    console.log('Performance Data: ', data);
+    
+                    setStats(data);
+                } catch(e) {
+                    console.error('Performance Error: ', e);
+                    console.log('Performance error, current stats: ', stats);
+                }
             }
         };
         
         fetchStatData();
+
     }, [bodyBuilder]);
 
         
     const [closedOrders, setClosedOrders] = useState([]);
     useEffect(() => {
         const fetchData = async () => {
-            const { data } = await axios.post(
-                'http://127.0.0.1:8000/portfolio/orders', 
-                bodyBuilder.orders,
-                { headers: { Authorization: `Bearer ${getCookie('jwt')}` }}
-            );
-            
-            console.log(data);
-            setClosedOrders(data);
+            if (bodyBuilder)
+            {
+                const { data } = await axios.post(
+                    'http://127.0.0.1:8000/portfolio/orders', 
+                    bodyBuilder?.orders,
+                    { headers: { Authorization: `Bearer ${getCookie('jwt')}` }}
+                );
+                
+                setClosedOrders(data);
+            }
         };
 
         fetchData();
@@ -388,12 +405,20 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
                     <h1>Stats</h1>
                 </div>
                 <div className="card-body">
-                    {Object.keys(statTitles).map((key) => (
-                        <div className="container" key={key}>
-                            <div className="title">{statTitles[key]}</div>
-                            <div className="value">{String(stats[key])}</div>
-                        </div>
-                    ))}
+                    {
+                        stats
+                        ? (
+                            <>                            
+                            {Object.keys(statTitles).map((key) => (
+                                <div className="container" key={key}>
+                                    <div className="title">{statTitles[key]}</div>
+                                    <div className="value">{String(stats[key])}</div>
+                                </div>
+                            ))}
+                            </>
+                        )
+                        : 'No data for retrieval'
+                    }
                 </div>
             </div>
         }/>
