@@ -10,7 +10,7 @@ const Auth: FC = () => {
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
     useEffect(() => {
-        if (isLoggedIn) { navigate("/dashboard", {replace: true}); }
+        if (isLoggedIn) { navigate("/dashboard/trade"); }
     }, [isLoggedIn]);
 
     useEffect(() => {

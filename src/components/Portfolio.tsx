@@ -9,6 +9,7 @@ import * as echarts from 'echarts';
 // Local
 import DashboardLayout from "./DashboardLayout";
 import OrderTable from "./OrdersTable";
+import { Navigate, useNavigate } from "react-router-dom";
 
 
 interface PortfolioPageProps
@@ -26,6 +27,7 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
     /* --------------------
         Render charts
     -------------------- */
+    const navigate = useNavigate();
     const [chartData, setChartData] = useState<Array<Record<string, number>>>([]);
     const [distributionData, setDistributionData] = useState<Array<Record<string, string | number>>>([]);
     const [winnerLoserData, setWinnerLoserData] = useState<Record<string, Array<number>>>({});
@@ -359,13 +361,22 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
         const fetchData = async () => {
             if (bodyBuilder)
             {
-                const { data } = await axios.post(
-                    'http://127.0.0.1:8000/portfolio/orders', 
-                    bodyBuilder?.orders,
-                    { headers: { Authorization: `Bearer ${getCookie('jwt')}` }}
-                );
-                
-                setClosedOrders(data);
+                try
+                {
+                    const { data } = await axios.post(
+                        'http://127.0.0.1:8000/portfolio/orders', 
+                        bodyBuilder?.orders,
+                        { headers: { Authorization: `Bearer ${getCookie('jwt')}` }}
+                    );
+                    
+                    setClosedOrders(data);
+                } catch(e)
+                {
+                    if (e instanceof axios.AxiosError)
+                    {
+                        e.status == 403 ? navigate("/404", {replace: true}) : null;
+                    }
+                }
             }
         };
 
