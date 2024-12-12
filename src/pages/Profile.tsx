@@ -1,17 +1,20 @@
-import React, { FC, useState, useEffect } from 'react';
+import React, { FC, useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getCookie } from 'typescript-cookie';
 import axios from 'axios';
 
 // Local
+import Alert, { AlertTypes } from '../components/Alert';
 import Portfolio from '../components/Portfolio';
 import Sidebar from '../components/Sidebar';
+
 
 const imgUrl: string = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgDw7HXLDZfXQoJReyeHR8IqyPYAp6RWpjs4Dp9MwZ49HoJl2RsXRTGxqnUlzPgtFTbsA7a2upeCQeyPg-2w5qEmpBOxlPkqbfGv48AFW1OyNZ6WIuZt5dI-NVtflu1NPjqE8oJUi4I57oMVtiAStrRnmgjjAf5WQ6_sbd8UYoDhloMBdSRnpIgjY6EdOML/s1920/photo_6291852644980997101_w.jpg";
 
 const Profile: FC = () => {
     const { user } = useParams();
     const navigate = useNavigate();
+
     const [username, setUsername] = useState<string | null>(null);
     const [isUsersProfile, setIsUsersProfile] = useState<boolean | null>(null);
     
@@ -22,11 +25,15 @@ const Profile: FC = () => {
     const [following, setFollowing] = useState<Array<string>>([]);
     const [showFollowing, setShowFollowing] = useState<boolean>(false);
 
+    const [alertMessage, setAlertMessage] = useState<null | Record<string, string | AlertTypes>>(null);
+    const [alertCounter, setAlertCounter] = useState<number>(0);
+
+
     const toggleOverlay: (
-        e: React.MouseEvent<HTMLButtonElement | HTMLDivElement, MouseEvent>,
+        e: React.MouseEvent<HTMLButtonElement | HTMLDivElement, MouseEvent> | null,
         path: string,
     ) => void = (
-        e: React.MouseEvent<HTMLButtonElement | HTMLDivElement, MouseEvent>,
+        e: React.MouseEvent<HTMLButtonElement | HTMLDivElement, MouseEvent> | null,
         path: string,
     ):void => {
         const card = document.querySelector(path) as HTMLElement;
@@ -36,11 +43,60 @@ const Profile: FC = () => {
         else if (styles.display === 'flex') { card.style.display= 'none'; }
     };
 
+    const handleFollowSubmit: (
+        e: React.FormEvent<HTMLFormElement>,
+        elementPath: string
+    ) => void = async (
+        e: React.FormEvent<HTMLFormElement>,
+        elementPath: string
+    ) => {
+        e.preventDefault();
+        let formData: Record<string, string | boolean> = Object.fromEntries(
+            Array.from(new FormData(e.target as HTMLFormElement).entries()).map(
+                ([k, _]) => [k, true]
+            )
+        );
+        
+        formData['username'] = user;
+
+        try
+        {
+            await axios.post(
+                "http://127.0.0.1:8000/portfolio/copy",
+                formData,
+                { headers: { 'Authorization': `Bearer ${getCookie('jwt')}` } }
+            )
+
+            setAlertMessage({
+                message: `You're now following ${user}`,
+                type: AlertTypes.SUCCESS
+            });
+            alertCounterRef.current += 1;
+            toggleOverlay(null, elementPath);
+        } catch(e) {
+            if (e instanceof axios.AxiosError)
+            {
+                e.status == 400 
+                ? setAlertMessage({
+                    message: e.response?.data.error,
+                    type: AlertTypes.ERROR
+                })
+                : null;
+            }
+        }
+    };
+
+
     useEffect(() => {
         user === localStorage.getItem('username') 
         ? setIsUsersProfile(true) 
         : setIsUsersProfile(false);
     }, []);
+
+
+    useEffect(() => {
+        setAlertCounter((prev) => prev + 1);
+    }, [alertMessage]);
 
 
     useEffect(() => {
@@ -114,12 +170,52 @@ const Profile: FC = () => {
         }
     }, [isUsersProfile]);
 
-    const imgUrl: string = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgDw7HXLDZfXQoJReyeHR8IqyPYAp6RWpjs4Dp9MwZ49HoJl2RsXRTGxqnUlzPgtFTbsA7a2upeCQeyPg-2w5qEmpBOxlPkqbfGv48AFW1OyNZ6WIuZt5dI-NVtflu1NPjqE8oJUi4I57oMVtiAStrRnmgjjAf5WQ6_sbd8UYoDhloMBdSRnpIgjY6EdOML/s1920/photo_6291852644980997101_w.jpg";
-
     return (
         <Sidebar mainContent={
             <>
-            
+                { 
+                    alertMessage 
+                    ? <Alert 
+                            message={alertMessage.message} 
+                            type={alertMessage.type as AlertTypes} 
+                            counter={alertCounter}
+                        /> 
+                    : null
+                }
+                <div className="overlay-card follow-card">
+                    <div className="container">
+                        <div className="card">
+                            <div className="card-title">
+                                <div className="title">
+                                    <h2></h2>
+                                </div>
+                                <button className='transparent' onClick={(e) => { toggleOverlay(e, '.overlay-card.follow-card') }}>
+                                    <i className="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            <div className="card-body">
+                                <form id="followForm" onSubmit={(e) => { handleFollowSubmit(e, ".overlay-card.follow-card") }}>
+                                    <input type="checkbox" id="limit" name="limit_orders" value="true"/>
+                                    <label htmlFor="limit">Limit Orders</label><br />
+                                    <input type="checkbox" id="market" name="market_orders" value='Market'/>
+                                    <label htmlFor="market">Market Orders</label><br />
+                                    <button className="btn" type="submit">Copy</button>
+                                    <div 
+                                        style={{ 
+                                            display: 'flex', 
+                                            flexDirection: 'row', 
+                                            alignItems: 'center', 
+                                            justifyContent: 'center' ,
+                                            gap: '0.5rem',
+                                        }}>
+                                        <i style={{ color: '#bbc0c7' }} className="fa-solid fa-circle-info"></i>
+                                        <span style={{ textAlign: 'center', alignSelf: 'center' }} id="errorMessage">Must choose an option</span>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {/* Following */}
                 <div className="overlay-card following-card">
                     <div className="container">
@@ -174,7 +270,7 @@ const Profile: FC = () => {
                         <div className="card">
                             <div className="card-title space-between">
                                 <h2>Settings</h2>
-                                <button className="transparent" onClick={(e) => { toggleOverlay(e, '.overlay-card.account-settings-card') }}>
+                                <button className="transparent" onClick={(e) => { toggleOverlay(e, '.overlay-card.account-settings-card'); }}>
                                     <i className="fa-solid fa-xmark"></i>
                                 </button>
                             </div>
@@ -187,7 +283,7 @@ const Profile: FC = () => {
                     <div className="container">
                         <div className="card">
                             <div className="card-title space-between">
-                                <button className="transparent" onClick={(e) => { toggleOverlay(e, '.overlay-card.edit-profile-card') }}>
+                                <button className="transparent" onClick={(e) => { toggleOverlay(e, '.overlay-card.edit-profile-card'); }}>
                                     <i className="fa-solid fa-xmark"></i>
                                 </button>
                                 <button className="btn btn-primary" style={{ width: 'auto' }}>Save</button>
@@ -279,6 +375,7 @@ const Profile: FC = () => {
                                                 <div className="container">
                                                     <button 
                                                         className="btn btn-secondary follow-btn"
+                                                        onClick={(e) => { toggleOverlay(e, ".overlay-card.follow-card") }}
                                                     >Follow</button>
                                                 </div>
                                             </>

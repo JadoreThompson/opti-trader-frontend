@@ -122,6 +122,7 @@ const LeaderBoard: FC = () => {
                                 <input type="checkbox" id="market" name="market_orders" value='Market'/>
                                 <label htmlFor="market">Market Orders</label><br />
                                 <button className="btn" type="submit">Copy</button>
+                                <i className="fa-solid fa-circle-info"></i>
                                 <span className='error' id="errorMessage"></span>
                             </form>
                         </div>

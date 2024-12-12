@@ -28,7 +28,10 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
         Render charts
     -------------------- */
     const navigate = useNavigate();
+    
     const [chartData, setChartData] = useState<Array<Record<string, number>>>([]);
+    const [secondaryChartData, setSecondaryChartData] = useState<Array<Record<string, number>>>([]);
+
     const [distributionData, setDistributionData] = useState<Array<Record<string, string | number>>>([]);
     const [winnerLoserData, setWinnerLoserData] = useState<Record<string, Array<number>>>({});
     const [bodyBuilder, setBodyBuilder] = useState<null | Record<string, null | Record<string, null | string | Array<string>>>>(null);
@@ -253,13 +256,43 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
                 try
                 {
                     let url = `http://127.0.0.1:8000/portfolio/growth?interval=${bodyBuilder?.growth?.interval}`;
-                    url += bodyBuilder?.growth?.username ? `&username=${bodyBuilder?.growth?.username}` : '';
+                    // url += bodyBuilder?.growth?.username ? `&username=${bodyBuilder?.growth?.username}` : '';
 
-                    const { data } = await axios.get(
-                        url, 
-                        {headers: { 'Authorization': `Bearer ${getCookie('jwt')}` }},
-                    );
-                    setChartData(data);
+                    if (isUsersProfile)
+                    {
+                        const { data } = await axios.get(
+                            url, 
+                            {headers: { 'Authorization': `Bearer ${getCookie('jwt')}` }},
+                        );
+                        setChartData(data);
+                    } else
+                    {
+                        async function fetch(link: string)
+                        {
+                            try
+                            {
+                                const { data } = await axios.get(
+                                    link, 
+                                    {headers: { 'Authorization': `Bearer ${getCookie('jwt')}` }},
+                                );
+                                return data;
+                            } catch(e)
+                            {
+                                return e;
+                            }
+                        }
+
+                        const results = await Promise.all([fetch(url), fetch(url += `&username=${bodyBuilder?.growth?.username}`)])
+                        results.forEach((item) => { 
+                            if (results instanceof axios.AxiosError )
+                            {
+                                item.status === 403 ? navigate("/404", { replace: true }) : null;
+                            }
+                        })
+
+                        setChartData(results[1]);
+                        setSecondaryChartData(results[0]);
+                    }
     
                 } catch(e)
                 {
@@ -306,6 +339,16 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
                     topColor: 'rgba(124, 72, 235, 1.0)',
                     bottomColor: 'rgba(43, 1, 137, 0.01)'
                 });
+                
+                if (secondaryChartData.length > 0)
+                {
+                    const secondaryAreaSeries = chart.addAreaSeries({
+                        lineColor: 'rgba(255, 235, 59, 1)',
+                        topColor: 'rgba(255, 235, 59, 1)',
+                        bottomColor: 'rgba(255, 235, 59, 0.01)'  
+                    })
+                    secondaryAreaSeries.setData(secondaryChartData);
+                }
 
                 areaSeries.setData(chartData);
             }
@@ -391,9 +434,15 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
         <DashboardLayout leftContent={    
             <>
                 <div className="cr card">
-                    <div className="chart-header">
-                        <span>Balance</span>
-                        <span style={{ fontSize: "2rem"}}>{String(stats?.balance)}</span>
+                    <div className="chart-header" style={{ display:'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <div className="title" style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span>Balance</span>
+                            <span style={{ fontSize: "2rem"}}>{String(stats?.balance)}</span>
+                        </div>
+                        <div className="legend">
+                            <button className="legend-btn" style={{ backgroundColor: 'rgba(124, 72, 235, 1)', border: '1px solid rgba(124, 72, 235, 1)' }}>Base</button>
+                            <button className="legend-btn" style={{ backgroundColor: "#FFEB3B", border: '1px solid #FFEB3B' }}>Custom</button>
+                        </div>
                     </div>
                     <div className="chart-container">
                         <div id="growth-chart-container"></div>

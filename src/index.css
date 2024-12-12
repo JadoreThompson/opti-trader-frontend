@@ -38,6 +38,8 @@ h1 {
 
 i {
   color: white;
+  margin: 0;
+  padding: none;
 }
 
 i:hover { cursor: pointer; }
@@ -900,4 +902,9 @@ button.transparent i {
 
 .sidebar-icon.active {
   color: var(--primary-color);
+}
+
+.legend-btn {
+  border-radius: 0.25rem;
+  border: none;
 }
