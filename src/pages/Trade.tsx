@@ -9,6 +9,7 @@ import { AlertTypes } from '../components/Alert';
 import DashboardLayout from '../components/DashboardLayout';
 import { OrderType, IntervalEnum, SocketMessageType, IntervalType } from '../types/TradingPageTypes';
 import OrderTable from '../components/OrdersTable';
+import Sidebar from '../components/Sidebar';
 
 
 const Trade: FC = () => {
@@ -334,57 +335,64 @@ const Trade: FC = () => {
     /* --------------------
         Return Content
     -------------------- */
-    return (
-        <>
-            <Alert message={alertMessage} type={alertType} counter={alertCounter}/>
-            <DashboardLayout leftContent={
-                <>
-                    <div className="chart-card card">
-                        <div className="btn-container">
-                        {Object.values(IntervalEnum).map((value) => (
-                            <button key={value} className={`btn btn-secondary ${value === '1m' ? 'active': ''}`} value={value} onClick={changeTimeFrame}>{value}</button>
-                        ))}
-                        </div>
-                        <div className="chart-container">
-                            <div id="chart-container" className='chart'></div>
-                        </div>
-                        <div className="card-footer"></div>
-                    </div>
-                    <OrderTable 
-                        showClosed={false} 
-                        openOrders={openOrderData} 
-                        orderIdRef={orderIdRef} 
-                        formSubmissionHandler={modifyFormHandler}
-                    />
-                </>
 
-            } rightContent={
-                <div className="card">
-                    <form id='orderForm' onSubmit={formSubmit}>
-                        <input type="text" name='ticker' placeholder='Ticker' value='APPL' pattern="[A-Za-z]+" readOnly/>
-                        <input type="number" name='quantity' placeholder='Quantity'required/>
-                        <input type="number" name='take_profit' placeholder='Take Profit'/>
-                        <input type="number" name='stop_loss' placeholder='Stop Loss'/>
-                        <button type='button' id='orderType' className="container" onClick={toggleOrderTypes}>Market Order</button>
-                        <div className="options-container container" style={{display: showOrderTypes ? 'block': 'none'}}>
-                            <div className="option">
-                                <button onClick={selectOrderType} type="button"  value={OrderType.MARKET_ORDER}>Market Order</button>
+    return (
+        <Sidebar mainContent={
+            <>
+                <Alert message={alertMessage} type={alertType} counter={alertCounter}/>
+                <DashboardLayout 
+                    leftContent=
+                    {
+                        <>
+                            <div className="chart-card card">
+                                <div className="btn-container">
+                                {Object.values(IntervalEnum).map((value) => (
+                                    <button key={value} className={`btn btn-secondary ${value === '1m' ? 'active': ''}`} value={value} onClick={changeTimeFrame}>{value}</button>
+                                ))}
+                                </div>
+                                <div className="chart-container">
+                                    <div id="chart-container" className='chart'></div>
+                                </div>
+                                <div className="card-footer"></div>
                             </div>
-                            <div className="option">
-                                <button onClick={selectOrderType} type="button" value={OrderType.LIMIT_ORDER}>Limit Order</button>
-                            </div>
-                            <div className="option">
-                                <button onClick={selectOrderType} type="button" value={OrderType.CLOSE_ORDER}>Close Order</button>
-                            </div>
+                            <OrderTable 
+                                showClosed={false} 
+                                openOrders={openOrderData} 
+                                orderIdRef={orderIdRef} 
+                                formSubmissionHandler={modifyFormHandler}
+                            />
+                        </>
+                    } 
+                    rightContent=
+                    {
+                        <div className="card">
+                            <form id='orderForm' onSubmit={formSubmit}>
+                                <input type="text" name='ticker' placeholder='Ticker' value='APPL' pattern="[A-Za-z]+" readOnly/>
+                                <input type="number" name='quantity' placeholder='Quantity'required/>
+                                <input type="number" name='take_profit' placeholder='Take Profit'/>
+                                <input type="number" name='stop_loss' placeholder='Stop Loss'/>
+                                <button type='button' id='orderType' className="container" onClick={toggleOrderTypes}>Market Order</button>
+                                <div className="options-container container" style={{display: showOrderTypes ? 'block': 'none'}}>
+                                    <div className="option">
+                                        <button onClick={selectOrderType} type="button"  value={OrderType.MARKET_ORDER}>Market Order</button>
+                                    </div>
+                                    <div className="option">
+                                        <button onClick={selectOrderType} type="button" value={OrderType.LIMIT_ORDER}>Limit Order</button>
+                                    </div>
+                                    <div className="option">
+                                        <button onClick={selectOrderType} type="button" value={OrderType.CLOSE_ORDER}>Close Order</button>
+                                    </div>
+                                </div>
+                                <div className="container limit-options" style={{display: showLimitOptions ? 'block': 'none'}}>
+                                    <input type="number" name='limit_price' placeholder='Limit Price' required={showLimitOptions}/>
+                                </div>
+                                <button type='submit' className='btn btn-primary'>Open Order</button>
+                            </form>
                         </div>
-                        <div className="container limit-options" style={{display: showLimitOptions ? 'block': 'none'}}>
-                            <input type="number" name='limit_price' placeholder='Limit Price' required={showLimitOptions}/>
-                        </div>
-                        <button type='submit' className='btn btn-primary'>Open Order</button>
-                    </form>
-                </div>
-            }/>
-        </>
+                    }
+                />      
+            </>
+        }/>
     );
 };
 

@@ -4,7 +4,7 @@ import { useLocation } from "react-router-dom";
 // Local
 import Sidebar from "../components/Sidebar";
 import Trade from "./Trade";
-import LeaderBoard from "../components/Leaderboard";
+import LeaderBoard from "./Leaderboard";
 import Profile from "./Profile";
 import Follow from "./Follow";
 
@@ -45,7 +45,7 @@ const Dashboard: FC = (() => {
         <>
             <div style={rootStyles}>
                 <div style={sidebarStyles} className="sidebar">
-                    <Sidebar showModal={setModalChoice}/>
+                    <Sidebar />
                 </div>
                 <div style={mainStyles} className="main-content">
                     {modalOptions[currentModalChoice]}

@@ -1,6 +1,9 @@
 import { FC, MouseEventHandler, useEffect, useState } from 'react';
-import Profile from './Profile';
+import { Link } from 'react-router-dom';
 
+// Local
+import Profile from './Profile';
+import Sidebar from '../components/Sidebar';
 
 const imgUrl: string = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgDw7HXLDZfXQoJReyeHR8IqyPYAp6RWpjs4Dp9MwZ49HoJl2RsXRTGxqnUlzPgtFTbsA7a2upeCQeyPg-2w5qEmpBOxlPkqbfGv48AFW1OyNZ6WIuZt5dI-NVtflu1NPjqE8oJUi4I57oMVtiAStrRnmgjjAf5WQ6_sbd8UYoDhloMBdSRnpIgjY6EdOML/s1920/photo_6291852644980997101_w.jpg";
 
@@ -13,15 +16,15 @@ const Follow: FC = () => {
             .querySelector(".username span")!
             .textContent;
         setUsername(username);
-    };
+    };    
 
     return (
-        <>
-        {
-            username 
-            ? (<Profile isUsersProfile={false} user={username!} />)
-            : ( <>
-            
+        <Sidebar mainContent={
+            <>
+            {
+                username 
+                ? (<Profile isUsersProfile={false} user={username!} />)
+                : (                 
                     <div className="container flex">
                         <div className="container justify-center" style={{ width: "50%", margin: 'auto' }}>
                             <div className="container flex w-100 m-2" style={{ alignItems: 'center', borderRadius: '0.5rem', border: '1px solid grey', padding: '0.5rem' }}>
@@ -31,14 +34,16 @@ const Follow: FC = () => {
                                 </button>
                             </div>
                             <div className="container body">
-                                <div className="container flex w-100 search-result" onClick={showProfile}>
-                                    <div className="profile img-container title-group small">
-                                        <img src={imgUrl} alt="" />
+                                <Link to="/dashboard/profile/zenz">    
+                                    <div className="container flex w-100 search-result">
+                                        <div className="profile img-container title-group small">
+                                            <img src={imgUrl} alt="" />
+                                        </div>
+                                        <div className="username">
+                                            <span>zenz</span>
+                                        </div>
                                     </div>
-                                    <div className="username">
-                                        <span>zenz</span>
-                                    </div>
-                                </div>
+                                </Link>
                                 <div className="container flex w-100 search-result" onClick={showProfile}>
                                     <div className="profile img-container title-group small">
                                         <img src={imgUrl} alt="" />
@@ -60,10 +65,10 @@ const Follow: FC = () => {
                             </div>
                         </div>
                     </div>
-                </>
-            )
-        }
-        </>
+                )
+            }
+            </>
+        }/>
     )
 };
 

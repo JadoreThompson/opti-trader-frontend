@@ -2,7 +2,8 @@ import { FC, MouseEventHandler, useEffect, useState } from 'react';
 import get from 'axios';
 import { getCookie } from 'typescript-cookie';
 import axios from 'axios';
-import Alert, { AlertTypes } from './Alert';
+import Alert, { AlertTypes } from '../components/Alert';
+import Sidebar from '../components/Sidebar';
 
 
 const LeaderBoard: FC = () => {
@@ -90,7 +91,9 @@ const LeaderBoard: FC = () => {
     }, []);
 
     return (
-        <>
+        <Sidebar mainContent=
+        {   
+            <>
             {
                 showAlert 
                 ? (
@@ -156,7 +159,9 @@ const LeaderBoard: FC = () => {
                     </div>
                 </div>
             </div>
-        </>
+            </>
+        }
+        />
     );
 };
 

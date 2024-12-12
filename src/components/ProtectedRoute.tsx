@@ -5,7 +5,7 @@ import { getCookie } from "typescript-cookie";
 
 const ProtectedRoute: FC<{ element: ReactElement }> = ({ element }) => {
     if (getCookie('jwt')) { return element; }
-    else { return <Navigate to="/auth/login" replace={true} />; }
+    else { return <Navigate to="/auth/login" replace />; }
 };
 
 export default ProtectedRoute;

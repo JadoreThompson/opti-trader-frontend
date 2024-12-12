@@ -888,3 +888,7 @@ button.transparent i {
 .search-result span {
   font-size: 2rem;
 }
+
+.sidebar-icon.active {
+  color: var(--primary-color);
+}
