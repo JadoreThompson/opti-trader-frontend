@@ -1,7 +1,7 @@
-import { FC } from 'react';
+import { FC } from "react";
 
 const PageNotFound: FC = () => {
-    return <h1>404</h1>
+  return <h1>404</h1>;
 };
 
 export default PageNotFound;

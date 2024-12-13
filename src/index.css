@@ -11,9 +11,9 @@
 
   --primary-color: #b796d8;
   --dark-primary-bg-color: #131415;
-  --dark-secondary-bg-color: #1C1D1F;
+  --dark-secondary-bg-color: #1c1d1f;
   --dark-tertiary-bg-color: rgba(37, 39, 41, 1);
-  --dark-text-color: #F3F3F4;
+  --dark-text-color: #f3f3f4;
 }
 
 * {
@@ -42,9 +42,12 @@ i {
   padding: none;
 }
 
-i:hover { cursor: pointer; }
+i:hover {
+  cursor: pointer;
+}
 
-input, select {
+input,
+select {
   width: 100%;
   padding-top: 0.55rem;
   background-color: rgba(0, 0, 0, 0);
@@ -70,7 +73,6 @@ input, select {
   flex-direction: column;
 }
 
-
 @media (min-width: 900px) {
   .left.side {
     flex: 5;
@@ -82,7 +84,6 @@ input, select {
     max-width: 20%;
   }
 }
-
 
 @media (max-width: 900px) {
   .left.side {
@@ -124,16 +125,17 @@ input, select {
 /*------------------------------------*/
 /*------------------------------------*/
 
-input:focus, select:focus {
+input:focus,
+select:focus {
   outline: transparent;
   background-color: rgba(0, 0, 0, 0) !important;
 }
 
 input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus, 
-input:-webkit-autofill:active{
-    -webkit-box-shadow: 0 0 0 30px var(--dark-secondary-bg-color) inset !important;
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px var(--dark-secondary-bg-color) inset !important;
 }
 
 form input,
@@ -238,9 +240,13 @@ button.transparent i {
   margin-left: 0.6rem;
 }
 
-.w-100 { width: 100%; }
+.w-100 {
+  width: 100%;
+}
 
-.justify-center { justify-content: center; }
+.justify-center {
+  justify-content: center;
+}
 
 .circle {
   border-radius: 50%;
@@ -301,7 +307,6 @@ button.transparent i {
   color: var(--primary-color);
 }
 
-
 .chart-card {
   height: auto;
   width: 100%;
@@ -347,13 +352,13 @@ button.transparent i {
   margin-top: 5rem;
 }
 
-@media(max-width: 900px) {
+@media (max-width: 900px) {
   .auth-container .auth-card {
     width: 35%;
   }
 }
 
-.chart-container{
+.chart-container {
   display: flex;
   flex-direction: column;
   height: 30rem;
@@ -370,7 +375,6 @@ button.transparent i {
 
 #orderType:hover {
   box-shadow: 0px 0px 3px 2px var(--primary-color);
-  
 }
 
 #orderType.active {
@@ -474,7 +478,7 @@ button.transparent i {
   text-align: center !important;
 }
 
-@media  (max-width: 900px) {
+@media (max-width: 900px) {
   .table-container td {
     min-width: 100px;
   }
@@ -482,7 +486,7 @@ button.transparent i {
 
 @media (min-width: 900px) {
   .table-container table {
-    table-layout: auto ;
+    table-layout: auto;
     width: 100%;
   }
 
@@ -549,7 +553,7 @@ button.transparent i {
   background-color: transparent;
 }
 
-.pagination-controls button:disabled i{
+.pagination-controls button:disabled i {
   color: grey !important;
 }
 
@@ -587,17 +591,17 @@ button.transparent i {
 
 .table-card .btn:hover,
 .table-card .btn.active {
-  border-radius:  0.5rem;
+  border-radius: 0.5rem;
 }
 
 .table-card .btn.active {
-  border:  1px solid var(--primary-color);
+  border: 1px solid var(--primary-color);
 }
 
 .table-card .table-container {
   width: 100%;
-  max-width: 100%;  
-  overflow-y: auto; 
+  max-width: 100%;
+  overflow-y: auto;
 }
 
 .win {
@@ -649,7 +653,7 @@ button.transparent i {
   justify-content: center;
 }
 
-.overlay-card.following-card .card{
+.overlay-card.following-card .card {
   max-height: 50%;
   overflow-y: auto;
   width: auto;
@@ -660,11 +664,11 @@ button.transparent i {
   width: 20rem;
 }
 
-.overlay-card .card button[type=submit] {
+.overlay-card .card button[type="submit"] {
   background-color: rgb(57, 81, 235);
 }
 
-.overlay-card .card button[type=submit]:hover {
+.overlay-card .card button[type="submit"]:hover {
   background-color: rgb(33, 59, 230);
   transition: 0.1s ease-in;
 }
@@ -685,10 +689,8 @@ button.transparent i {
   margin-bottom: 2rem !important;
 }
 
-@media(max-width: 900px)
-{
-  .leaderboard-container .card
-  {
+@media (max-width: 900px) {
+  .leaderboard-container .card {
     width: 80%;
     overflow-y: auto;
   }
@@ -707,10 +709,8 @@ button.transparent i {
   flex-direction: column;
 }
 
-@media (min-width: 900px)
-{
-  .card.flex .card-title{
-    
+@media (min-width: 900px) {
+  .card.flex .card-title {
     flex-direction: column;
     justify-content: center;
   }
@@ -764,7 +764,7 @@ button.transparent i {
   width: 100%;
 }
 
-@media (min-width: 900px){
+@media (min-width: 900px) {
   .inner-card {
     width: 60%;
     margin: auto;
@@ -786,7 +786,6 @@ button.transparent i {
 .card.flex .card-title > .row:not(:last-of-type) {
   margin-bottom: 3rem;
 }
-
 
 .card.flex .card-title .row.info {
   justify-content: space-between;
@@ -823,7 +822,7 @@ button.transparent i {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  content: '';
+  content: "";
   top: 0;
   left: 0;
   position: absolute;
@@ -833,11 +832,10 @@ button.transparent i {
   filter: brightness(40%);
 }
 
-.inner-card, 
-.inner-card .card.flex, 
+.inner-card,
+.inner-card .card.flex,
 .inner-card .card-title,
-.inner-card .row
-{
+.inner-card .row {
   background-color: transparent;
 }
 
@@ -847,7 +845,7 @@ button.transparent i {
   padding-bottom: 0 !important;
 }
 
-.profile.img-container img{
+.profile.img-container img {
   border-radius: 10rem;
   width: 10rem;
   height: 10rem;
@@ -855,12 +853,10 @@ button.transparent i {
   display: block;
 }
 
-
 .profile.img-container.small img {
   width: 4rem;
   height: 4rem;
 }
-
 
 .title-info-header span {
   color: #bbc0c7;
@@ -876,7 +872,7 @@ button.transparent i {
 }
 
 .overlay-card.edit-profile-card .card .container::before {
-  content: '';
+  content: "";
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
