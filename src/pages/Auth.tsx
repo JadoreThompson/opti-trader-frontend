@@ -34,7 +34,9 @@ const Auth: FC = () => {
             
             setCookie('jwt', data?.token);
             localStorage.setItem('username', data?.username);
+            console.log(data);
             setIsLoggedIn(true);
+            navigate("/dashboard/trade");
         } catch(e)
         {
             console.error(e);

@@ -635,6 +635,7 @@ button.transparent i {
 }
 
 .overlay-card {
+  padding: 1rem;
   background-color: rgba(0, 0, 0, 0.5);
   position: fixed;
   top: 0;
@@ -646,6 +647,12 @@ button.transparent i {
   z-index: 10;
   display: none;
   justify-content: center;
+}
+
+.overlay-card.following-card .card{
+  max-height: 50%;
+  overflow-y: auto;
+  width: auto;
 }
 
 .overlay-card .card {

@@ -1,9 +1,10 @@
-import { FC, ReactElement, useEffect } from 'react';
+import { FC, ReactElement, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 
 const Sidebar: FC<{ mainContent: ReactElement }> = ({ mainContent }) => {
     const location = useLocation();
+    const [username, setUsername] = useState<string | null>(null);
 
     useEffect(() => {
         const options: Record<string, string> = {
@@ -16,6 +17,10 @@ const Sidebar: FC<{ mainContent: ReactElement }> = ({ mainContent }) => {
         document.getElementById(options[location.pathname.split("/")[2]])?.classList.add('active');
 
     }, [location.pathname]);
+
+    useEffect(() => {
+        console.log(localStorage.getItem('username'));
+    }, [])
 
     const rootStyles: Record<string, string> = {
         display: "flex",

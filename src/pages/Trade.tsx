@@ -316,19 +316,18 @@ const Trade: FC = () => {
 
     useEffect(() => {
         const fetchTableData = async () => {
-             try {
-                const { data } = await axios.post(
-                    'http://127.0.0.1:8000/portfolio/orders', 
-                    { order_status: ['filled', 'partially_closed_active'] },
+            try {
+                const { data } = await axios.get(
+                    `http://127.0.0.1:8000/portfolio/orders?${['filled', 'partially_closed_active'].map(item => `order_status=${item}&`)}`,
                     { headers: { 'Authorization': `Bearer ${ getCookie('jwt') }`}},
                 );                 
                 setOpenOrderData(data);
-             } catch(e) {
-                 console.error('Table Fetch Error: ', e);
-             }
+            } catch(e) {
+                console.error('Table Fetch Error: ', e);
+            }
          };
  
-         fetchTableData();
+         fetchTableData();      
      }, []);
 
 

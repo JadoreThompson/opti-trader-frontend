@@ -14,7 +14,6 @@ const App: FC = () => {
     <BrowserRouter>
       <Routes>
         <Route path='/404' element={<PageNotFound />} />
-        <Route index element={<Home />} />
         <Route path="/auth/*" element={<AuthRoutes />} />
         <Route path="/dashboard/*" element={<ProtectedRoute element={<DashboardRoutes />} />} />
       </Routes>

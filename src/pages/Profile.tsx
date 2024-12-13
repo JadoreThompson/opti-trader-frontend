@@ -12,13 +12,17 @@ import Sidebar from '../components/Sidebar';
 const imgUrl: string = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgDw7HXLDZfXQoJReyeHR8IqyPYAp6RWpjs4Dp9MwZ49HoJl2RsXRTGxqnUlzPgtFTbsA7a2upeCQeyPg-2w5qEmpBOxlPkqbfGv48AFW1OyNZ6WIuZt5dI-NVtflu1NPjqE8oJUi4I57oMVtiAStrRnmgjjAf5WQ6_sbd8UYoDhloMBdSRnpIgjY6EdOML/s1920/photo_6291852644980997101_w.jpg";
 
 const Profile: FC = () => {
+    const reqHeader: Record<string, Record<string, string>> = { 
+        headers: { 
+            'Authorization': `Bearer ${getCookie('jwt')}` 
+        } 
+    };
     const { user } = useParams();
     const navigate = useNavigate();
 
-    const [username, setUsername] = useState<string | null>(null);
     const [isUsersProfile, setIsUsersProfile] = useState<boolean | null>(null);
     
-    const [pageNum, setPageNum] = useState<number>(0);
+    const pageNumRef = useRef<number>(0);
     const [followerCount, setFollowerCount] = useState<number | null>(null);
     const [followingCount, setFollowingCount] = useState<number | null>(null);
     const [followers, setFollowers] = useState<Array<string>>([]);
@@ -43,6 +47,19 @@ const Profile: FC = () => {
         else if (styles.display === 'flex') { card.style.display= 'none'; }
     };
 
+
+    const toggleFollowingCard: (
+        e: React.MouseEvent<HTMLButtonElement | HTMLDivElement, MouseEvent> | null
+    ) => void = (e: React.MouseEvent<HTMLButtonElement | HTMLDivElement, MouseEvent> | null): void => {
+        const card = document.querySelector('.overlay-card.following-card') as HTMLElement;
+        const styles = window.getComputedStyle(card);
+        
+        if (styles.display === 'none') { card.style.display= 'flex'; }
+        else if (styles.display === 'flex') { card.style.display= 'none'; pageNumRef.current = 0; }
+    };
+
+
+
     const handleFollowSubmit: (
         e: React.FormEvent<HTMLFormElement>,
         elementPath: string
@@ -57,21 +74,20 @@ const Profile: FC = () => {
             )
         );
         
-        formData['username'] = user;
+        formData['username'] = user!;
 
         try
         {
             await axios.post(
                 "http://127.0.0.1:8000/portfolio/copy",
                 formData,
-                { headers: { 'Authorization': `Bearer ${getCookie('jwt')}` } }
+                reqHeader,
             )
 
             setAlertMessage({
                 message: `You're now following ${user}`,
                 type: AlertTypes.SUCCESS
             });
-            alertCounterRef.current += 1;
             toggleOverlay(null, elementPath);
         } catch(e) {
             if (e instanceof axios.AxiosError)
@@ -85,6 +101,62 @@ const Profile: FC = () => {
             }
         }
     };
+
+    const onVisible: (
+        element: HTMLElement | null, 
+        callback: any
+    ) => void = (element: HTMLElement | null, callback: any): void => {
+        new IntersectionObserver((entries: Array<any>, observer) => {
+            entries.forEach(entry => {
+                if (entry.intersectionRatio > 0) {
+                    callback(element);
+                    observer.disconnect();
+                }
+            })
+        }).observe(element!);
+    };
+
+    useEffect(() => {
+        const card: HTMLElement = (document.querySelector('.overlay-card.following-card .card') as HTMLElement);            
+        
+        const callback: () => void = async (): Promise<void> => {
+            
+            pageNumRef.current += 1;
+            let url = `http://127.0.0.1:8000/accounts/metrics?page=${pageNumRef.current}`;
+            isUsersProfile ? null : url += `&username=${user}`;
+            
+            try
+            {                
+                const { data } = await axios.get(url, reqHeader)
+                let leave: boolean;
+
+                if (showFollowing)
+                {
+                    setFollowing((prev) => {
+                        return [...prev, ...data.following.entities];
+                    })
+                    data.following.entities.length > 0 ? leave = false : leave = true;
+                } else {
+                    setFollowers((prev) => {
+                        return [...prev, ...data.followers.entities];
+                    })
+                    data.followers.entities.length > 0 ? leave = false : leave = true;
+                }
+                
+                !leave ? onVisible(card.querySelector('#footer'), callback) : null;
+            } catch(e)
+            {
+                if (e instanceof axios.AxiosError)
+                {
+                    console.log(e);
+                }
+            }
+
+        }
+        onVisible(card.querySelector('#footer'), callback);
+
+    }, [showFollowing]);
+
 
 
     useEffect(() => {
@@ -105,14 +177,14 @@ const Profile: FC = () => {
             {
                 if (isUsersProfile !== null)
                 {
-                    let url = `http://127.0.0.1:8000/accounts/metrics?page=${pageNum}`;
+                    let url = `http://127.0.0.1:8000/accounts/metrics?page=${pageNumRef.current}`;
                     isUsersProfile ? url = url : url += `&username=${user}`;
-                    console.log(url)
     
                     const { data } = await axios.get(
                         url,
-                        { headers: { 'Authorization': `Bearer ${getCookie('jwt')}` } },
+                        reqHeader
                     )
+
                     setFollowerCount(data?.followers.count);
                     setFollowingCount(data?.following.count);
                     setFollowers(data?.followers.entities);
@@ -224,7 +296,7 @@ const Profile: FC = () => {
                                 <div>
                                     <h1>{ showFollowing ? 'Following' : 'Followers' }</h1>
                                 </div>
-                                <button className="transparent" onClick={(e) => { toggleOverlay(e, '.overlay-card.following-card') }}>
+                                <button className="transparent" onClick={toggleFollowingCard}>
                                     <i className="fa-solid fa-xmark"></i>
                                 </button>
                             </div>
@@ -261,6 +333,7 @@ const Profile: FC = () => {
                                     )
                                 }
                             </div>
+                            <section id="footer"></section>
                         </div>
                     </div>
                 </div>
