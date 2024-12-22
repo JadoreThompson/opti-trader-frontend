@@ -68,9 +68,11 @@ select {
   height: auto;
 }
 
-.left.side {
+.left.side,
+.right.side {
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
 }
 
 @media (min-width: 900px) {
@@ -621,8 +623,13 @@ button.transparent i {
   background-color: rgba(39, 171, 39, 0.192);
 }
 
-.loss {
+.loss,
+.asks {
   background-color: rgba(255, 0, 0, 0.192);
+}
+
+.bids {
+  background-color: rgba(14, 125, 241, 0.192);
 }
 
 .tooltip-container {

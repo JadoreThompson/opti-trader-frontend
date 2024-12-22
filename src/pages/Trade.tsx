@@ -12,6 +12,7 @@ import { getCookie } from "typescript-cookie";
 // Local
 import Alert, { AlertTypes } from "../components/Alert";
 import DashboardLayout from "../components/DashboardLayout";
+import DOM from "../components/DOM";
 import OrderTable from "../components/OrdersTable";
 import Sidebar from "../components/Sidebar";
 import {
@@ -247,10 +248,16 @@ const Trade: FC = () => {
       if (socketMessage?.category === SocketMessageCategory.PRICE) {
         updateChartPrice(socketMessage?.details);
         return;
-      } else if (
-        socketMessage?.category === SocketMessageCategory.ORDER_UPDATE
-      ) {
+      }
+
+      if (socketMessage?.category === SocketMessageCategory.ORDER_UPDATE) {
         alterOrder(socketMessage.details);
+        return;
+      }
+
+      if (socketMessage?.category === SocketMessageCategory.DOM) {
+        setDomAsks(socketMessage.details["asks"]);
+        setDomBids(socketMessage.details["bids"]);
         return;
       }
 
@@ -382,13 +389,14 @@ const Trade: FC = () => {
       (
         document.querySelector(".modify-order-card") as HTMLElement
       ).style.display = "none";
-      // document.querySelector("");
     }
   };
 
   const [openOrderData, setOpenOrderData] = useState<
     Array<Record<string, null | number | string>>
   >([]);
+  const [domAsks, setDomAsks] = useState<Record<number, number>>({});
+  const [domBids, setDomBids] = useState<Record<number, number>>({});
 
   useEffect(() => {
     const fetchTableData = async () => {
@@ -456,88 +464,91 @@ const Trade: FC = () => {
               </>
             }
             rightContent={
-              <div className="card">
-                <form id="orderForm" onSubmit={formSubmit}>
-                  <input
-                    type="text"
-                    name="ticker"
-                    placeholder="Ticker"
-                    value="APPL"
-                    pattern="[A-Za-z]+"
-                    readOnly
-                  />
-                  <input
-                    type="number"
-                    name="quantity"
-                    placeholder="Quantity"
-                    required
-                  />
-                  <input
-                    type="number"
-                    name="take_profit"
-                    placeholder="Take Profit"
-                  />
-                  <input
-                    type="number"
-                    name="stop_loss"
-                    placeholder="Stop Loss"
-                  />
-                  <button
-                    type="button"
-                    id="orderType"
-                    className="container"
-                    onClick={toggleOrderTypes}
-                  >
-                    Market Order
-                  </button>
-                  <div
-                    className="options-container container"
-                    style={{ display: showOrderTypes ? "block" : "none" }}
-                  >
-                    <div className="option">
-                      <button
-                        onClick={selectOrderType}
-                        type="button"
-                        value={OrderType.MARKET_ORDER}
-                      >
-                        Market Order
-                      </button>
-                    </div>
-                    <div className="option">
-                      <button
-                        onClick={selectOrderType}
-                        type="button"
-                        value={OrderType.LIMIT_ORDER}
-                      >
-                        Limit Order
-                      </button>
-                    </div>
-                    <div className="option">
-                      <button
-                        onClick={selectOrderType}
-                        type="button"
-                        value={OrderType.CLOSE_ORDER}
-                      >
-                        Close Order
-                      </button>
-                    </div>
-                  </div>
-                  <div
-                    className="container limit-options"
-                    style={{ display: showLimitOptions ? "block" : "none" }}
-                  >
+              <>
+                <div className="card">
+                  <form id="orderForm" onSubmit={formSubmit}>
+                    <input
+                      type="text"
+                      name="ticker"
+                      placeholder="Ticker"
+                      value="APPL"
+                      pattern="[A-Za-z]+"
+                      readOnly
+                    />
                     <input
                       type="number"
-                      name="limit_price"
-                      placeholder="Limit Price"
-                      required={showLimitOptions}
+                      name="quantity"
+                      placeholder="Quantity"
+                      required
                     />
-                  </div>
-                  <button type="submit" className="btn btn-primary">
-                    Open Order
-                  </button>
-                </form>
-              </div>
+                    <input
+                      type="number"
+                      name="take_profit"
+                      placeholder="Take Profit"
+                    />
+                    <input
+                      type="number"
+                      name="stop_loss"
+                      placeholder="Stop Loss"
+                    />
+                    <button
+                      type="button"
+                      id="orderType"
+                      className="container"
+                      onClick={toggleOrderTypes}
+                    >
+                      Market Order
+                    </button>
+                    <div
+                      className="options-container container"
+                      style={{ display: showOrderTypes ? "block" : "none" }}
+                    >
+                      <div className="option">
+                        <button
+                          onClick={selectOrderType}
+                          type="button"
+                          value={OrderType.MARKET_ORDER}
+                        >
+                          Market Order
+                        </button>
+                      </div>
+                      <div className="option">
+                        <button
+                          onClick={selectOrderType}
+                          type="button"
+                          value={OrderType.LIMIT_ORDER}
+                        >
+                          Limit Order
+                        </button>
+                      </div>
+                      <div className="option">
+                        <button
+                          onClick={selectOrderType}
+                          type="button"
+                          value={OrderType.CLOSE_ORDER}
+                        >
+                          Close Order
+                        </button>
+                      </div>
+                    </div>
+                    <div
+                      className="container limit-options"
+                      style={{ display: showLimitOptions ? "block" : "none" }}
+                    >
+                      <input
+                        type="number"
+                        name="limit_price"
+                        placeholder="Limit Price"
+                        required={showLimitOptions}
+                      />
+                    </div>
+                    <button type="submit" className="btn btn-primary">
+                      Open Order
+                    </button>
+                  </form>
+                </div>
+                <DOM asks={domAsks} bids={domBids} />
+              </>
             }
           />
         </>

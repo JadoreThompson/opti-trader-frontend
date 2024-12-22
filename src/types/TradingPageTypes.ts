@@ -9,9 +9,7 @@ export enum SocketMessageCategory {
     ORDER_UPDATE = 'order_update',
     PRICE = 'price',
     ERROR = 'error',
-    // MARKET = 'market_order',
-    // CLOSE = 'close_order',
-    // LIMIT = 'limit_order',
+    DOM = 'dom',
 }
 
 export enum IntervalEnum {
