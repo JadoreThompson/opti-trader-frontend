@@ -4,12 +4,14 @@ export enum OrderType {
     CLOSE_ORDER = 'close_order',
 }
 
-export enum SocketMessageType {
+export enum SocketMessageCategory {
+    SUCCESS = 'success',
+    ORDER_UPDATE = 'order_update',
     PRICE = 'price',
-    MARKET = 'market_order',
-    CLOSE = 'close_order',
-    LIMIT = 'limit_order',
-    ERROR = 'error'
+    ERROR = 'error',
+    // MARKET = 'market_order',
+    // CLOSE = 'close_order',
+    // LIMIT = 'limit_order',
 }
 
 export enum IntervalEnum {

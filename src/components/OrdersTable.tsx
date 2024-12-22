@@ -32,6 +32,7 @@ const openOrderTableHeaders: Record<string, string> = {
     quantity: 'Quantity',
     price: 'Price',
     filled_price: 'Filled Price',
+    unrealised_pnl: 'Unrealised PnL',
     stop_loss: 'Stop Loss',
     take_profit: 'Take Profit',
     limit_price: 'Limit Price',

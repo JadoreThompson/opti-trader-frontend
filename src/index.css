@@ -131,6 +131,17 @@ select:focus {
   background-color: rgba(0, 0, 0, 0) !important;
 }
 
+input[type='file'] {
+  appearance: none;
+  width: 100%;
+}
+
+input[type='file']::-webkit-file-upload-button,
+input[type='file']::file-selector-button {
+  visibility: hidden;
+}
+
+
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
@@ -186,8 +197,8 @@ td {
 }
 
 button.transparent {
-  border: none;
-  background-color: transparent;
+  border: none !important;
+  background-color: transparent !important;
   width: auto !important;
   padding: 0 !important;
   margin: 0;
@@ -205,6 +216,8 @@ button.transparent i {
   border-radius: 1rem;
   background-color: var(--dark-secondary-bg-color);
   align-self: flex-start;
+  min-width: 0;
+  min-height: 0;
 }
 
 .card .card-footer {
@@ -910,4 +923,53 @@ button.transparent i {
 .legend-btn {
   border-radius: 0.25rem;
   border: none;
+}
+
+.card.onboarding {
+  width: 50%;
+  min-height: 50% !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1rem 4rem 1rem;
+}
+
+.card.onboarding .card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4rem;
+}
+
+.card.onboarding .card-footer {
+  display: flex;
+  flex-direction: column;
+  margin-top: 2rem;
+  width: 80%;
+  gap: 1rem;
+}
+
+@media (min-width: 900px) {
+  .card.onboarding .card-footer {
+    width: 50%;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 900px)
+{
+  .card.onboarding .card-body .onboard-msg h1{
+    text-align: left !important;
+  }
+}
+
+
+.card.onboarding i {
+  font-size: 4rem;
+}
+
+.card.onboarding p {
+  color: grey;
 }

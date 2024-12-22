@@ -18,7 +18,7 @@ import {
   IntervalEnum,
   IntervalType,
   OrderType,
-  SocketMessageType,
+  SocketMessageCategory,
 } from "../types/TradingPageTypes";
 
 const Trade: FC = () => {
@@ -138,17 +138,21 @@ const Trade: FC = () => {
   const [alertMessage, setAlertMessage] = useState<string>("");
   const [alertCounter, setAlertCounter] = useState<number>(0);
 
-  const displayAlert = (message: string, messageType: string): void => {
-    if (Object.values(AlertTypes).includes(messageType)) {
-      setAlertMessage(message);
-      setAlertType(messageType as AlertTypes);
-      setAlertCounter((prev) => prev + 1);
+  const displayAlert: (msg: string, msgType: AlertTypes) => void = (
+    msg: string,
+    msgType: AlertTypes
+  ): void => {
+    if (!msgType) {
+      return;
     }
+    setAlertMessage(msg);
+    setAlertType(msgType);
+    setAlertCounter((prev) => prev + 1);
   };
 
   const updateChartPrice = (data: Record<string, any>): void => {
-    const newPrice = data.message.price;
-    const newTime = data.message.time;
+    const newPrice = data.price;
+    const newTime = data.time;
 
     if (candlestickSeriesRef.current) {
       let lastCandle =
@@ -189,43 +193,37 @@ const Trade: FC = () => {
     }
   };
 
-  const updateOrders: (data: Record<string, any>) => void = (
+  const addOrderToTable: (data: Record<string, any>) => void = (
     data: Record<string, any>
   ): void => {
-    const messageDetails = data.details;
-    const messageType = data.internal;
-
-    if (
-      messageType == SocketMessageType.MARKET ||
-      messageType == SocketMessageType.LIMIT
-    ) {
-      setOpenOrderData((prev) => {
-        const prevData = [...prev];
-        prevData.push(messageDetails);
-        return prevData;
-      });
-    } else if (messageType == SocketMessageType.CLOSE) {
-      console.log(data);
-      if (messageDetails["order_status"] === "closed") {
-        setOpenOrderData((prev) => {
-          let prevData = [...prev];
-          prevData = prevData.filter(
-            (item) => item.order_id != messageDetails.order_id
-          );
-          return prevData;
-        });
-      } else if (messageDetails["order_status"] === "partially_closed_active") {
-        setOpenOrderData((prev) => {
-          let prevData = [...prev];
-          prevData = prevData.map((item) =>
-            item["order_id"] === messageDetails["order_id"]
-              ? (item = messageDetails)
-              : null
-          );
-          return prevData;
-        });
-      }
+    if (!data) {
+      return;
     }
+
+    setOpenOrderData((prev) => {
+      let orders = [...prev];
+      orders.push(data);
+      return orders;
+    });
+  };
+
+  const alterOrder: (data: Record<string, any>) => void = (
+    data: Record<string, any>
+  ): void => {
+    setOpenOrderData((prev) => {
+      if (data["order_status"] === "closed") {
+        return [...prev].filter(
+          (item) => item["order_id"] !== data["order_id"]
+        );
+      }
+
+      return [...prev].map((order) => {
+        if (order.order_id === data["order_id"]) {
+          return data;
+        }
+        return order;
+      });
+    });
   };
 
   useEffect(() => {
@@ -237,34 +235,47 @@ const Trade: FC = () => {
     };
 
     socketRef.current.onclose = (e): void => {
-      console.log("Socket closed: ", e.reason);
+      setAlertMessage("Connection to server lost");
+      setAlertType(AlertTypes.ERROR);
+      setAlertCounter((prev) => prev + 1);
     };
 
     socketRef.current.onmessage = (e): void => {
       const socketMessage = JSON.parse(e.data);
       console.log("Socket msg: ", socketMessage);
 
-      displayAlert(socketMessage.message, socketMessage.status as AlertTypes);
-
-      if (socketMessage.status == SocketMessageType.ERROR) {
+      if (socketMessage?.category === SocketMessageCategory.PRICE) {
+        updateChartPrice(socketMessage?.details);
+        return;
+      } else if (
+        socketMessage?.category === SocketMessageCategory.ORDER_UPDATE
+      ) {
+        alterOrder(socketMessage.details);
         return;
       }
 
-      if (socketMessage.status == SocketMessageType.PRICE) {
-        updateChartPrice(socketMessage);
+      displayAlert(
+        socketMessage?.message,
+        socketMessage?.category as AlertTypes
+      );
+
+      if (socketMessage?.category === SocketMessageCategory.ERROR) {
         return;
       }
 
       try {
-        const action: Record<string, (data: Record<string, any>) => void> = {
-          [SocketMessageType.MARKET]: updateOrders,
-          [SocketMessageType.CLOSE]: updateOrders,
+        const actions: Record<string, (data: Record<string, any>) => void> = {
+          [SocketMessageCategory.SUCCESS]: addOrderToTable,
+          [SocketMessageCategory.ORDER_UPDATE]: alterOrder,
         };
-        action[socketMessage?.internal as SocketMessageType](socketMessage);
-      } catch (e) {
-        if (!(e instanceof TypeError)) {
-          throw e;
+
+        const category = socketMessage.category as SocketMessageCategory;
+        if (category) {
+          const action = actions[category];
+          action(socketMessage.details);
         }
+      } catch (e) {
+        console.error(e);
       }
     };
 
@@ -371,7 +382,7 @@ const Trade: FC = () => {
       (
         document.querySelector(".modify-order-card") as HTMLElement
       ).style.display = "none";
-      document.querySelector("");
+      // document.querySelector("");
     }
   };
 
@@ -386,7 +397,9 @@ const Trade: FC = () => {
           `http://127.0.0.1:8000/portfolio/orders?${[
             "filled",
             "partially_closed_active",
-          ].map((item) => `order_status=${item}&`)}`,
+          ]
+            .map((item) => `order_status=${item}`)
+            .join("&")}`,
           { headers: { Authorization: `Bearer ${getCookie("jwt")}` } }
         );
         setOpenOrderData(data);

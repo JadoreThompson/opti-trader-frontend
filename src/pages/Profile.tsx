@@ -443,7 +443,7 @@ const Profile: FC = () => {
                       <input
                         type="text"
                         value={user}
-                        onChange={(e) => setUsername(e.target.value)}
+                        // onChange={(e) => setUsername(e.target.value)}
                       />
                     </form>
                   </div>

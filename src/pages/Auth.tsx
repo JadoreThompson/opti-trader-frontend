@@ -1,19 +1,18 @@
 import axios from "axios";
 import { FC, useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getCookie, setCookie } from "typescript-cookie";
+import Login from "./Login";
+import Register from "./Register";
 
 const Auth: FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [isRegistering, setIsRegistering] = useState<boolean>(false);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (isLoggedIn) {
-      navigate("/dashboard/trade");
-    }
-  }, [isLoggedIn]);
+  const [isRegistering, setIsRegistering] = useState<boolean | null>(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [showTokenBox, setShowTokenBox] = useState<boolean>(false);
+  const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
 
   useEffect(() => {
     if (location.pathname === "/auth/register") {
@@ -23,29 +22,60 @@ const Auth: FC = () => {
     }
   }, [location.pathname]);
 
-  const handleSubmit: (arg: React.FormEvent<HTMLFormElement>) => void = async (
+  const loginHandler: (arg: React.FormEvent<HTMLFormElement>) => void = async (
     e: React.FormEvent<HTMLFormElement>
   ): Promise<void> => {
     e.preventDefault();
     const formData = Object.fromEntries(
       new FormData(e.target as HTMLFormElement)
     );
-    const header: Record<string, Record<string, string>> = {
-      headers: { Authorization: `Bearer ${getCookie("jwt")}` },
-    };
-    const url: string = isRegistering
-      ? "http://127.0.0.1:8000/accounts/register"
-      : "http://127.0.0.1:8000/accounts/login";
 
     try {
-      const { data } = await axios.post(url, formData, header);
+      const { data } = await axios.post(
+        "http://127.0.0.1:8000/accounts/login",
+        formData,
+        { headers: { Authorization: `Bearer ${getCookie("jwt")}` } }
+      );
 
       setCookie("jwt", data?.token);
       localStorage.setItem("username", data?.username);
-      console.log(data);
-      setIsLoggedIn(true);
       navigate("/dashboard/trade");
     } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const registerHandler: (
+    arg: React.FormEvent<HTMLFormElement>
+  ) => Promise<void> = async (
+    e: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
+    e.preventDefault();
+    const formData = Object.fromEntries(
+      new FormData(e.target as HTMLFormElement)
+    );
+
+    try {
+      if (!showTokenBox) {
+        await axios.post("http://127.0.0.1:8000/accounts/register", formData);
+        setShowTokenBox(true);
+      } else {
+        console.log(formData);
+        const { data } = await axios.post(
+          "http://127.0.0.1:8000/accounts/authenticate",
+          formData
+        );
+
+        
+        setCookie("jwt", data?.token);
+        localStorage.setItem("username", data?.username);
+        setShowOnboarding(true);
+      }
+    } catch (e) {
+      if (e instanceof axios.AxiosError) {
+        document.getElementById("errorMessage")!.textContent =
+          e.response?.data.error;
+      }
       console.error(e);
     }
   };
@@ -53,64 +83,13 @@ const Auth: FC = () => {
   return (
     <>
       {isRegistering ? (
-        <>
-          <div className="container auth-container">
-            <div className="card auth-card">
-              <div className="card-title">
-                <h1>Register</h1>
-              </div>
-              <form id="registerForm" onSubmit={handleSubmit}>
-                <input type="text" name="username" placeholder="Username" />
-                <input type="text" name="email" placeholder="Email" />
-                <input type="text" name="password" placeholder="Password" />
-                <button type="submit" className="btn btn-primary">
-                  Register
-                </button>
-              </form>
-              <div className="card-footer">
-                <p>
-                  Already have an account?{" "}
-                  <Link to="/auth/login" replace={true}>
-                    login
-                  </Link>
-                </p>
-                <p style={{ color: "red" }} id="errorMessage"></p>
-              </div>
-            </div>
-          </div>
-        </>
+        <Register
+          submitHandler={registerHandler}
+          showTokenBox={showTokenBox}
+          showOnboarding={showOnboarding}
+        />
       ) : (
-        <>
-          <div className="container auth-container">
-            <div className="card auth-card">
-              <div className="card-title">
-                <h1>Login</h1>
-              </div>
-              <form id="loginForm" onSubmit={handleSubmit}>
-                <input type="text" name="email" placeholder="Email" required />
-                <input
-                  type="text"
-                  name="password"
-                  placeholder="Password"
-                  required
-                />
-                <button className="btn btn-primary">Login</button>
-              </form>
-              <div className="card-footer">
-                <p>
-                  Don't have an account?{" "}
-                  <Link to="/auth/register" replace={true}>
-                    Register
-                  </Link>
-                </p>
-                <p
-                  style={{ color: "red", textAlign: "center" }}
-                  id="errorMessage"
-                ></p>
-              </div>
-            </div>
-          </div>
-        </>
+        <Login handleSubmit={loginHandler} />
       )}
     </>
   );
