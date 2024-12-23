@@ -31,7 +31,7 @@ const TableBody: FC<TableBodyOptions> = ({ orders, tableIndex, maxRows, tableHea
       {tableData.map((order, index) => (
         <tr key={index} data-key={order.order_id}>
             {Object.keys(tableHeaders).map((key) => (
-                <td key={key} data-key={key} className={key === 'realised_pnl' ? (order[key] > 0 ? 'win': 'loss') : ''}>
+                <td key={key} data-key={key} className={key === 'realised_pnl' || key === 'unrealised_pnl' ? (order[key] > 0 ? 'win': 'loss') : ''}>
                     {key === 'realised_pnl' ? `$${order[key]}`: order[key]}
                 </td>
             ))}
@@ -43,10 +43,6 @@ const TableBody: FC<TableBodyOptions> = ({ orders, tableIndex, maxRows, tableHea
                         <button onClick={displayOrderModifier} style={{ backgroundColor: 'transparent', border: 'none'}} className="tooltip-icon">
                             <i className="fa-solid fa-pencil"></i>
                         </button>
-                    </div>
-                    <div className="tooltip-container">        
-                        <span className="tooltip">Close</span>
-                        <i className="tooltip-icon fa-solid fa-xmark"></i>
                     </div>
                 </td>
             ) : (null)}

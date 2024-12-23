@@ -1,5 +1,6 @@
 import { FC, useState, useEffect, useRef } from "react";
 import TableBody from "./TableBody";
+import { quantity } from "echarts/types/src/util/number.js";
 
 interface orderTableOptions {
     showClosed: boolean,
@@ -31,12 +32,14 @@ const openOrderTableHeaders: Record<string, string> = {
     quantity: 'Quantity',
     price: 'Price',
     filled_price: 'Filled Price',
+    unrealised_pnl: 'Unrealised PnL',
     stop_loss: 'Stop Loss',
     take_profit: 'Take Profit',
     limit_price: 'Limit Price',
     created_at: 'Open Time',
     order_status: 'Order Status'
 };
+
 
 
 const BASE_URL = 'http://127.0.0.1:8000';
@@ -52,6 +55,10 @@ const OrderTable: FC<orderTableOptions>  =
         const [maxClosedOrderPages, setMaxCloseTablePages] = useState<number>(0);
         const [maxOpenOrderPages, setMaxOpenTablePages] = useState<number>(0);
         const [tableIndex, setTableIndex] = useState<number | null>(null);
+        const [filterOption, setFilterOption] = useState<number>(0);
+        const [filterTarget, setFilterTarget] = useState<string | null>(null);
+        const [orders, setOrders] = useState<Array<Record<string, any>>>([]);
+        
         const maxTableRows: number = 10;
 
         const nextPageHandler = () => { 
@@ -94,17 +101,41 @@ const OrderTable: FC<orderTableOptions>  =
         useEffect(() => {
             const maxPageConfig = () => {
                 if (showClosed) {
+                    setOrders(closedOrders!);
                     setMaxCloseTablePages(Math.ceil(closedOrders!.length / maxTableRows));
                 } else {
+                    setOrders(openOrders!);
                     setMaxOpenTablePages(Math.ceil(openOrders!.length / maxTableRows));
                 }
             }
             maxPageConfig();
         }, [closedOrders, openOrders]);
+
+        const sortData = (key: string) => {
+            let sortedOrders;
+            filterTarget === key 
+                ? (filterOption === 0 ? setFilterOption(1) : setFilterOption(0)) 
+                : setFilterOption(0);
+            
+            setFilterTarget(key);
+
+            if (['closed_at', 'created_at'].includes(key!)) {
+                setOrders(sortedOrders = [...orders].sort((a, b) => new Date(a[key!]).getTime() - new Date(b[key!]).getTime()));
+                
+            } else {
+                setOrders(sortedOrders = [...orders].sort((a, b) => a[key!] - b[key!]));
+            }
+
+            filterOption === 1 ? setOrders(sortedOrders.reverse()) : setOrders(sortedOrders);
+        };
+
+        const enableFilter = (e: React.PointerEvent<HTMLTableCellElement>): void => {
+            sortData((e.target as HTMLElement).getAttribute('data-key') as string);
+        }
         
 
         return <>
-            <div className="modify-order-card">
+            <div className="modify-order-card overlay-card">
                 <div className="container">
                     <div className="card">
                         <div className="card-title">
@@ -133,13 +164,27 @@ const OrderTable: FC<orderTableOptions>  =
                             <table>
                                 <thead>
                                     <tr>
-                                        {Object.values(closedOrderTableHeaders).map((value) => (
-                                            <th key={value}>{value}</th>
+                                        {Object.entries(closedOrderTableHeaders).map(([key, value]) => (
+                                            <th onPointerDown={enableFilter} key={key} data-key={key}>
+                                                {value}
+                                                {
+                                                    filterTarget === key
+                                                    ? (
+                                                        
+                                                            filterOption === 0
+                                                            ? (<i className="fa-solid fa-arrow-down toggle-icon"></i>)
+                                                            : (<i className="fa-solid fa-arrow-up toggle-icon"></i>)
+                                                        
+                                                    ) : (
+                                                        null
+                                                    )
+                                                }
+                                            </th>
                                         ))}
                                     </tr>
                                 </thead>
                                 <TableBody 
-                                    orders={closedOrders}
+                                    orders={orders}
                                     tableIndex={tableIndex!}
                                     maxRows={maxTableRows}
                                     tableHeaders={closedOrderTableHeaders}
@@ -151,14 +196,27 @@ const OrderTable: FC<orderTableOptions>  =
                             <table>
                                 <thead>
                                     <tr>
-                                        {Object.values(openOrderTableHeaders).map((value) => (
-                                            <th key={value}>{value}</th>
+                                        {Object.entries(openOrderTableHeaders).map(([key, value]) => (
+                                            <th onPointerDown={enableFilter} key={key} data-key={key}>
+                                                {value}
+                                                {
+                                                    filterTarget === key
+                                                    ? (
+                                                        
+                                                            filterOption === 0
+                                                            ? (<i className="fa-solid fa-arrow-down toggle-icon"></i>)
+                                                            : (<i className="fa-solid fa-arrow-up toggle-icon"></i>)
+                                                        
+                                                    ) : (
+                                                        null
+                                                    )
+                                                }
+                                            </th>
                                         ))}
-                                        <th></th>
                                     </tr>
                                 </thead>
                                 <TableBody 
-                                    orders={openOrders}
+                                    orders={orders}
                                     tableIndex={tableIndex!} 
                                     maxRows={maxTableRows} 
                                     tableHeaders={openOrderTableHeaders}
