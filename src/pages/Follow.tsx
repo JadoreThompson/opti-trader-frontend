@@ -23,7 +23,6 @@ const Follow: FC = () => {
   const handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void = async (
     e: React.ChangeEvent<HTMLInputElement>
   ): Promise<void> => {
-    console.log("handle called");
     try {
       const { data } = await axios.get(
         `http://127.0.0.1:8000/accounts/search?prefix=${e.target.value}`,
@@ -43,18 +42,12 @@ const Follow: FC = () => {
     new IntersectionObserver((entries: Array<any>, observer) => {
       entries.forEach((entry) => {
         if (entry.intersectionRatio > 0) {
-          console.log("end");
           callback();
           observer.disconnect();
         }
       });
     }).observe(element!);
   };
-
-  // useEffect(() => {
-  //   const element = document.getElementById('root') as HTMLElement;
-  //   // element.style.overflow = 'hidden';
-  // }, []);
 
   useEffect(() => {
     const element: HTMLElement = document.querySelector(

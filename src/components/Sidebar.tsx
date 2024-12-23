@@ -18,10 +18,6 @@ const Sidebar: FC<{ mainContent: ReactElement }> = ({ mainContent }) => {
 
     }, [location.pathname]);
 
-    useEffect(() => {
-        console.log(localStorage.getItem('username'));
-    }, [])
-
     const rootStyles: Record<string, string> = {
         display: "flex",
         flexDirection: 'row',

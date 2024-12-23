@@ -409,13 +409,9 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
               }`,
             { headers: { Authorization: `Bearer ${getCookie("jwt")}` } }
           );
-
-          console.log("Performance Data: ", data);
-
           setStats(data);
         } catch (e) {
           console.error("Performance Error: ", e);
-          console.log("Performance error, current stats: ", stats);
         }
       }
     };

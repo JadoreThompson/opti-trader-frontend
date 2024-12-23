@@ -11,7 +11,7 @@ const Auth: FC = () => {
 
   const [isRegistering, setIsRegistering] = useState<boolean | null>(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  const [showTokenBox, setShowTokenBox] = useState<boolean>(false);
+  const [showTokenBox, setShowTokenBox] = useState<boolean>(true);
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
 
   useEffect(() => {
@@ -60,13 +60,10 @@ const Auth: FC = () => {
         await axios.post("http://127.0.0.1:8000/accounts/register", formData);
         setShowTokenBox(true);
       } else {
-        console.log(formData);
         const { data } = await axios.post(
           "http://127.0.0.1:8000/accounts/authenticate",
           formData
         );
-
-        
         setCookie("jwt", data?.token);
         localStorage.setItem("username", data?.username);
         setShowOnboarding(true);
