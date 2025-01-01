@@ -6,6 +6,7 @@ import Follow from "../pages/Follow";
 import Leaderboard from "../pages/Leaderboard";
 import Profile from "../pages/Profile";
 import Trade from "../pages/Trade";
+import Pairs from "../pages/Pairs";
 
 const DashboardRoutes: FC = () => {
   return (
@@ -14,6 +15,7 @@ const DashboardRoutes: FC = () => {
       <Route path="follow" element={<Follow />} />
       <Route path="leaderboard" element={<Leaderboard />} />
       <Route path="trade" element={<Trade />} />
+      <Route path="pairs" element={<Pairs />}/>
     </Routes>
   );
 };

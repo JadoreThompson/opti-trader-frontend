@@ -44,22 +44,22 @@ const Sidebar: FC<{ mainContent: ReactElement }> = ({ mainContent }) => {
             <div style={rootStyles}>
                 <div className="sidebar" style={sidebarStyles}>
                     <div className="sidebar-icon-container">
-                        <Link to={`/dashboard/profile/${localStorage.getItem('username')}`}>
+                        <Link to={`/profile/${localStorage.getItem('username')}`}>
                             <i className="fa-solid fa-user sidebar-icon" id="profile" />
                         </Link>
                     </div>
                     <div className="sidebar-icon-container">
-                        <Link to="/dashboard/trade">
+                        <Link to="/trade">
                             <i className="fa-solid fa-chart-line sidebar-icon" id="trade" />
                         </Link>
                     </div>
                     <div className="sidebar-icon-container">
-                        <Link to="/dashboard/leaderboard">
+                        <Link to="/leaderboard">
                             <i className="fa-solid fa-trophy sidebar-icon" id='leaderboard'/>
                         </Link>
                     </div>
                     <div className="sidebar-icon-container">
-                        <Link to="/dashboard/follow">
+                        <Link to="/follow">
                             <i className="fa-solid fa-user-plus sidebar-icon" id='follow'/>
                         </Link>
                     </div>

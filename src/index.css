@@ -133,16 +133,15 @@ select:focus {
   background-color: rgba(0, 0, 0, 0) !important;
 }
 
-input[type='file'] {
+input[type="file"] {
   appearance: none;
   width: 100%;
 }
 
-input[type='file']::-webkit-file-upload-button,
-input[type='file']::file-selector-button {
+input[type="file"]::-webkit-file-upload-button,
+input[type="file"]::file-selector-button {
   visibility: hidden;
 }
-
 
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
@@ -965,13 +964,11 @@ button.transparent i {
   }
 }
 
-@media (max-width: 900px)
-{
-  .card.onboarding .card-body .onboard-msg h1{
+@media (max-width: 900px) {
+  .card.onboarding .card-body .onboard-msg h1 {
     text-align: left !important;
   }
 }
-
 
 .card.onboarding i {
   font-size: 4rem;
@@ -979,4 +976,10 @@ button.transparent i {
 
 .card.onboarding p {
   color: grey;
+}
+
+.pairs-container .card-body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

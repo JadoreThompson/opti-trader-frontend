@@ -105,7 +105,7 @@ const Follow: FC = () => {
               />
             </div>
             {users.map((user) => (
-              <Link key={user} to={`/dashboard/profile/${user}`}>
+              <Link key={user} to={`/profile/${user}`}>
                 <div className="container flex w-100 search-result">
                   <div className="profile img-container title-group small">
                     <img src="#" />
