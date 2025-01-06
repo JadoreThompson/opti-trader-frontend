@@ -39,7 +39,7 @@ const Auth: FC = () => {
 
       setCookie("jwt", data?.token);
       localStorage.setItem("username", data?.username);
-      navigate("/dashboard/trade");
+      navigate("/trade");
     } catch (e) {
       console.error(e);
     }

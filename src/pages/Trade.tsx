@@ -139,6 +139,8 @@ const Trade: FC = () => {
   const [alertMessage, setAlertMessage] = useState<string>("");
   const [alertCounter, setAlertCounter] = useState<number>(0);
 
+  const [marketType, setMarketType] = useState<string>("spot");
+
   const displayAlert: (msg: string, msgType: AlertTypes) => void = (
     msg: string,
     msgType: AlertTypes
@@ -345,7 +347,7 @@ const Trade: FC = () => {
     }
   };
 
-  const formSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const orderFormSubmitHandler = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     let payload: Record<string, any> = {};
@@ -364,9 +366,11 @@ const Trade: FC = () => {
     );
 
     payload["type"] = selectedOrderType;
-    payload[selectedOrderType] = orderData;
-
+    payload["market_type"] = marketType;
+    payload = { ...payload, ...orderData };
+    
     if (isConnected && socketRef?.current) {
+      console.log("Payload: ", payload);
       socketRef.current.send(JSON.stringify(payload));
       (e.target as HTMLFormElement).reset();
     }
@@ -466,7 +470,7 @@ const Trade: FC = () => {
             rightContent={
               <>
                 <div className="card">
-                  <form id="orderForm" onSubmit={formSubmit}>
+                  <form id="orderForm" onSubmit={orderFormSubmitHandler}>
                     <input
                       type="text"
                       name="ticker"
