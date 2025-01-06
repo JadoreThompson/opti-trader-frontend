@@ -22,6 +22,7 @@ import {
   OrderType,
   SocketMessageCategory,
 } from "../types/Trade";
+import LightDarkSwitch from "../components/SiteThemeSwitch";
 
 const Trade: FC = () => {
   let chart;
@@ -429,7 +430,7 @@ const Trade: FC = () => {
     const fetchTableData = async () => {
       try {
         const { data } = await axios.get(
-          `http://127.0.0.1:8000/portfolio/orders?${[
+          `http://127.0.0.1:8000/portfolio/orders?market_type=${marketType}&${[
             "filled",
             "partially_closed_active",
           ]
@@ -444,219 +445,222 @@ const Trade: FC = () => {
     };
 
     fetchTableData();
-  }, []);
+  }, [marketType]);
 
   /* --------------------
         Return Content
     -------------------- */
 
   return (
-    <Sidebar
-      mainContent={
-        <>
-          <Alert
-            message={alertMessage}
-            type={alertType}
-            counter={alertCounter}
-          />
-          <DashboardLayout
-            leftContent={
-              <>
-                <div className="chart-card card">
-                  <div className="btn-container">
-                    {Object.values(IntervalEnum).map((value) => (
-                      <button
-                        key={value}
-                        className={`btn btn-secondary ${
-                          value === "1m" ? "active" : ""
-                        }`}
-                        value={value}
-                        onClick={changeTimeFrame}
-                      >
-                        {value}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="chart-container">
-                    <div id="chart-container" className="chart"></div>
-                  </div>
-                  <div className="card-footer"></div>
-                </div>
-                <OrderTable
-                  showClosed={false}
-                  openOrders={openOrderData}
-                  orderIdRef={orderIdRef}
-                  formSubmissionHandler={modifyFormHandler}
-                />
-              </>
-            }
-            rightContent={
-              <>
-                <div className="card">
-                  <form id="orderForm" onSubmit={orderFormSubmitHandler}>
-                    <input
-                      type="text"
-                      name="ticker"
-                      placeholder="Ticker"
-                      value="APPL"
-                      pattern="[A-Za-z]+"
-                      readOnly
-                    />
-                    <input
-                      type="number"
-                      name="quantity"
-                      placeholder="Quantity"
-                      required
-                    />
-                    <input
-                      type="number"
-                      name="take_profit"
-                      placeholder="Take Profit"
-                    />
-                    <input
-                      type="number"
-                      name="stop_loss"
-                      placeholder="Stop Loss"
-                    />
-                    <button
-                      type="button"
-                      className="option-button"
-                      id="orderType"
-                      onClick={(e) => {
-                        toggleOrderTypes(e, "orderType");
-                      }}
-                    >
-                      Market Order
-                    </button>
-                    <div
-                      className="options-container container"
-                      style={{
-                        display: showOrderTypeOptions ? "block" : "none",
-                      }}
-                    >
-                      {Object.values(OrderType).map((value, index) => (
-                        <>
-                          <div key={index} className="option">
-                            <button
-                              type="button"
-                              value={value}
-                              onClick={selectOrderType}
-                            >
-                              {value
-                                .split("_")
-                                .map(
-                                  (word) =>
-                                    word.charAt(0).toUpperCase() + word.slice(1)
-                                )
-                                .join(" ")}
-                            </button>
-                          </div>
-                        </>
+    <>
+      <LightDarkSwitch />
+      <Sidebar
+        mainContent={
+          <>
+            <Alert
+              message={alertMessage}
+              type={alertType}
+              counter={alertCounter}
+            />
+            <DashboardLayout
+              leftContent={
+                <>
+                  <div className="chart-card card">
+                    <div className="btn-container">
+                      {Object.values(IntervalEnum).map((value) => (
+                        <button
+                          key={value}
+                          className={`btn btn-secondary ${
+                            value === "1m" ? "active" : ""
+                          }`}
+                          value={value}
+                          onClick={changeTimeFrame}
+                        >
+                          {value}
+                        </button>
                       ))}
                     </div>
-                    <button
-                      type="button"
-                      className="option-button"
-                      id="marketType"
-                      onClick={(e) => {
-                        toggleOrderTypes(e, "marketType");
-                      }}
-                    >
-                      SPOT
-                    </button>
-                    <div
-                      className="options-container container"
-                      style={{
-                        display: showMarketTypeOptions ? "block" : "none",
-                      }}
-                    >
-                      {Object.values(MarketType).map((value, index) => (
-                        <>
-                          <div key={index} className="option">
-                            <button
-                              type="button"
-                              value={value}
-                              onClick={selectMarketType}
-                            >
-                              {value.valueOf().charAt(0).toUpperCase() +
-                                value.valueOf().slice(1)}
-                            </button>
-                          </div>
-                        </>
-                      ))}
+                    <div className="chart-container">
+                      <div id="chart-container" className="chart"></div>
                     </div>
-                    <div
-                      className="container limit-options"
-                      style={{ display: showLimitOptions ? "block" : "none" }}
-                    >
+                    <div className="card-footer"></div>
+                  </div>
+                  <OrderTable
+                    showClosed={false}
+                    openOrders={openOrderData}
+                    orderIdRef={orderIdRef}
+                    formSubmissionHandler={modifyFormHandler}
+                  />
+                </>
+              }
+              rightContent={
+                <>
+                  <div className="card">
+                    <form id="orderForm" onSubmit={orderFormSubmitHandler}>
+                      <input
+                        type="text"
+                        name="ticker"
+                        placeholder="Ticker"
+                        value="APPL"
+                        pattern="[A-Za-z]+"
+                        readOnly
+                      />
                       <input
                         type="number"
-                        name="limit_price"
-                        placeholder="Limit Price"
-                        required={showLimitOptions}
+                        name="quantity"
+                        placeholder="Quantity"
+                        required
                       />
-                    </div>
-                    {showSideOptions ? (
-                      <div
-                        className="container side-options br"
-                        style={{
-                          display: showSideOptions ? "flex" : "none",
-                          overflow: "hidden",
+                      <input
+                        type="number"
+                        name="take_profit"
+                        placeholder="Take Profit"
+                      />
+                      <input
+                        type="number"
+                        name="stop_loss"
+                        placeholder="Stop Loss"
+                      />
+                      <button
+                        type="button"
+                        className="option-button"
+                        id="orderType"
+                        onClick={(e) => {
+                          toggleOrderTypes(e, "orderType");
                         }}
                       >
+                        Market Order
+                      </button>
+                      <div
+                        className="options-container container"
+                        style={{
+                          display: showOrderTypeOptions ? "block" : "none",
+                        }}
+                      >
+                        {Object.values(OrderType).map((value, index) => (
+                          <>
+                            <div key={index} className="option">
+                              <button
+                                type="button"
+                                value={value}
+                                onClick={selectOrderType}
+                              >
+                                {value
+                                  .split("_")
+                                  .map(
+                                    (word) =>
+                                      word.charAt(0).toUpperCase() + word.slice(1)
+                                  )
+                                  .join(" ")}
+                              </button>
+                            </div>
+                          </>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        className="option-button"
+                        id="marketType"
+                        onClick={(e) => {
+                          toggleOrderTypes(e, "marketType");
+                        }}
+                      >
+                        SPOT
+                      </button>
+                      <div
+                        className="options-container container"
+                        style={{
+                          display: showMarketTypeOptions ? "block" : "none",
+                        }}
+                      >
+                        {Object.values(MarketType).map((value, index) => (
+                          <>
+                            <div key={index} className="option">
+                              <button
+                                type="button"
+                                value={value}
+                                onClick={selectMarketType}
+                              >
+                                {value.valueOf().charAt(0).toUpperCase() +
+                                  value.valueOf().slice(1)}
+                              </button>
+                            </div>
+                          </>
+                        ))}
+                      </div>
+                      <div
+                        className="container limit-options"
+                        style={{ display: showLimitOptions ? "block" : "none" }}
+                      >
+                        <input
+                          type="number"
+                          name="limit_price"
+                          placeholder="Limit Price"
+                          required={showLimitOptions}
+                        />
+                      </div>
+                      {showSideOptions ? (
                         <div
-                          className=""
+                          className="container side-options br"
                           style={{
-                            height: "100%",
-                            width: "100%",
-                            backgroundColor: "blue",
-                            display: "flex",
+                            display: showSideOptions ? "flex" : "none",
+                            overflow: "hidden",
                           }}
                         >
-                          <button
-                            type="submit"
-                            name="side"
-                            value="long"
-                            className="btn"
+                          <div
+                            className=""
                             style={{
-                              width: "100%",
                               height: "100%",
-                              backgroundColor: "green",
-                              borderRadius: "0",
+                              width: "100%",
+                              backgroundColor: "blue",
+                              display: "flex",
                             }}
                           >
-                            Long
-                          </button>
-                          <button
-                            type="submit"
-                            value="sell"
-                            name="side"
-                            className="btn"
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              backgroundColor: "red",
-                              borderRadius: "0",
-                            }}
-                          >
-                            Short
-                          </button>
+                            <button
+                              type="submit"
+                              name="side"
+                              value="long"
+                              className="btn"
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                backgroundColor: "green",
+                                borderRadius: "0",
+                              }}
+                            >
+                              Long
+                            </button>
+                            <button
+                              type="submit"
+                              value="sell"
+                              name="side"
+                              className="btn"
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                backgroundColor: "red",
+                                borderRadius: "0",
+                              }}
+                            >
+                              Short
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      <button type="submit" className="btn btn-primary">
-                        Open Order
-                      </button>
-                    )}
-                  </form>
-                </div>
-                <DOM asks={domAsks} bids={domBids} />
-              </>
-            }
-          />
-        </>
-      }
-    />
+                      ) : (
+                        <button type="submit" className="btn btn-primary">
+                          Open Order
+                        </button>
+                      )}
+                    </form>
+                  </div>
+                  <DOM asks={domAsks} bids={domBids} />
+                </>
+              }
+            />
+          </>
+        }
+      />
+    </>
   );
 };
 

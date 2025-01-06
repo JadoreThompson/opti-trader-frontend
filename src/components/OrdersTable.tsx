@@ -1,7 +1,9 @@
 import { FC, useEffect, useState } from "react";
 import TableBody from "./TableBody";
+import { MarketType } from "../types/Trade";
 
 interface orderTableOptions {
+  // markeyType: MarketType,
   showClosed: boolean;
   closedOrders: undefined | Array<Record<string, null | number | string>>;
   openOrders: undefined | Array<Record<string, null | number | string>>;
@@ -14,6 +16,8 @@ interface orderTableOptions {
 const closedOrderTableHeaders: Record<string, string> = {
   ticker: "Ticker",
   order_type: "Order Type",
+  market_type: "Market Type",
+  side: "Side",
   quantity: "Quantity",
   price: "Price",
   filled_price: "Filled Price",
@@ -30,6 +34,8 @@ const closedOrderTableHeaders: Record<string, string> = {
 const openOrderTableHeaders: Record<string, string> = {
   ticker: "Ticker",
   order_type: "Order Type",
+  market_type: "Market Type",
+  side: "Side",
   quantity: "Quantity",
   price: "Price",
   filled_price: "Filled Price",
@@ -44,6 +50,7 @@ const openOrderTableHeaders: Record<string, string> = {
 const BASE_URL = "http://127.0.0.1:8000";
 
 const OrderTable: FC<orderTableOptions> = ({
+  // markeyType,
   showClosed,
   closedOrders,
   openOrders,
