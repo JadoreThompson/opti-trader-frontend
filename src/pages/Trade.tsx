@@ -11,16 +11,17 @@ import { getCookie } from "typescript-cookie";
 
 // Local
 import Alert, { AlertTypes } from "../components/Alert";
-import DashboardLayout from "../components/DashboardLayout";
 import DOM from "../components/DOM";
+import DashboardLayout from "../components/DashboardLayout";
 import OrderTable from "../components/OrdersTable";
 import Sidebar from "../components/Sidebar";
 import {
   IntervalEnum,
   IntervalType,
+  MarketType,
   OrderType,
   SocketMessageCategory,
-} from "../types/TradingPageTypes";
+} from "../types/Trade";
 
 const Trade: FC = () => {
   let chart;
@@ -139,7 +140,7 @@ const Trade: FC = () => {
   const [alertMessage, setAlertMessage] = useState<string>("");
   const [alertCounter, setAlertCounter] = useState<number>(0);
 
-  const [marketType, setMarketType] = useState<string>("spot");
+  const [marketType, setMarketType] = useState<string>(MarketType.SPOT);
 
   const displayAlert: (msg: string, msgType: AlertTypes) => void = (
     msg: string,
@@ -298,16 +299,25 @@ const Trade: FC = () => {
   /* --------------------
             Handlers
     -------------------- */
-  const [showOrderTypes, setShowOrderTypes] = useState<boolean>(false);
+  const [showOrderTypeOptions, setShowOrderTypes] = useState<boolean>(false);
   const [showLimitOptions, setShowLimitOptions] = useState<boolean>(false);
+  const [showMarketTypeOptions, setShowMarketTypeOptions] =
+    useState<boolean>(false);
+  const [showSideOptions, setShowSideOptions] = useState<boolean>(false);
   const [selectedOrderType, setSelectedOrderType] = useState<OrderType>(
     OrderType.MARKET_ORDER
   );
 
   const toggleOrderTypes = (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+    category: string
   ) => {
-    setShowOrderTypes(true);
+    if (category === "orderType") {
+      setShowOrderTypes(true);
+    } else if (category === "marketType") {
+      setShowMarketTypeOptions(true);
+    }
+
     (e.target as HTMLElement).classList.add("active");
   };
 
@@ -316,16 +326,6 @@ const Trade: FC = () => {
       "active"
     );
     setShowOrderTypes(false);
-  };
-
-  const enableLimitOptions = (orderType: OrderType) => {
-    setShowLimitOptions(true);
-    disableOrderTypes();
-  };
-
-  const disableLimitOptions = (orderType: OrderType) => {
-    setShowLimitOptions(false);
-    disableOrderTypes();
   };
 
   const selectOrderType = (
@@ -341,10 +341,29 @@ const Trade: FC = () => {
         .join(" ");
 
     if (chosenOrderType == OrderType.LIMIT_ORDER) {
-      enableLimitOptions(chosenOrderType);
+      setShowLimitOptions(true);
     } else {
-      disableLimitOptions(chosenOrderType);
+      setShowLimitOptions(false);
     }
+    disableOrderTypes();
+  };
+
+  const selectMarketType: (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => void = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
+    const chosenMarketType = (e.target as HTMLButtonElement)
+      .value as MarketType;
+    setMarketType(chosenMarketType);
+    (document.getElementById("marketType") as HTMLElement).textContent =
+      chosenMarketType.toUpperCase();
+
+    if (chosenMarketType === MarketType.FUTURES) {
+      setShowSideOptions(true);
+    } else {
+      setShowSideOptions(false);
+    }
+
+    setShowMarketTypeOptions(false);
   };
 
   const orderFormSubmitHandler = (e: React.FormEvent<HTMLFormElement>) => {
@@ -368,8 +387,12 @@ const Trade: FC = () => {
     payload["type"] = selectedOrderType;
     payload["market_type"] = marketType;
     payload = { ...payload, ...orderData };
-    
+
     if (isConnected && socketRef?.current) {
+      if (marketType === MarketType.FUTURES) {
+        payload['side'] = ((e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement).value
+      }
+      
       console.log("Payload: ", payload);
       socketRef.current.send(JSON.stringify(payload));
       (e.target as HTMLFormElement).reset();
@@ -497,43 +520,70 @@ const Trade: FC = () => {
                     />
                     <button
                       type="button"
+                      className="option-button"
                       id="orderType"
-                      className="container"
-                      onClick={toggleOrderTypes}
+                      onClick={(e) => {
+                        toggleOrderTypes(e, "orderType");
+                      }}
                     >
                       Market Order
                     </button>
                     <div
                       className="options-container container"
-                      style={{ display: showOrderTypes ? "block" : "none" }}
+                      style={{
+                        display: showOrderTypeOptions ? "block" : "none",
+                      }}
                     >
-                      <div className="option">
-                        <button
-                          onClick={selectOrderType}
-                          type="button"
-                          value={OrderType.MARKET_ORDER}
-                        >
-                          Market Order
-                        </button>
-                      </div>
-                      <div className="option">
-                        <button
-                          onClick={selectOrderType}
-                          type="button"
-                          value={OrderType.LIMIT_ORDER}
-                        >
-                          Limit Order
-                        </button>
-                      </div>
-                      <div className="option">
-                        <button
-                          onClick={selectOrderType}
-                          type="button"
-                          value={OrderType.CLOSE_ORDER}
-                        >
-                          Close Order
-                        </button>
-                      </div>
+                      {Object.values(OrderType).map((value, index) => (
+                        <>
+                          <div key={index} className="option">
+                            <button
+                              type="button"
+                              value={value}
+                              onClick={selectOrderType}
+                            >
+                              {value
+                                .split("_")
+                                .map(
+                                  (word) =>
+                                    word.charAt(0).toUpperCase() + word.slice(1)
+                                )
+                                .join(" ")}
+                            </button>
+                          </div>
+                        </>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      className="option-button"
+                      id="marketType"
+                      onClick={(e) => {
+                        toggleOrderTypes(e, "marketType");
+                      }}
+                    >
+                      SPOT
+                    </button>
+                    <div
+                      className="options-container container"
+                      style={{
+                        display: showMarketTypeOptions ? "block" : "none",
+                      }}
+                    >
+                      {Object.values(MarketType).map((value, index) => (
+                        <>
+                          <div key={index} className="option">
+                            <button
+                              type="button"
+                              value={value}
+                              onClick={selectMarketType}
+                            >
+                              {value.valueOf().charAt(0).toUpperCase() +
+                                value.valueOf().slice(1)}
+                            </button>
+                          </div>
+                        </>
+                      ))}
                     </div>
                     <div
                       className="container limit-options"
@@ -546,9 +596,58 @@ const Trade: FC = () => {
                         required={showLimitOptions}
                       />
                     </div>
-                    <button type="submit" className="btn btn-primary">
-                      Open Order
-                    </button>
+                    {showSideOptions ? (
+                      <div
+                        className="container side-options br"
+                        style={{
+                          display: showSideOptions ? "flex" : "none",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <div
+                          className=""
+                          style={{
+                            height: "100%",
+                            width: "100%",
+                            backgroundColor: "blue",
+                            display: "flex",
+                          }}
+                        >
+                          <button
+                            type="submit"
+                            name="side"
+                            value="long"
+                            className="btn"
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              backgroundColor: "green",
+                              borderRadius: "0",
+                            }}
+                          >
+                            Long
+                          </button>
+                          <button
+                            type="submit"
+                            value="sell"
+                            name="side"
+                            className="btn"
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              backgroundColor: "red",
+                              borderRadius: "0",
+                            }}
+                          >
+                            Short
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button type="submit" className="btn btn-primary">
+                        Open Order
+                      </button>
+                    )}
                   </form>
                 </div>
                 <DOM asks={domAsks} bids={domBids} />

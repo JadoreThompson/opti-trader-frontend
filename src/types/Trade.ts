@@ -4,6 +4,11 @@ export enum OrderType {
     CLOSE_ORDER = 'close_order',
 }
 
+export enum MarketType {
+    SPOT = 'spot',
+    FUTURES = 'futures',
+}
+
 export enum SocketMessageCategory {
     SUCCESS = 'success',
     ORDER_UPDATE = 'order_update',

@@ -8,7 +8,7 @@ class RequestBuilder {
     return RequestBuilder.baseUrl;
   }
 
-  public static constructHeader(jwt: string): Record<string, string> {
+  public static constructHeader(): Record<string, string> {
     RequestBuilder.header = { Authorization: `Bearer ${getCookie("jwt")}` };
     return RequestBuilder.header;
   }
