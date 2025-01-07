@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 
-const LightDarkSwitch: React.FC = () => {
+const SiteThemeSwitch: React.FC = () => {
   const changeTheme: (e: React.ChangeEvent<HTMLInputElement>) => void = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -28,9 +28,9 @@ const LightDarkSwitch: React.FC = () => {
   return (
     <label className="switch">
       <input type="checkbox" onChange={changeTheme} />
-      <span className="slider"></span>
+      <span className="slider">Change Theme</span>
     </label>
   );
 };
 
-export default LightDarkSwitch;
+export default SiteThemeSwitch;

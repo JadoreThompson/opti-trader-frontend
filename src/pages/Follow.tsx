@@ -59,7 +59,7 @@ const Follow: FC = () => {
     const callback: () => void = async (): Promise<void> => {
       pageNumRef.current += 1;
 
-      if (queryRef.current != 'dpg') {
+      if (queryRef.current != "dpg") {
         let url: string = `http://127.0.0.1:8000/accounts/search?prefix=${queryRef.current}&page=${pageNumRef.current}`;
 
         try {
@@ -73,10 +73,9 @@ const Follow: FC = () => {
         } catch (e) {
           console.error(e);
         }
-        
+
         !leave ? onVisible(element, callback) : null;
       }
-
     };
 
     onVisible(element, callback);
@@ -88,7 +87,7 @@ const Follow: FC = () => {
         <>
           <div
             className="container flex results"
-            style={{ flexDirection: "column", paddingBottom: '5rem' }}
+            style={{ flexDirection: "column", paddingBottom: "5rem" }}
           >
             <div className="container">
               <input
@@ -98,7 +97,7 @@ const Follow: FC = () => {
                   border: "1px solid grey",
                   borderRadius: "0.25rem",
                   margin: 0,
-                  padding: '0.5rem',
+                  padding: "0.5rem",
                   fontSize: "1.5rem",
                 }}
                 onChange={handleChange}

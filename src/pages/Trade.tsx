@@ -15,6 +15,7 @@ import DOM from "../components/DOM";
 import DashboardLayout from "../components/DashboardLayout";
 import OrderTable from "../components/OrdersTable";
 import Sidebar from "../components/Sidebar";
+import SiteThemeSwitch from "../components/SiteThemeSwitch";
 import {
   IntervalEnum,
   IntervalType,
@@ -22,7 +23,6 @@ import {
   OrderType,
   SocketMessageCategory,
 } from "../types/Trade";
-import LightDarkSwitch from "../components/SiteThemeSwitch";
 
 const Trade: FC = () => {
   let chart;
@@ -391,9 +391,11 @@ const Trade: FC = () => {
 
     if (isConnected && socketRef?.current) {
       if (marketType === MarketType.FUTURES) {
-        payload['side'] = ((e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement).value
+        payload["side"] = (
+          (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement
+        ).value;
       }
-      
+
       console.log("Payload: ", payload);
       socketRef.current.send(JSON.stringify(payload));
       (e.target as HTMLFormElement).reset();
@@ -453,7 +455,7 @@ const Trade: FC = () => {
 
   return (
     <>
-      <LightDarkSwitch />
+      <SiteThemeSwitch />
       <Sidebar
         mainContent={
           <>
@@ -549,7 +551,8 @@ const Trade: FC = () => {
                                   .split("_")
                                   .map(
                                     (word) =>
-                                      word.charAt(0).toUpperCase() + word.slice(1)
+                                      word.charAt(0).toUpperCase() +
+                                      word.slice(1)
                                   )
                                   .join(" ")}
                               </button>

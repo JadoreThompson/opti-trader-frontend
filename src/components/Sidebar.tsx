@@ -18,10 +18,6 @@ const Sidebar: FC = () => {
       ?.classList.add("active");
   }, [location.pathname]);
 
-  useEffect(() => {
-    console.log(show);
-  }, [show]);
-
   return (
     <>
       <svg
