@@ -3,19 +3,26 @@ import { FC, useEffect, useState } from "react";
 // Local
 import { useLocation } from "react-router-dom";
 import Header from "../components/Header";
-import PerformanceCard from "../components/PerformanceCard";
+import PortfolioGrowthCard from "../components/PortfolioGrowthCard";
+import { MarketType } from "../types/CommonTypes";
 
 const imgUrl: string =
   "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgDw7HXLDZfXQoJReyeHR8IqyPYAp6RWpjs4Dp9MwZ49HoJl2RsXRTGxqnUlzPgtFTbsA7a2upeCQeyPg-2w5qEmpBOxlPkqbfGv48AFW1OyNZ6WIuZt5dI-NVtflu1NPjqE8oJUi4I57oMVtiAStrRnmgjjAf5WQ6_sbd8UYoDhloMBdSRnpIgjY6EdOML/s1920/photo_6291852644980997101_w.jpg";
 
 const Profile: FC = () => {
   const location = useLocation();
+
+  const [displayName, setDisplayName] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
+
+  const [showSpot, setShowSpot] = useState<boolean>(true);
+  const [marketType, setMarketType] = useState<MarketType>(MarketType.SPOT);
 
   useEffect(() => {
     const storedUser: string = localStorage.getItem("username")!;
     const pathUser: string = location.pathname.split("/")[2];
-    storedUser === pathUser ? setUsername(storedUser) : setUsername(pathUser);
+    setDisplayName(pathUser);
+    storedUser === pathUser ? null : setUsername(pathUser);
   }, []);
 
   return (
@@ -27,8 +34,22 @@ const Profile: FC = () => {
               <div className="global-layout-inner">
                 <div className="d-row mb-3">
                   <div className="btn-radio-group">
-                    <button className="btn">Futures</button>
-                    <button className="btn">Spot</button>
+                    {Object.values(MarketType).map((value, index) => (
+                      <button
+                        key={index}
+                        className={`btn ${
+                          marketType === value ? "active" : ""
+                        }`}
+                        value={value}
+                        onClick={(e) => {
+                          setMarketType(
+                            (e.target as HTMLButtonElement).value as MarketType
+                          );
+                        }}
+                      >
+                        {value.charAt(0).toUpperCase() + value.slice(1)}
+                      </button>
+                    ))}
                   </div>
                 </div>
                 <div className="d-row header profile mb-3">
@@ -38,7 +59,7 @@ const Profile: FC = () => {
                   <div className="d-col pt-1" style={{ flex: 6 }}>
                     <div className="b-0">
                       <div>
-                        <h1 id="username">Dojo</h1>
+                        <h1 id="username">{displayName}</h1>
                       </div>
                       <div>
                         <span className="secondary small" id="bio">
@@ -58,7 +79,7 @@ const Profile: FC = () => {
                   </div>
                 </div>
                 <div>
-                  <div className="tab-bar">
+                  <div className="tab-bar underline">
                     <button className="btn active">
                       <span className="secondary">Overview</span>
                     </button>
@@ -71,7 +92,12 @@ const Profile: FC = () => {
                   </div>
                 </div>
                 <div>
-                  <PerformanceCard username={username} />
+                  <PortfolioGrowthCard
+                    username={username}
+                    marketType={marketType}
+                  />
+                  {/* <PerformanceCard username={username!} /> */}
+                  {/* <Distribution /> */}
                 </div>
               </div>
             </div>

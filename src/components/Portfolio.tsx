@@ -41,7 +41,7 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
   const [winnerLoserData, setWinnerLoserData] = useState<
     Record<string, Array<number>>
   >({});
-  const [bodyBuilder, setBodyBuilder] = useState<null | Record<
+  const [requestBodyBuilder, setBodyBuilder] = useState<null | Record<
     string,
     null | Record<string, null | string | Array<string>>
   >>(null);
@@ -63,12 +63,12 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
   // Winners Loses Per Day Data
   useEffect(() => {
     const fetchData = async () => {
-      if (bodyBuilder) {
+      if (requestBodyBuilder) {
         try {
           const { data } = await axios.get(
             `http://127.0.0.1:8000/portfolio/weekday-results${
-              bodyBuilder?.username
-                ? `?username=${bodyBuilder?.username.username}`
+              requestBodyBuilder?.username
+                ? `?username=${requestBodyBuilder?.username.username}`
                 : ""
             }`,
             { headers: { Authorization: `Bearer ${getCookie("jwt")}` } }
@@ -81,7 +81,7 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
     };
 
     fetchData();
-  }, [bodyBuilder]);
+  }, [requestBodyBuilder]);
 
   // Winners Losers Per Day
   useEffect(() => {
@@ -192,11 +192,11 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
   // Distribution Growth Pie Chart Data
   useEffect(() => {
     const fetchData = async () => {
-      if (bodyBuilder) {
+      if (requestBodyBuilder) {
         const { data } = await axios.get(
           `http://127.0.0.1:8000/portfolio/distribution${
-            bodyBuilder?.username
-              ? `?username=${bodyBuilder?.username.username}`
+            requestBodyBuilder?.username
+              ? `?username=${requestBodyBuilder?.username.username}`
               : ""
           }`,
           { headers: { Authorization: `Bearer ${getCookie("jwt")}` } }
@@ -206,7 +206,7 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
     };
 
     fetchData();
-  }, [bodyBuilder]);
+  }, [requestBodyBuilder]);
 
   // Distribution Growth Pie Chart
   useEffect(() => {
@@ -271,9 +271,9 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
   // Portfolio Growth Chart Data
   useEffect(() => {
     const fetchData = async () => {
-      if (bodyBuilder) {
+      if (requestBodyBuilder) {
         try {
-          let url = `http://127.0.0.1:8000/portfolio/growth?interval=${bodyBuilder?.growth?.interval}`;
+          let url = `http://127.0.0.1:8000/portfolio/growth?interval=${requestBodyBuilder?.growth?.interval}`;
           // url += bodyBuilder?.growth?.username ? `&username=${bodyBuilder?.growth?.username}` : '';
 
           if (isUsersProfile) {
@@ -295,7 +295,7 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
 
             const results = await Promise.all([
               fetch(url),
-              fetch((url += `&username=${bodyBuilder?.growth?.username}`)),
+              fetch((url += `&username=${requestBodyBuilder?.growth?.username}`)),
             ]);
             results.forEach((item) => {
               if (results instanceof axios.AxiosError) {
@@ -314,7 +314,7 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
       }
     };
     fetchData();
-  }, [bodyBuilder]);
+  }, [requestBodyBuilder]);
 
   // Portfolio Growth Chart
   useEffect(() => {
@@ -398,13 +398,13 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
 
   useEffect(() => {
     const fetchStatData = async () => {
-      if (bodyBuilder) {
+      if (requestBodyBuilder) {
         try {
           const { data } = await axios.get(
             BASE_URL +
               `/portfolio/performance${
-                bodyBuilder?.username?.username
-                  ? `?username=${bodyBuilder?.username.username}`
+                requestBodyBuilder?.username?.username
+                  ? `?username=${requestBodyBuilder?.username.username}`
                   : ""
               }`,
             { headers: { Authorization: `Bearer ${getCookie("jwt")}` } }
@@ -417,18 +417,18 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
     };
 
     fetchStatData();
-  }, [bodyBuilder]);
+  }, [requestBodyBuilder]);
 
   const [closedOrders, setClosedOrders] = useState([]);
   useEffect(() => {
     const fetchData = async () => {
-      if (bodyBuilder) {
+      if (requestBodyBuilder) {
         try {
-          let url = `http://127.0.0.1:8000/portfolio/orders?${bodyBuilder?.orders!.order_status!.map(
+          let url = `http://127.0.0.1:8000/portfolio/orders?${requestBodyBuilder?.orders!.order_status!.map(
             (item) => `order_status=${item!}`
           )}`;
-          url += bodyBuilder?.orders?.username
-            ? `&username=${bodyBuilder?.orders?.username}`
+          url += requestBodyBuilder?.orders?.username
+            ? `&username=${requestBodyBuilder?.orders?.username}`
             : "";
 
           const { data } = await axios.get(url, {
@@ -445,7 +445,7 @@ const Portfolio: FC<PortfolioPageProps> = ({ isUsersProfile, username }) => {
     };
 
     fetchData();
-  }, [bodyBuilder]);
+  }, [requestBodyBuilder]);
 
   return (
     <DashboardLayout

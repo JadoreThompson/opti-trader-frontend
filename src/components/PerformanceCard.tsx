@@ -1,5 +1,6 @@
 import axios from "axios";
 import { FC, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import RequestBuilder from "../utils/RequestBuilder";
 
 const performanceKeys: Record<string, string> = {
@@ -13,7 +14,9 @@ const performanceKeys: Record<string, string> = {
   risk_of_ruin: "Risk of Ruin",
 };
 
-const PerformanceCard: FC<{ username: string | null }> = ({ username }) => {
+const PerformanceCard: FC<{ username: string }> = ({ username }) => {
+  const navigate = useNavigate();
+
   const [followData, setFollowData] = useState<null | Record<
     string,
     Record<string, any>
@@ -25,51 +28,77 @@ const PerformanceCard: FC<{ username: string | null }> = ({ username }) => {
 
   useEffect(() => {
     (async () => {
-      try {
-        setPerformanceData(
-          await axios
-            .get(
-              RequestBuilder.getBaseUrl() +
-                `/portfolio/performance?username=${username}`,
-              RequestBuilder.constructHeader()
-            )
-            .then((response) => {
-              return response.data;
-            })
-        );
-      } catch (err) {
-        console.error(err);
-      }
+      setPerformanceData(
+        await axios
+          .get(
+            RequestBuilder.getBaseUrl() +
+              `/portfolio/performance?${
+                username ? `username=${username}` : ""
+              }`,
+            RequestBuilder.constructHeader()
+          )
+          .then((response) => {
+            // console.log(response.data);
+            return response.data;
+          })
+          .catch((err) => {
+            console.error(err);
+            if (err instanceof axios.AxiosError) {
+              if (err.response?.status === 403) {
+                navigate("/404", { replace: false });
+              }
+            }
+            return null;
+          })
+      );
     })();
-  }, []);
+  }, [username]);
 
   useEffect(() => {
     (async () => {
-      const { data } = await axios.get(
-        RequestBuilder.getBaseUrl() + "/accounts/metrics",
-        RequestBuilder.constructHeader()
+      setFollowData(
+        await axios
+          .get(
+            RequestBuilder.getBaseUrl() +
+              `/accounts/metrics?${username ? `username=${username}` : ""}`,
+            RequestBuilder.constructHeader()
+          )
+          .then((response) => response.data)
+          .catch((err) => {
+            if (err instanceof axios.AxiosError) {
+              if (err.response?.status === 403) {
+                navigate("/404", { replace: false });
+              }
+            }
+            return null;
+          })
       );
-      setFollowData(data);
     })();
-  }, []);
+  }, [username]);
 
   return (
     <>
-      <div className="card">
+      <div className="card performance">
         <h2>Performance</h2>
-        {!(performanceData !== null && followData !== null) ? null : (
+        {!(performanceData !== null && followData !== null) ? (
+          <>
+            <div className="h-100 w-100 everything-center">
+              <span className="large secondary">No data</span>
+            </div>
+          </>
+        ) : (
           <>
             <div className="d-row justify-sb">
-              {Number((performanceData["total_profit"] as string).slice(1)) >=
+              {Number((performanceData["total_profit"] as string)?.slice(1)) >=
               0 ? (
                 <>
-                  <span className="large positive">
+                  <span key={0} className="large positive">
                     +{performanceData["total_profit"]}
                   </span>
                 </>
               ) : (
                 <>
-                  <span className="large negative">
+                  <span key={1} className="large negative">
                     -{performanceData["total_profit"]}
                   </span>
                 </>
@@ -93,13 +122,11 @@ const PerformanceCard: FC<{ username: string | null }> = ({ username }) => {
               <span className="secondary">Following</span>
               <span>{followData["followers"]["count"]}</span>
             </div>
-            {Object.keys(performanceKeys).map((key) => (
-              <>
-                <div className="d-row justify-sb mb-05">
-                  <span className="secondary">{performanceKeys[key]}</span>
-                  <span>{performanceData[key]}</span>
-                </div>
-              </>
+            {Object.keys(performanceKeys).map((key, index) => (
+              <div key={index} className="d-row justify-sb mb-05">
+                <span className="secondary">{performanceKeys[key]}</span>
+                <span>{performanceData[key]}</span>
+              </div>
             ))}
           </>
         )}
