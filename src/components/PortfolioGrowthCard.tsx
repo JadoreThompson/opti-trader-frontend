@@ -85,7 +85,7 @@ const PortfolioGrowthCard: FC<{
 
   return (
     <>
-      <div className="card chart-container portfolio">
+      <div className="card chart-container portfolio-growth">
         <h2>PortfolioGrowth</h2>
         <div className="d-row flex-end mb-1">
           <div className="btn-radio-group">

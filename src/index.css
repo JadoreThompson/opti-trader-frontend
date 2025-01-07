@@ -175,7 +175,7 @@ svg.icon {
 .btn-radio-group .btn:hover {
   box-shadow: none;
   background-color: var(--background-color-primary);
-  border-radius: var(--border-radius-secondary);  
+  border-radius: var(--border-radius-secondary);
 }
 
 .btn-radio-group .btn.active {
@@ -204,13 +204,23 @@ svg.icon {
   height: 24.25rem;
 }
 
-.card.portfolio {
-  height: 20rem;
-}
-
 .chart {
   width: 100%;
   height: 100%;
+}
+
+.chart.echart-chart {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.chart-container.asset-allocation {
+  height: 20rem;
+}
+
+.chart-container.portfolio-growth {
+  height: 20rem;
 }
 
 .container {
@@ -406,7 +416,6 @@ svg.icon {
   border-bottom: 1px solid var(--border-color);
 }
 
-
 .tab-bar .btn {
   border: none !important;
   border-radius: 0 !important;
@@ -428,7 +437,6 @@ svg.icon {
 .tab-bar .btn.active span {
   color: var(--text-color) !important;
 }
-
 
 .tab-bar .btn:hover span {
   color: var(--text-color);

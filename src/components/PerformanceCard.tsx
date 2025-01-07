@@ -1,6 +1,7 @@
 import axios from "axios";
 import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { MarketType } from "../types/CommonTypes";
 import RequestBuilder from "../utils/RequestBuilder";
 
 const performanceKeys: Record<string, string> = {
@@ -9,12 +10,15 @@ const performanceKeys: Record<string, string> = {
   beta: "Beta",
   sharpe: "Sharpe",
   treynor: "Tryenor",
-  ahpr: "AHPR",
-  ghpr: "GHPR",
+  // ahpr: "AHPR",
+  // ghpr: "GHPR",
   risk_of_ruin: "Risk of Ruin",
 };
 
-const PerformanceCard: FC<{ username: string }> = ({ username }) => {
+const PerformanceCard: FC<{ username: string; marketType: MarketType }> = ({
+  username,
+  marketType,
+}) => {
   const navigate = useNavigate();
 
   const [followData, setFollowData] = useState<null | Record<
@@ -32,13 +36,12 @@ const PerformanceCard: FC<{ username: string }> = ({ username }) => {
         await axios
           .get(
             RequestBuilder.getBaseUrl() +
-              `/portfolio/performance?${
+              `/portfolio/performance?market_type=${marketType}&${
                 username ? `username=${username}` : ""
               }`,
             RequestBuilder.constructHeader()
           )
           .then((response) => {
-            // console.log(response.data);
             return response.data;
           })
           .catch((err) => {
@@ -52,7 +55,7 @@ const PerformanceCard: FC<{ username: string }> = ({ username }) => {
           })
       );
     })();
-  }, [username]);
+  }, [username, marketType]);
 
   useEffect(() => {
     (async () => {
@@ -80,7 +83,7 @@ const PerformanceCard: FC<{ username: string }> = ({ username }) => {
     <>
       <div className="card performance">
         <h2>Performance</h2>
-        {!(performanceData !== null && followData !== null) ? (
+        {performanceData === null || followData === null ? (
           <>
             <div className="h-100 w-100 everything-center">
               <span className="large secondary">No data</span>
@@ -89,8 +92,7 @@ const PerformanceCard: FC<{ username: string }> = ({ username }) => {
         ) : (
           <>
             <div className="d-row justify-sb">
-              {Number((performanceData["total_profit"] as string)?.slice(1)) >=
-              0 ? (
+              {performanceData["total_profit"] >= 0 ? (
                 <>
                   <span key={0} className="large positive">
                     +{performanceData["total_profit"]}
@@ -99,7 +101,7 @@ const PerformanceCard: FC<{ username: string }> = ({ username }) => {
               ) : (
                 <>
                   <span key={1} className="large negative">
-                    -{performanceData["total_profit"]}
+                    {performanceData["total_profit"]}
                   </span>
                 </>
               )}

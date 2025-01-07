@@ -2,7 +2,9 @@ import { FC, useEffect, useState } from "react";
 
 // Local
 import { useLocation } from "react-router-dom";
+import AssetAllocation from "../components/AssetAllocation";
 import Header from "../components/Header";
+import PerformanceCard from "../components/PerformanceCard";
 import PortfolioGrowthCard from "../components/PortfolioGrowthCard";
 import { MarketType } from "../types/CommonTypes";
 
@@ -14,9 +16,9 @@ const Profile: FC = () => {
 
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
-
-  const [showSpot, setShowSpot] = useState<boolean>(true);
-  const [marketType, setMarketType] = useState<MarketType>(MarketType.SPOT);
+  const [currentMarketType, setCurrentMarketType] = useState<MarketType>(
+    MarketType.SPOT
+  );
 
   useEffect(() => {
     const storedUser: string = localStorage.getItem("username")!;
@@ -38,11 +40,11 @@ const Profile: FC = () => {
                       <button
                         key={index}
                         className={`btn ${
-                          marketType === value ? "active" : ""
+                          currentMarketType === value ? "active" : ""
                         }`}
                         value={value}
                         onClick={(e) => {
-                          setMarketType(
+                          setCurrentMarketType(
                             (e.target as HTMLButtonElement).value as MarketType
                           );
                         }}
@@ -94,10 +96,16 @@ const Profile: FC = () => {
                 <div>
                   <PortfolioGrowthCard
                     username={username}
-                    marketType={marketType}
+                    marketType={currentMarketType}
                   />
-                  {/* <PerformanceCard username={username!} /> */}
-                  {/* <Distribution /> */}
+                  <PerformanceCard
+                    username={username!}
+                    marketType={currentMarketType}
+                  />
+                  <AssetAllocation
+                    username={username}
+                    marketType={currentMarketType}
+                  />
                 </div>
               </div>
             </div>
