@@ -61,7 +61,7 @@ const TickerChart: FC<{ ticker: string }> = ({ ticker }) => {
               type: ColorType.Solid,
               color: bodyStyles.getPropertyValue("--background-color-primary"),
             },
-            textColor: bodyStyles.getPropertyValue("--text-color"),
+            textColor: bodyStyles.getPropertyValue("--text-color-primary"),
             fontSize: 12,
             fontFamily: bodyStyles.getPropertyValue("font-family"),
             attributionLogo: false,
