@@ -42,7 +42,7 @@ const AssetAllocation: FC<{
       },
       series: [
         {
-          name: "Portfolio Distribution",
+          name: "Asset Allocation",
           type: "pie",
           radius: ["40%", "70%"],
           avoidLabelOverlap: false,
@@ -90,7 +90,7 @@ const AssetAllocation: FC<{
           })
       );
     })();
-  }, [username]);
+  }, [username, marketType]);
 
   useEffect(() => {
     loadChart(chartData);
@@ -108,7 +108,6 @@ const AssetAllocation: FC<{
           </>
         ) : (
           <div className="chart" id="assetAllocationChart"></div>
-          // <></>
         )}
       </div>
     </>

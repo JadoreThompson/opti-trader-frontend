@@ -25,29 +25,7 @@ const PortfolioGrowthCard: FC<{
     Record<string, number>
   >>(null);
 
-  useEffect(() => {
-    (async () => {
-      setChartData(
-        await axios
-          .get(
-            RequestBuilder.getBaseUrl() +
-              `/portfolio/growth?market_type=${marketType}&interval=${currentInterval}${
-                username ? `&username=${username}` : ""
-              }`,
-            RequestBuilder.constructHeader()
-          )
-          .then((response) => response.data)
-          .catch((err) => {
-            if (err instanceof axios.AxiosError) {
-              console.log(err);
-            }
-            return null;
-          })
-      );
-    })();
-  }, [currentInterval, username]);
-
-  useEffect(() => {
+  const loadChart: () => void = (): void => {
     if (chartData) {
       const options: TimeChartOptions = {
         autoSize: true,
@@ -81,31 +59,73 @@ const PortfolioGrowthCard: FC<{
       });
       areaSeries.setData(chartData);
     }
+  };
+
+  useEffect(() => {
+    (async () => {
+      setChartData(
+        await axios
+          .get(
+            RequestBuilder.getBaseUrl() +
+              `/portfolio/growth?market_type=${marketType}&interval=${currentInterval}${
+                username ? `&username=${username}` : ""
+              }`,
+            RequestBuilder.constructHeader()
+          )
+          .then((response) => response.data)
+          .catch((err) => {
+            if (err instanceof axios.AxiosError) {
+              console.log(err);
+            }
+            return null;
+          })
+      );
+    })();
+  }, [currentInterval, username, marketType]);
+
+  useEffect(() => {
+    loadChart();
   }, [chartData, bodyStyles]);
+
+  // useEffect(() => {
+  //   console.log(chartData);
+  // }, [chartData]);
 
   return (
     <>
       <div className="card chart-container portfolio-growth">
         <h2>PortfolioGrowth</h2>
-        <div className="d-row flex-end mb-1">
-          <div className="btn-radio-group">
-            {Object.values(GrowthInterval).map((value, index) => (
-              <button
-                key={index}
-                value={value}
-                className={`btn ${currentInterval === value ? "active" : ""}`}
-                onClick={(e) => {
-                  setCurrentInterval(
-                    (e.target as HTMLButtonElement).value as GrowthInterval
-                  );
-                }}
-              >
-                {value}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="chart" id="portfolioGrowthChartContainer"></div>
+        {chartData === null ? (
+          <>
+            <div className="h-100 w-100 everything-center">
+              <span className="large secondary">No data</span>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="d-row flex-end mb-1">
+              <div className="btn-radio-group">
+                {Object.values(GrowthInterval).map((value, index) => (
+                  <button
+                    key={index}
+                    value={value}
+                    className={`btn ${
+                      currentInterval === value ? "active" : ""
+                    }`}
+                    onClick={(e) => {
+                      setCurrentInterval(
+                        (e.target as HTMLButtonElement).value as GrowthInterval
+                      );
+                    }}
+                  >
+                    {value}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="chart" id="portfolioGrowthChartContainer"></div>
+          </>
+        )}
       </div>
     </>
   );

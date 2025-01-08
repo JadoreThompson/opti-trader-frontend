@@ -2,9 +2,13 @@ import { FC, useEffect, useState } from "react";
 
 // Local
 import { useLocation } from "react-router-dom";
+import AssetAllocation from "../components/AssetAllocation";
 import Header from "../components/Header";
+import PerformanceCard from "../components/PerformanceCard";
+import PortfolioGrowthCard from "../components/PortfolioGrowthCard";
+import UserOrdersProfileCard from "../components/UserOrdersProfileCard";
 import WeekdayGains from "../components/WeekdayGains";
-import { MarketType } from "../types/CommonTypes";
+import { MarketType, OrderStatus } from "../types/CommonTypes";
 
 const imgUrl: string =
   "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgDw7HXLDZfXQoJReyeHR8IqyPYAp6RWpjs4Dp9MwZ49HoJl2RsXRTGxqnUlzPgtFTbsA7a2upeCQeyPg-2w5qEmpBOxlPkqbfGv48AFW1OyNZ6WIuZt5dI-NVtflu1NPjqE8oJUi4I57oMVtiAStrRnmgjjAf5WQ6_sbd8UYoDhloMBdSRnpIgjY6EdOML/s1920/photo_6291852644980997101_w.jpg";
@@ -92,7 +96,7 @@ const Profile: FC = () => {
                   </div>
                 </div>
                 <div>
-                  {/* <PortfolioGrowthCard
+                  <PortfolioGrowthCard
                     username={username}
                     marketType={currentMarketType}
                   />
@@ -103,10 +107,15 @@ const Profile: FC = () => {
                   <AssetAllocation
                     username={username}
                     marketType={currentMarketType}
-                  /> */}
+                  />
                   <WeekdayGains
                     username={username}
                     marketType={currentMarketType}
+                  />
+                  <UserOrdersProfileCard
+                    username={username}
+                    marketType={currentMarketType}
+                    orderStatus={OrderStatus.CLOSED}
                   />
                 </div>
               </div>

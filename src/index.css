@@ -8,7 +8,7 @@
   --red: #f1493f;
 
   --padding: 0.5rem;
-  --secondary-text-color: #8e8e92;
+  --text-color-secondary: #8e8e92;
 
   /* Light Styles */
   --background-color-primary: white;
@@ -78,6 +78,8 @@ i.bg {
   background-color: var(--background-color-secondary);
 }
 
+span {}
+
 span.large {
   font-size: 1.25rem;
 }
@@ -91,7 +93,7 @@ span.positive {
 }
 
 span.secondary {
-  color: var(--secondary-text-color);
+  color: var(--text-color-secondary);
 }
 
 span.small {
@@ -100,6 +102,40 @@ span.small {
 
 svg.icon {
   height: 1.5rem;
+}
+
+svg.icon.large {
+  height: 4rem;
+}
+
+tbody {}
+
+tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+th {
+  text-align: left;
+}
+
+th.secondary {
+  color: var(--text-color-secondary);
+}
+
+td {
+  padding: var(--padding);
+}
+
+td.positive {
+  color: var(--green)
+}
+
+td.negative {
+  color: var(--red);
+}
+
+td.underline {
+  border-bottom: 1px solid var(--border-color);
 }
 
 .border-primary {
@@ -128,6 +164,15 @@ svg.icon {
   background-color: transparent;
 }
 
+.btn:disabled {
+  color: var(--text-color-secondary);
+}
+
+.btn:disabled:hover {
+  box-shadow: none;
+  cursor: default;
+}
+
 .btn:hover {
   cursor: pointer;
   transition: linear 0.2s;
@@ -143,6 +188,10 @@ svg.icon {
   box-shadow: 0px 0px 3px 2px white;
 }
 
+.btn.rounded {
+  border-radius: var(--border-radius-secondary) !important;
+}
+
 .btn.secondary {
   background-color: var(--secondary-color);
   color: var(--text-color);
@@ -152,9 +201,6 @@ svg.icon {
   box-shadow: 0px 0px 3px 2px var(--secondary-color);
 }
 
-.btn.br-secondary {
-  border-radius: var(--border-radius-secondary);
-}
 
 .btn-radio-group {
   display: flex;
@@ -204,6 +250,13 @@ svg.icon {
   height: 24.25rem;
 }
 
+.card.user-orders.profile {
+  min-height: 0;
+  max-height: 25rem;
+  display: flex;
+  align-items: center;
+}
+
 .chart {
   width: 100%;
   height: 100%;
@@ -241,6 +294,10 @@ svg.icon {
   flex-direction: column;
 }
 
+.d-flex {
+  display: flex;
+}
+
 .d-row {
   display: flex;
   flex-direction: row;
@@ -256,7 +313,13 @@ svg.icon {
   justify-content: flex-end;
 }
 
+.g-1 {
+  display: flex;
+  gap: 1rem;
+}
+
 .justify-center {
+  display: flex;
   justify-content: center;
 }
 
@@ -308,7 +371,7 @@ svg.icon {
 }
 
 .h-100 {
-  height: 100%;
+  height: 100% !important;
 }
 
 .img-container.profile {
@@ -343,6 +406,10 @@ svg.icon {
 
 .mt-1 {
   margin-top: 1rem;
+}
+
+.mt-2 {
+  margin-top: 2rem;
 }
 
 .mt-3 {
@@ -447,5 +514,5 @@ svg.icon {
 }
 
 .w-100 {
-  width: 100;
+  width: 100%;
 }
