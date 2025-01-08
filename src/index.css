@@ -50,6 +50,24 @@ a {
   color: var(--text-color);
 }
 
+button[type="submit"] {
+  background-color: blue;
+  border: none !important;
+}
+
+button[type="submit"]:hover {
+  box-shadow: 0px 0px 1px 1px blue !important;
+  border: none !important;
+}
+
+form > * {
+  margin-bottom: 1rem;
+}
+
+form > *:last-child {
+  margin-bottom: 0;
+}
+
 header {
   top: 0;
   height: 3rem;
@@ -78,7 +96,20 @@ i.bg {
   background-color: var(--background-color-secondary);
 }
 
-span {}
+input {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-primary);
+  padding: var(--padding);
+  font-size: 1rem;
+}
+
+input:focus {
+  outline: none;
+}
+
+span {
+}
 
 span.large {
   font-size: 1.25rem;
@@ -102,16 +133,34 @@ span.small {
 
 svg.icon {
   height: 1.5rem;
+  cursor: pointer;
 }
 
 svg.icon.large {
   height: 4rem;
 }
 
-tbody {}
+tbody {
+}
 
 tbody tr:last-child td {
   border-bottom: none !important;
+}
+
+td {
+  padding: var(--padding);
+}
+
+td.positive {
+  color: var(--green);
+}
+
+td.negative {
+  color: var(--red);
+}
+
+td.underline {
+  border-bottom: 1px solid var(--border-color);
 }
 
 th {
@@ -122,20 +171,32 @@ th.secondary {
   color: var(--text-color-secondary);
 }
 
-td {
-  padding: var(--padding);
+th.small {
+  font-size: 0.85rem;
 }
 
-td.positive {
-  color: var(--green)
+thead:hover {
+  cursor: default;
 }
 
-td.negative {
-  color: var(--red);
+thead:hover tr {
+  background-color: transparent;
 }
 
-td.underline {
-  border-bottom: 1px solid var(--border-color);
+tr:hover {
+  background-color: var(--background-color-secondary);
+}
+
+.align-center {
+  align-items: center;
+}
+
+.border-radius-1 {
+  border-radius: var(--border-radius-primary) !important;
+}
+
+.border-radius-2 {
+  border-radius: var(--border-radius-secondary) !important;
 }
 
 .border-primary {
@@ -201,7 +262,6 @@ td.underline {
   box-shadow: 0px 0px 3px 2px var(--secondary-color);
 }
 
-
 .btn-radio-group {
   display: flex;
   align-items: center;
@@ -209,6 +269,18 @@ td.underline {
   border-radius: var(--border-radius-secondary);
   padding: 0.1rem;
   overflow: hidden;
+}
+
+.btn-radio-group.transparent {
+  background-color: transparent !important;
+}
+
+.btn-radio-group.transparent .btn:hover {
+  background-color: var(--background-color-secondary);
+}
+
+.btn-radio-group.transparent .btn.active {
+  background-color: var(--background-color-secondary);
 }
 
 .btn-radio-group .btn {
@@ -246,6 +318,19 @@ td.underline {
   flex-direction: column;
 }
 
+.card.overlay {
+  position: fixed;
+  background-color: var(--background-color-primary);
+  width: 100%;
+}
+
+@media (min-width: 425px) {
+  .card.card.overlay {
+    width: 50%;
+    top: 20%;
+  }
+}
+
 .card.performance {
   height: 24.25rem;
 }
@@ -273,6 +358,10 @@ td.underline {
 }
 
 .chart-container.portfolio-growth {
+  height: 20rem;
+}
+
+.chart-container.ticker-chart {
   height: 20rem;
 }
 
@@ -321,6 +410,11 @@ td.underline {
 .justify-center {
   display: flex;
   justify-content: center;
+}
+
+.justify-end {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .justify-sb {
@@ -420,6 +514,20 @@ td.underline {
   margin-top: 5rem;
 }
 
+.overlay-container {
+  position: fixed;
+  height: 100vh;
+  width: 100%;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 5;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
 .pt-1 {
   padding-top: 1rem;
 }
@@ -452,13 +560,14 @@ td.underline {
   visibility: visible;
   transform: translateX(0);
   transition: opacity 0.2s linear, transform 0.2s linear, visibility 0s 0s;
+  z-index: 999;
 }
 
 .sidebar-container.active {
   width: 100%;
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 10000;
+  z-index: 999;
 }
 
 .sidebar-item {

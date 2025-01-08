@@ -1,28 +1,33 @@
 import axios from "axios";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import "../index.css";
 import { MarketType, OrderStatus } from "../types/CommonTypes";
 import RequestBuilder from "../utils/RequestBuilder";
 
 const tableHeaders: Record<string, string> = {
   ticker: "Ticker",
+  quantity: "Quantity",
+  standing_quantity: "Remaning",
   filled_price: "Entry Price",
   close_price: "Exit Price",
+  order_status: "Status",
   realised_pnl: "Realised PnL",
 };
 
 const futuresTableHeaders: Record<string, string> = {
   ...tableHeaders,
   ...{
-    side: "Position Type",
+    side: "Type",
   },
 };
 
-const UserOrdersProfileCard: FC<{
-  username: string | null;
+const OrdersTableTemp: FC<{
+  //   username: string | null;
   marketType: MarketType;
-  orderStatus: (typeof OrderStatus)[keyof typeof OrderStatus];
-}> = ({ username, marketType, orderStatus }) => {
+  orderStatus: (typeof OrderStatus)[keyof typeof OrderStatus][];
+  websocket: null | WebSocket;
+}> = ({ marketType, orderStatus, websocket }) => {
+  // () => {
   const pageSize = 10;
 
   const [revealTable, setRevealTable] = useState<boolean>(false);
@@ -35,15 +40,17 @@ const UserOrdersProfileCard: FC<{
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [maxPages, setMaxPages] = useState<number>(0);
 
+  const currentModifyIndex = useRef<number>();
+
   useEffect(() => {
     (async () => {
       setData(
         await axios
           .get(
             RequestBuilder.getBaseUrl() +
-              `/portfolio/orders?order_status=${orderStatus}&market_type=${marketType}${
-                username ? `&username=${username}` : ""
-              }`,
+              `/portfolio/orders?market_type=${marketType}${orderStatus
+                .map((item) => `&order_status=${item}`)
+                .join("")}`,
             RequestBuilder.constructHeader()
           )
           .then((response) => response.data)
@@ -55,7 +62,7 @@ const UserOrdersProfileCard: FC<{
           })
       );
     })();
-  }, [username, marketType, orderStatus]);
+  }, [orderStatus, marketType]);
 
   useEffect(() => {
     setSortedData(data);
@@ -98,12 +105,55 @@ const UserOrdersProfileCard: FC<{
     }
   };
 
+  const showModifyOverlay: (
+    e: React.PointerEvent<HTMLTableRowElement>
+  ) => void = (e: React.PointerEvent<HTMLTableRowElement>): void => {
+    currentModifyIndex.current = Number(
+      (e.target as HTMLElement).getAttribute("data-key")
+    )!;
+    (
+      document.getElementById("modifyOrderCard") as HTMLDivElement
+    ).style.display = "flex";
+  };
+
+  const hideModifyOverlay = (): void => {
+    const card = (document.getElementById(
+      "modifyOrderCard"
+    ) as HTMLDivElement)!;
+    card.querySelector("form")?.reset();
+    card.style.display = "none";
+  };
+
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
+    e.preventDefault();
+
+    if (websocket) {
+      let payload: Record<string, null | number | string> = {
+        order_id: String(sortedData![currentModifyIndex.current!]["order_id"])!,
+        type: String(sortedData![currentModifyIndex.current!]["order_type"])!,
+        market_type: String(
+          sortedData![currentModifyIndex.current!]["market_type"]
+        )!,
+      };
+      const modifyData = Object.fromEntries(
+        Array.from(new FormData(e.target as HTMLFormElement).entries()).map(
+          ([k, v]) => [k, Number(v)]
+        )
+      );
+      console.log("sending");
+      websocket.send(JSON.stringify({ ...payload, ...modifyData }));
+    }
+
+    hideModifyOverlay();
+  };
+
   return (
     <>
       <div
         className={`card container user-orders profile ${
           revealTable ? "d-col" : ""
         }`}
+        style={{ overflowX: "auto" }}
       >
         {!revealTable ? (
           <>
@@ -136,6 +186,55 @@ const UserOrdersProfileCard: FC<{
           </>
         ) : (
           <>
+            <div
+              className="overlay-container d-flex justify-center align-center"
+              id="modifyOrderCard"
+              style={{ display: "none" }}
+            >
+              <div className="card overlay">
+                <div className="card-title justify-end">
+                  <svg
+                    className="icon"
+                    onPointerUp={() => {
+                      hideModifyOverlay();
+                    }}
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                  >
+                    {" "}
+                    <path
+                      d="M5 5h2v2H5V5zm4 4H7V7h2v2zm2 2H9V9h2v2zm2 0h-2v2H9v2H7v2H5v2h2v-2h2v-2h2v-2h2v2h2v2h2v2h2v-2h-2v-2h-2v-2h-2v-2zm2-2v2h-2V9h2zm2-2v2h-2V7h2zm0 0V5h2v2h-2z"
+                      fill="currentColor"
+                    />{" "}
+                  </svg>
+                </div>
+                <div className="card-body">
+                  <form
+                    className="d-col justify-center"
+                    onSubmit={handleFormSubmit}
+                  >
+                    <label htmlFor="takeProfit">Take Profit</label>
+                    <input
+                      type="number"
+                      id="takeProfit"
+                      name="take_profit"
+                      min={0}
+                    />
+                    <label htmlFor="stopLoss">Stop Loss</label>
+                    <input
+                      type="number"
+                      id="stopLoss"
+                      name="stop_loss"
+                      min={0}
+                    />
+                    <button className="btn" type="submit">
+                      Modify
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
             <table className="w-100 h-100" cellSpacing={0}>
               <thead>
                 <tr>
@@ -144,7 +243,7 @@ const UserOrdersProfileCard: FC<{
                       ? tableHeaders
                       : futuresTableHeaders
                   ).map((value, index) => (
-                    <th key={index} className="secondary small">
+                    <th key={index} className="secondary">
                       {value}
                     </th>
                   ))}
@@ -154,7 +253,16 @@ const UserOrdersProfileCard: FC<{
                 {sortedData!
                   .slice(currentIndex, currentIndex + pageSize)!
                   .map((order, index) => (
-                    <tr key={index}>
+                    <tr
+                      key={index}
+                      className="pointer"
+                      data-key={index}
+                      onPointerUp={(e) => {
+                        orderStatus.includes(OrderStatus.CLOSED)
+                          ? null
+                          : showModifyOverlay(e);
+                      }}
+                    >
                       {Object.keys(
                         marketType === MarketType.SPOT
                           ? tableHeaders
@@ -171,7 +279,9 @@ const UserOrdersProfileCard: FC<{
                             ? Number(order[key]!) < 0
                               ? `${String(order[key])} USDT`
                               : `+${String(order[key])} USDT`
-                            : String(order[key])}
+                            : order[key] !== null
+                            ? String(order[key])
+                            : "-"}
                         </td>
                       ))}
                     </tr>
@@ -203,4 +313,4 @@ const UserOrdersProfileCard: FC<{
   );
 };
 
-export default UserOrdersProfileCard;
+export default OrdersTableTemp;

@@ -1,20 +1,20 @@
 import { FC, useEffect, useState } from "react";
 
 // Local
-import { useLocation } from "react-router-dom";
-import AssetAllocation from "../components/AssetAllocation";
+import { useParams } from "react-router-dom";
 import Header from "../components/Header";
+import { MarketType, OrderStatus } from "../types/CommonTypes";
+import AssetAllocation from "../components/AssetAllocation";
 import PerformanceCard from "../components/PerformanceCard";
 import PortfolioGrowthCard from "../components/PortfolioGrowthCard";
 import UserOrdersProfileCard from "../components/UserOrdersProfileCard";
 import WeekdayGains from "../components/WeekdayGains";
-import { MarketType, OrderStatus } from "../types/CommonTypes";
 
 const imgUrl: string =
   "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgDw7HXLDZfXQoJReyeHR8IqyPYAp6RWpjs4Dp9MwZ49HoJl2RsXRTGxqnUlzPgtFTbsA7a2upeCQeyPg-2w5qEmpBOxlPkqbfGv48AFW1OyNZ6WIuZt5dI-NVtflu1NPjqE8oJUi4I57oMVtiAStrRnmgjjAf5WQ6_sbd8UYoDhloMBdSRnpIgjY6EdOML/s1920/photo_6291852644980997101_w.jpg";
 
 const Profile: FC = () => {
-  const location = useLocation();
+  const { user } = useParams();
 
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
@@ -24,9 +24,8 @@ const Profile: FC = () => {
 
   useEffect(() => {
     const storedUser: string = localStorage.getItem("username")!;
-    const pathUser: string = location.pathname.split("/")[2];
-    setDisplayName(pathUser);
-    storedUser === pathUser ? null : setUsername(pathUser);
+    setDisplayName(user!);
+    storedUser === user ? null : setUsername(user!);
   }, []);
 
   return (
