@@ -223,6 +223,10 @@ svg.icon {
   height: 20rem;
 }
 
+.chart-container.weekday-gains {
+  height: 20rem;
+}
+
 .container {
   padding: var(--padding);
   border-radius: var(--border-radius-primary);

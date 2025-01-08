@@ -2,10 +2,8 @@ import { FC, useEffect, useState } from "react";
 
 // Local
 import { useLocation } from "react-router-dom";
-import AssetAllocation from "../components/AssetAllocation";
 import Header from "../components/Header";
-import PerformanceCard from "../components/PerformanceCard";
-import PortfolioGrowthCard from "../components/PortfolioGrowthCard";
+import WeekdayGains from "../components/WeekdayGains";
 import { MarketType } from "../types/CommonTypes";
 
 const imgUrl: string =
@@ -94,7 +92,7 @@ const Profile: FC = () => {
                   </div>
                 </div>
                 <div>
-                  <PortfolioGrowthCard
+                  {/* <PortfolioGrowthCard
                     username={username}
                     marketType={currentMarketType}
                   />
@@ -103,6 +101,10 @@ const Profile: FC = () => {
                     marketType={currentMarketType}
                   />
                   <AssetAllocation
+                    username={username}
+                    marketType={currentMarketType}
+                  /> */}
+                  <WeekdayGains
                     username={username}
                     marketType={currentMarketType}
                   />
