@@ -22,11 +22,11 @@ const futuresTableHeaders: Record<string, string> = {
 };
 
 const OrdersTableTemp: FC<{
-  //   username: string | null;
-  marketType: MarketType;
-  orderStatus: (typeof OrderStatus)[keyof typeof OrderStatus][];
-  websocket: null | WebSocket;
-}> = ({ marketType, orderStatus, websocket }) => {
+  ticker: undefined | string;
+  marketType: null | MarketType[];
+  orderStatus: null | OrderStatus[];
+  websocket: undefined | WebSocket;
+}> = ({ ticker, marketType, orderStatus, websocket }) => {
   // () => {
   const pageSize = 10;
 
@@ -44,13 +44,22 @@ const OrdersTableTemp: FC<{
 
   useEffect(() => {
     (async () => {
+      if (!orderStatus || !marketType) {
+        return;
+      }
+
+      const params: string[] = [
+        orderStatus.map((item) => `order_status=${item}`).join("&"),
+        marketType.map((item) => `market_type=${item}`).join("&"),
+      ];
+
       setData(
         await axios
           .get(
             RequestBuilder.getBaseUrl() +
-              `/portfolio/orders?market_type=${marketType}${orderStatus
-                .map((item) => `&order_status=${item}`)
-                .join("")}`,
+              `/portfolio/orders?${
+                ticker ? `ticker=${ticker}&` : ""
+              }${params.join("&")}`,
             RequestBuilder.constructHeader()
           )
           .then((response) => response.data)
@@ -105,6 +114,27 @@ const OrdersTableTemp: FC<{
     }
   };
 
+  const getDisplayValue = (key: string, value: any) => {
+    if (value === null || value == undefined) {
+      return "-";
+    }
+
+    if (key === "realised_pnl" || key === "unrealised_pnl") {
+      return Number(value) < 0 ? `$${value}` : `+${value}`;
+    }
+
+    if (key === "order_status") {
+      return OrderStatus.getDisplayValue(value);
+    }
+
+    if (key === "side") {
+      value = String(value);
+      return value.charAt(0).toUpperCase() + value.slice(1);
+    }
+
+    return value;
+  };
+
   const showModifyOverlay: (
     e: React.PointerEvent<HTMLTableRowElement>
   ) => void = (e: React.PointerEvent<HTMLTableRowElement>): void => {
@@ -140,7 +170,7 @@ const OrdersTableTemp: FC<{
           ([k, v]) => [k, Number(v)]
         )
       );
-      console.log("sending");
+
       websocket.send(JSON.stringify({ ...payload, ...modifyData }));
     }
 
@@ -239,7 +269,7 @@ const OrdersTableTemp: FC<{
               <thead>
                 <tr>
                   {Object.values(
-                    marketType === MarketType.SPOT
+                    marketType?.includes(MarketType.SPOT)
                       ? tableHeaders
                       : futuresTableHeaders
                   ).map((value, index) => (
@@ -258,13 +288,13 @@ const OrdersTableTemp: FC<{
                       className="pointer"
                       data-key={index}
                       onPointerUp={(e) => {
-                        orderStatus.includes(OrderStatus.CLOSED)
+                        orderStatus!.includes(OrderStatus.CLOSED)
                           ? null
                           : showModifyOverlay(e);
                       }}
                     >
                       {Object.keys(
-                        marketType === MarketType.SPOT
+                        marketType?.includes(MarketType.SPOT)
                           ? tableHeaders
                           : futuresTableHeaders
                       ).map((key) => (
@@ -275,13 +305,7 @@ const OrdersTableTemp: FC<{
                             order[key]!
                           )}`}
                         >
-                          {key === "realised_pnl"
-                            ? Number(order[key]!) < 0
-                              ? `${String(order[key])} USDT`
-                              : `+${String(order[key])} USDT`
-                            : order[key] !== null
-                            ? String(order[key])
-                            : "-"}
+                          {getDisplayValue(key, order[key])}
                         </td>
                       ))}
                     </tr>

@@ -28,3 +28,5 @@ export const OrderStatus  = {
         }
     },
 }
+
+export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus]

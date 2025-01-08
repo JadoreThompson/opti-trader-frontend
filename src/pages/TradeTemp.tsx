@@ -6,6 +6,7 @@ import OrdersTableTemp from "../components/OrdersTableTemp";
 import TickerChart from "../components/TickerChart";
 import { MarketType, OrderStatus } from "../types/CommonTypes";
 import RequestBuilder from "../utils/RequestBuilder";
+import OrderFolder from "../components/OrderFolder";
 
 const TradeTemp: FC = () => {
   const { ticker } = useParams();
@@ -47,11 +48,7 @@ const TradeTemp: FC = () => {
         content={
           <>
             <TickerChart ticker={ticker!} />
-            <OrdersTableTemp
-              marketType={"futures" as MarketType}
-              orderStatus={[OrderStatus.FILLED]}
-              websocket={websocket}
-            />
+            <OrderFolder ticker={ticker!}/>
           </>
         }
       />
