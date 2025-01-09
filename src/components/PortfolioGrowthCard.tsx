@@ -2,8 +2,8 @@ import axios from "axios";
 import { ColorType, TimeChartOptions, createChart } from "lightweight-charts";
 import { FC, useEffect, useState } from "react";
 import { MarketType } from "../types/CommonTypes";
+import { useBodyStyles } from "../utils/BodyStyles";
 import RequestBuilder from "../utils/RequestBuilder";
-import { useBodyStyles } from "./BodyStyles";
 
 enum GrowthInterval {
   DAY = "1d",

@@ -7,8 +7,8 @@ import {
   createChart,
 } from "lightweight-charts";
 import { FC, useEffect, useRef, useState } from "react";
+import { useBodyStyles } from "../utils/BodyStyles";
 import RequestBuilder from "../utils/RequestBuilder";
-import { useBodyStyles } from "./BodyStyles";
 enum ChartIntervals {
   M1 = "1m",
   M15 = "15m",

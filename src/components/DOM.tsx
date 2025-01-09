@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react";
-import { useBodyStyles } from "./BodyStyles";
+import { useBodyStyles } from "../utils/BodyStyles";
 
 const DOM: FC<{
   asks: Record<number, number>;

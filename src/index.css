@@ -52,14 +52,19 @@ a {
   color: var(--text-color-primary);
 }
 
-button[type="submit"] {
-  background-color: blue;
-  border: none !important;
+b {}
+
+button:hover {
+  cursor: pointer;
 }
 
-button[type="submit"]:hover {
-  box-shadow: 0px 0px 1px 1px blue !important;
-  border: none !important;
+button:disabled {
+  cursor: default;
+}
+
+button.transparent {
+  background-color: transparent;
+  border: none;
 }
 
 form > * {
@@ -125,6 +130,46 @@ input.text-secondary {
   color: var(--text-color-secondary);
 }
 
+input.rounded {
+  border-radius: var(--border-radius-secondary) !important;
+}
+
+li {
+  list-style: none;
+}
+
+li.center {
+  text-align: center;
+}
+
+li.left {
+  text-align: left;
+}
+
+li.right {
+  text-align: right;
+}
+
+li.negative {
+  color: var(--red);
+}
+
+li.positive {
+  color: var(--green);
+}
+
+li.secondary {
+  color: var(--text-color-secondary);
+}
+
+li.small {
+  font-size: 0.75rem;
+}
+
+path.positive {
+  color: var(--green);
+}
+
 span {
 }
 
@@ -155,10 +200,6 @@ svg.icon {
 
 svg.icon.large {
   height: 4rem;
-}
-
-path.positive {
-  color: var(--green);
 }
 
 tbody {
@@ -219,56 +260,22 @@ tr:hover {
   background-color: var(--background-color-secondary);
 }
 
-li {
-  list-style: none;
+.a {
 }
-
-li.center {
-  text-align: center;
-}
-
-li.left {
-  text-align: left;
-}
-
-li.right {
-  text-align: right;
-}
-
-li.negative {
-  color: var(--red);
-}
-
-li.positive {
-  color: var(--green);
-}
-
-li.secondary {
-  color: var(--text-color-secondary);
-}
-
-li.small {
-  font-size: 0.75rem;
-}
-
-.a {}
 
 .align-center {
   align-items: center;
 }
 
-.b {}
+.b {
+}
 
 .border-box {
   box-sizing: border-box;
 }
 
-.border-radius-1 {
-  border-radius: var(--border-radius-primary) !important;
-}
-
-.border-radius-2 {
-  border-radius: var(--border-radius-secondary) !important;
+.border-grey {
+  border: 1px solid var(--border-color) !important;
 }
 
 .border-primary {
@@ -277,6 +284,14 @@ li.small {
 
 .border-primary:hover {
   box-shadow: 0px 0px 3px 2px var(--primary-color) !important;
+}
+
+.border-radius-1 {
+  border-radius: var(--border-radius-primary) !important;
+}
+
+.border-radius-2 {
+  border-radius: var(--border-radius-secondary) !important;
 }
 
 .border-secondary {
@@ -316,12 +331,8 @@ li.small {
   box-shadow: 0px 0px 3px 2px;
 }
 
-.btn.positive {
-  background-color: var(--green);
-}
-
-.btn.positive:hover {
-  box-shadow: 0px 0px 1px 1px var(--green) !important;
+.btn.border-grey:hover {
+  background-color: rgb(65, 68, 68, 0.1);
 }
 
 .btn.negative {
@@ -332,6 +343,14 @@ li.small {
   box-shadow: 0px 0px 1px 1px var(--red) !important;
 }
 
+.btn.positive {
+  background-color: var(--green);
+}
+
+.btn.positive:hover {
+  box-shadow: 0px 0px 1px 1px var(--green) !important;
+}
+
 .btn.primary {
   background-color: white;
   color: black;
@@ -339,19 +358,6 @@ li.small {
 
 .btn.primary:hover {
   box-shadow: 0px 0px 3px 2px white;
-}
-
-.btn.rounded {
-  border-radius: var(--border-radius-secondary) !important;
-}
-
-.btn.secondary {
-  background-color: var(--secondary-color);
-  color: var(--text-color-primary);
-}
-
-.btn.secondary:hover {
-  box-shadow: 0px 0px 3px 2px var(--secondary-color);
 }
 
 .btn-radio-group {
@@ -394,9 +400,34 @@ li.small {
   transition: background-color 0.7s ease-in-out;
 }
 
+.btn.rounded {
+  border-radius: var(--border-radius-secondary) !important;
+}
+
+.btn.secondary {
+  background-color: var(--secondary-color);
+  color: var(--text-color-primary);
+}
+
+.btn.secondary:hover {
+  box-shadow: 0px 0px 3px 2px var(--secondary-color);
+}
+
+.btn.submit {
+  background-color: blue;
+  border: none !important;
+}
+
+.btn.submit:hover {
+  box-shadow: 0px 0px 1px 1px blue !important;
+  border: none !important;
+}
+
 .bottom-0 {
   bottom: 0;
 }
+
+.c {}
 
 .card {
   padding: var(--padding);
@@ -466,6 +497,8 @@ li.small {
   border-radius: var(--border-radius-primary);
 }
 
+.d {}
+
 .dotted-bottom {
   border-bottom: 2px dotted var(--border-color);
 }
@@ -506,11 +539,19 @@ li.small {
   flex-direction: row;
 }
 
+.e {}
+
+.error {
+  color: red;
+}
+
 .everything-center {
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
+.f {}
 
 .flex-end {
   justify-content: flex-end;
@@ -626,6 +667,24 @@ li.small {
   justify-content: space-between;
 }
 
+.justify-start {
+  justify-content: flex-start;
+}
+
+.k {
+}
+
+.l {
+}
+
+label.secondary {
+  color: var(--text-color-secondary);
+}
+
+label.small {
+  font-size: 0.75rem;
+}
+
 .mb-05 {
   margin-bottom: 0.5rem;
 }
@@ -735,7 +794,8 @@ li.small {
   background-color: #d9534f;
 }
 
-.t {}
+.t {
+}
 
 .tab-bar {
   display: flex;

@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
 import { Link } from "react-router-dom";
-import { useBodyStyles } from "./BodyStyles";
+import { useBodyStyles } from "../utils/BodyStyles";
 import CopyTradeForm from "./CopyTradeForm";
 
 export interface FollowCount {
