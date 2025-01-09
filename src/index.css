@@ -52,7 +52,8 @@ a {
   color: var(--text-color-primary);
 }
 
-b {}
+b {
+}
 
 button:hover {
   cursor: pointer;
@@ -427,7 +428,8 @@ tr:hover {
   bottom: 0;
 }
 
-.c {}
+.c {
+}
 
 .card {
   padding: var(--padding);
@@ -497,7 +499,8 @@ tr:hover {
   border-radius: var(--border-radius-primary);
 }
 
-.d {}
+.d {
+}
 
 .dotted-bottom {
   border-bottom: 2px dotted var(--border-color);
@@ -539,7 +542,8 @@ tr:hover {
   flex-direction: row;
 }
 
-.e {}
+.e {
+}
 
 .error {
   color: red;
@@ -551,7 +555,8 @@ tr:hover {
   justify-content: center;
 }
 
-.f {}
+.f {
+}
 
 .flex-end {
   justify-content: flex-end;
@@ -835,6 +840,13 @@ label.small {
 
 .text-secondary {
   color: var(--text-color-secondary);
+}
+
+.w {
+}
+
+.w-50 {
+  width: 50%;
 }
 
 .w-100 {

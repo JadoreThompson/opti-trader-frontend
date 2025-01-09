@@ -4,10 +4,10 @@ import { setCookie } from "typescript-cookie";
 import RequestBuilder from "../utils/RequestBuilder";
 import Utility from "../utils/Utility";
 
-const Register: FC = () => {
+const Register: FC<{ setShowOnboarding: (arg: boolean) => void }> = ({ setShowOnboarding }) => {
   const emailRef = useRef<string>();
-  const [displayConfirmationPage, setDisplayConfirmationPage] =
-    useState<boolean>(true);
+  const [displayConfirmation, setDisplayConfirmation] =
+    useState<boolean>(false);
   const [countdown, setCountDown] = useState<number>(0);
   const [errorMessage, setErrorMessage] = useState<null | string>(null);
   const [resendDisabled, setResendDisabled] = useState<boolean>(false);
@@ -18,7 +18,7 @@ const Register: FC = () => {
   useEffect(() => {
     setErrorMessage(null);
     setResendDisabled(false);
-  }, [displayConfirmationPage]);
+  }, [displayConfirmation]);
 
   async function registerFormHandler(
     e: React.FormEvent<HTMLFormElement>
@@ -35,7 +35,7 @@ const Register: FC = () => {
         RequestBuilder.getBaseUrl() + "/accounts/register",
         payload
       );
-      setDisplayConfirmationPage(true);
+      setDisplayConfirmation(true);
     } catch (err) {
       if (err instanceof axios.AxiosError) {
         setErrorMessage(err.response?.data.error);
@@ -49,7 +49,7 @@ const Register: FC = () => {
     e.preventDefault();
 
     if (!emailRef.current) {
-      setDisplayConfirmationPage(false);
+      setDisplayConfirmation(false);
       return;
     }
 
@@ -67,6 +67,7 @@ const Register: FC = () => {
       );
       localStorage.setItem("username", data.username);
       setCookie("jwt", data.token);
+      setShowOnboarding(true);
     } catch (err) {
       if (err instanceof axios.AxiosError) {
         setErrorMessage(err.response?.data.error);
@@ -122,13 +123,13 @@ const Register: FC = () => {
 
   return (
     <>
-      {displayConfirmationPage ? (
+      {displayConfirmation ? (
         <div className="card container d-col">
           <div className="d-row justify-start">
             <svg
               className="icon"
               onClick={() => {
-                setDisplayConfirmationPage(false);
+                setDisplayConfirmation(false);
               }}
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
