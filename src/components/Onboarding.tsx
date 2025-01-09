@@ -3,9 +3,10 @@ import { FC, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useBodyStyles } from "../utils/BodyStyles";
 import RequestBuilder from "../utils/RequestBuilder";
-import SiteThemeSwitch from "./SiteThemeSwitch";
 
-const Onboarding: FC<{ setIsLoggedIn: (arg: boolean) => void }> = ({ setIsLoggedIn }) => {
+const Onboarding: FC<{ setIsLoggedIn: (arg: boolean) => void }> = ({
+  setIsLoggedIn,
+}) => {
   const bodyStyles = useBodyStyles();
   const navigate = useNavigate();
   const payload = useRef<Record<string, boolean>>({});
@@ -36,9 +37,11 @@ const Onboarding: FC<{ setIsLoggedIn: (arg: boolean) => void }> = ({ setIsLogged
 
   return (
     <>
-      <SiteThemeSwitch />
-      <div className="card border-grey d-col container justify-center align-center">
-        <div className="w-50 h-100 d-col justify-center align-center g-1">
+      <div
+        className=" d-col container justify-center align-center"
+        style={{ boxSizing: "border-box" }}
+      >
+        <div className="h-100 d-col justify-center align-center g-1">
           <div className="">
             <svg
               className="icon"
@@ -66,7 +69,7 @@ const Onboarding: FC<{ setIsLoggedIn: (arg: boolean) => void }> = ({ setIsLogged
               value={"y"}
               name="visible"
               className="btn primary w-100"
-              style={{ height: "3rem" }}
+              // style={{ height: "3rem" }}
               onClick={handleChoice}
             >
               Make visible

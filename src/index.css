@@ -119,6 +119,7 @@ input {
   background-color: transparent;
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-primary);
+  box-sizing: border-box;
   padding: var(--padding);
   font-size: 1rem;
 }
@@ -436,11 +437,33 @@ tr:hover {
   border-radius: var(--border-radius-primary);
   border: 1px solid var(--border-color);
   width: 100%;
+  box-sizing: border-box;
 }
 
 .card.chart-container {
   display: flex;
   flex-direction: column;
+}
+
+.card.flexible {
+  width: 100%;
+  height: auto;
+}
+
+@media (min-width: 900px) {
+  .card.flexible {
+    width: 30%;
+    height: auto;
+    max-height: 70%;
+  }
+}
+
+@media (max-width: 900px) {
+  .card.flexible {
+    width: 80%;
+    height: auto;
+    max-height: 80%;
+  }
 }
 
 .card.overlay {

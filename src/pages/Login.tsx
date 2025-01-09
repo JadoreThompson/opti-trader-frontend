@@ -30,7 +30,8 @@ const Login: FC<{ setIsLoggedIn: (arg: boolean) => void }> = ({
   }
 
   return (
-    <div className="card container d-col">
+    <div className=" container d-col" style={{ boxSizing: "border-box" }}>
+      <h1>Login</h1>
       <form onSubmit={formHandler}>
         <div className="w-100">
           <label htmlFor="email" className="secondary small">
@@ -39,6 +40,7 @@ const Login: FC<{ setIsLoggedIn: (arg: boolean) => void }> = ({
           <input
             type="email"
             className="w-100 rounded"
+            style={{ boxSizing: "border-box" }}
             name="email"
             id="email"
             required
@@ -51,6 +53,7 @@ const Login: FC<{ setIsLoggedIn: (arg: boolean) => void }> = ({
           <input
             type="password"
             className="w-100 rounded"
+            style={{ boxSizing: "border-box" }}
             name="password"
             id="password"
             required
@@ -67,6 +70,12 @@ const Login: FC<{ setIsLoggedIn: (arg: boolean) => void }> = ({
           </div>
         )}
       </form>
+      <div className="w-100 everything-center mt-1">
+        <span style={{ marginRight: "0.1rem" }}>Don't have an account?</span>
+        <a style={{ color: "blue" }} href="/auth/register">
+          Register
+        </a>
+      </div>
     </div>
   );
 };

@@ -4,7 +4,9 @@ import { setCookie } from "typescript-cookie";
 import RequestBuilder from "../utils/RequestBuilder";
 import Utility from "../utils/Utility";
 
-const Register: FC<{ setShowOnboarding: (arg: boolean) => void }> = ({ setShowOnboarding }) => {
+const Register: FC<{ setShowOnboarding: (arg: boolean) => void }> = ({
+  setShowOnboarding,
+}) => {
   const emailRef = useRef<string>();
   const [displayConfirmation, setDisplayConfirmation] =
     useState<boolean>(false);
@@ -96,7 +98,6 @@ const Register: FC<{ setShowOnboarding: (arg: boolean) => void }> = ({ setShowOn
     if (resendDisabled) {
       delayResend();
     }
-
   }, [resendDisabled]);
 
   async function resendToken(
@@ -124,7 +125,7 @@ const Register: FC<{ setShowOnboarding: (arg: boolean) => void }> = ({ setShowOn
   return (
     <>
       {displayConfirmation ? (
-        <div className="card container d-col">
+        <div className=" container d-col">
           <div className="d-row justify-start">
             <svg
               className="icon"
@@ -142,6 +143,7 @@ const Register: FC<{ setShowOnboarding: (arg: boolean) => void }> = ({ setShowOn
               />{" "}
             </svg>
           </div>
+          <h1>Confirm</h1>
           <div className="w-100">
             <form onSubmit={confirmationFormHandler}>
               <label htmlFor="token">Enter token</label>
@@ -179,7 +181,8 @@ const Register: FC<{ setShowOnboarding: (arg: boolean) => void }> = ({ setShowOn
           </div>
         </div>
       ) : (
-        <div className="card container">
+        <div className="container d-col" style={{ minHeight: 0 }}>
+          <h1>Register</h1>
           <form onSubmit={registerFormHandler}>
             <div className="w-100">
               <label htmlFor="username" className="secondary small">
@@ -230,6 +233,14 @@ const Register: FC<{ setShowOnboarding: (arg: boolean) => void }> = ({ setShowOn
               <span className="error">{errorMessage}</span>
             </div>
           </form>
+          <div className="w-100 everything-center mt-1">
+            <span style={{ marginRight: "0.1rem" }}>
+              Already have an account?
+            </span>
+            <a style={{ color: "blue" }} href="/auth/login">
+              Login
+            </a>
+          </div>
         </div>
       )}
     </>

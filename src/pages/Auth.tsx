@@ -11,10 +11,10 @@ const Auth: FC = () => {
   const [cardNum, setCardNum] = useState<number>(0);
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
 
-  // useEffect(() => {
-  //   const p = location.pathname.split("/")[2];
-  //   p === "login" ? setCardNum(0) : setCardNum(1);
-  // }, [location.pathname]);
+  useEffect(() => {
+    const p = location.pathname.split("/")[2];
+    p === "login" ? setCardNum(0) : setCardNum(1);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (showOnboarding) {
@@ -30,11 +30,15 @@ const Auth: FC = () => {
 
   return (
     <>
-      {cardNum === 0 ? <Login setIsLoggedIn={setIsLoggedIn}/> : null}
-      {cardNum === 1 ? (
-        <Register setShowOnboarding={setShowOnboarding} />
-      ) : null}
-      {cardNum === 2 ? <Onboarding setIsLoggedIn={setIsLoggedIn} /> : null}
+      <div className="w-100 h-100 everything-center">
+        <div className="container card flexible">
+          {cardNum === 0 ? <Login setIsLoggedIn={setIsLoggedIn} /> : null}
+          {cardNum === 1 ? (
+            <Register setShowOnboarding={setShowOnboarding} />
+          ) : null}
+          {cardNum === 2 ? <Onboarding setIsLoggedIn={setIsLoggedIn} /> : null}
+        </div>
+      </div>
     </>
   );
 };
