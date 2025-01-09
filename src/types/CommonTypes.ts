@@ -3,6 +3,17 @@ export enum MarketType {
     FUTURES = 'futures',
 }
 
+export enum OrderType {
+    MARKET_ORDER = 'market_order',
+    LIMIT_ORDER = 'limit_order',
+    CLOSE_ORDER = 'close_order',
+}
+
+export enum Side {
+    LONG = 'long',
+    SHORT = 'short'
+}
+
 export const OrderStatus  = {
     FILLED: 'filled',
     PARTIALLY_FILLED: 'partially_filled',

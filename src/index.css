@@ -121,6 +121,10 @@ input:focus {
   outline: none;
 }
 
+input.text-secondary {
+  color: var(--text-color-secondary);
+}
+
 span {
 }
 
@@ -251,6 +255,10 @@ li.small {
   align-items: center;
 }
 
+.border-box {
+  box-sizing: border-box;
+}
+
 .border-radius-1 {
   border-radius: var(--border-radius-primary) !important;
 }
@@ -298,6 +306,22 @@ li.small {
   cursor: pointer;
   transition: linear 0.2s;
   box-shadow: 0px 0px 3px 2px;
+}
+
+.btn.positive {
+  background-color: var(--green);
+}
+
+.btn.positive:hover {
+  box-shadow: 0px 0px 1px 1px var(--green) !important;
+}
+
+.btn.negative {
+  background-color: var(--red);
+}
+
+.btn.negative:hover {
+  box-shadow: 0px 0px 1px 1px var(--red) !important;
 }
 
 .btn.primary {
@@ -441,11 +465,19 @@ li.small {
 .dom-element {
   width: 0;
   background-color: red;
-  transition: width 1s;
+  transition: width 0.5s;
 }
 
 .dom-element.active {
   transition-timing-function: linear;
+}
+
+.dual-button .btn {
+  border-radius: var(--border-radius-primary) 0 0 var(--border-radius-primary);
+}
+
+.dual-button .btn:last-child {
+  border-radius: 0 var(--border-radius-primary) var(--border-radius-primary) 0;
 }
 
 .d-col {
@@ -474,23 +506,19 @@ li.small {
   justify-content: flex-end;
 }
 
-.g-1 {
+.gap-1 {
   display: flex;
   gap: 1rem;
 }
 
-.justify-center {
+.gap-2 {
   display: flex;
-  justify-content: center;
+  gap: 2rem;
 }
 
-.justify-end {
+.gap-3 {
   display: flex;
-  justify-content: flex-end;
-}
-
-.justify-sb {
-  justify-content: space-between;
+  gap: 3rem;
 }
 
 .global-layout {
@@ -521,6 +549,11 @@ li.small {
   .global-layout-inner {
     width: 55% !important;
   }
+}
+
+.g-1 {
+  display: flex;
+  gap: 1rem;
 }
 
 .header.profile {
@@ -554,12 +587,30 @@ li.small {
   display: block;
 }
 
+.justify-center {
+  display: flex;
+  justify-content: center;
+}
+
+.justify-end {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.justify-sb {
+  justify-content: space-between;
+}
+
 .mb-05 {
   margin-bottom: 0.5rem;
 }
 
 .mb-1 {
   margin-bottom: 1rem;
+}
+
+.mb-2 {
+  margin-bottom: 2rem;
 }
 
 .mb-3 {

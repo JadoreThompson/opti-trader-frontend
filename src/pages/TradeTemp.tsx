@@ -6,6 +6,7 @@ import Header from "../components/Header";
 import OrderFolder from "../components/OrderFolder";
 import TickerChart from "../components/TickerChart";
 import RequestBuilder from "../utils/RequestBuilder";
+import OrderCreationForm from "../components/OrderCreationForm";
 
 const TradeTemp: FC = () => {
   const { ticker } = useParams();
@@ -61,14 +62,15 @@ const TradeTemp: FC = () => {
         content={
           <>
             {/* <TickerChart ticker={ticker!} />
-            <OrderFolder ticker={ticker!} /> */}
+            <OrderFolder ticker={ticker!} />
             <DOM
               asks={asks}
               bids={bids}
               ticker={ticker!}
               currentPrice={currentPrice!}
-              lastPrice={lastPrice}
-            />
+              lastPrice={lastPrice!}
+            /> */}
+            <OrderCreationForm ticker={ticker!} websocket={websocket}/>
           </>
         }
       />
