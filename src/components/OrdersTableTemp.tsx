@@ -219,7 +219,6 @@ const OrdersTableTemp: FC<{
             <div
               className="overlay-container d-flex justify-center align-center"
               id="modifyOrderCard"
-              style={{ display: "none" }}
             >
               <div className="card overlay">
                 <div className="card-title justify-end">

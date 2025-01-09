@@ -60,7 +60,7 @@ const Profile: FC = () => {
                     <img className="" src={imgUrl} alt="" />
                   </div>
                   <div className="d-col pt-1" style={{ flex: 6 }}>
-                    <div className="b-0">
+                    <div className="bottom-0">
                       <div>
                         <h1 id="username">{displayName}</h1>
                       </div>
@@ -74,7 +74,7 @@ const Profile: FC = () => {
                   </div>
                   <div className="pt-1" style={{ flex: 2 }}>
                     <button
-                      className="btn primary br-secondary"
+                      className="btn primary border-radius-2"
                       style={{ width: "100%" }}
                     >
                       Follow

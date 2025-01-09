@@ -127,7 +127,7 @@ const PerformanceCard: FC<{ username: string; marketType: MarketType }> = ({
             {Object.keys(performanceKeys).map((key, index) => (
               <div key={index} className="d-row justify-sb mb-05">
                 <span className="secondary">{performanceKeys[key]}</span>
-                <span>{performanceData[key]}</span>
+                <span>{performanceData[key] ? performanceData[key] : '-'}</span>
               </div>
             ))}
           </>

@@ -251,9 +251,13 @@ li.small {
   font-size: 0.75rem;
 }
 
+.a {}
+
 .align-center {
   align-items: center;
 }
+
+.b {}
 
 .border-box {
   box-sizing: border-box;
@@ -281,6 +285,10 @@ li.small {
 
 .border-secondary:hover {
   box-shadow: 0px 0px 3px 2px var(--secondary-color) !important;
+}
+
+.border-underline {
+  border-bottom: 1px solid var(--border-color);
 }
 
 .btn {
@@ -386,7 +394,7 @@ li.small {
   transition: background-color 0.7s ease-in-out;
 }
 
-.b-0 {
+.bottom-0 {
   bottom: 0;
 }
 
@@ -480,6 +488,10 @@ li.small {
   border-radius: 0 var(--border-radius-primary) var(--border-radius-primary) 0;
 }
 
+.dual-button .btn.active {
+  color: var(--text-color-primary);
+}
+
 .d-col {
   display: flex;
   flex-direction: column;
@@ -493,8 +505,6 @@ li.small {
   display: flex;
   flex-direction: row;
 }
-
-/* .ease-in {} */
 
 .everything-center {
   display: flex;
@@ -554,6 +564,21 @@ li.small {
 .g-1 {
   display: flex;
   gap: 1rem;
+}
+
+.g-2 {
+  display: flex;
+  gap: 2rem;
+}
+
+.g-3 {
+  display: flex;
+  gap: 3rem;
+}
+
+.g-4 {
+  display: flex;
+  gap: 4rem;
 }
 
 .header.profile {
@@ -639,6 +664,7 @@ li.small {
 
 .overlay-container {
   position: fixed;
+  display: none;
   height: 100vh;
   width: 100%;
   top: 0;
@@ -709,6 +735,8 @@ li.small {
   background-color: #d9534f;
 }
 
+.t {}
+
 .tab-bar {
   display: flex;
   flex-direction: row;
@@ -743,6 +771,10 @@ li.small {
 
 .tab-bar .btn:hover span {
   color: var(--text-color-primary);
+}
+
+.text-secondary {
+  color: var(--text-color-secondary);
 }
 
 .w-100 {
