@@ -661,6 +661,10 @@ tr:hover {
 .f {
 }
 
+.fixed {
+  position: fixed;
+}
+
 .flex-end {
   justify-content: flex-end;
 }
@@ -711,6 +715,10 @@ tr:hover {
   }
 }
 
+.grid {
+  display: grid;
+}
+
 .g-1 {
   display: flex;
   gap: 1rem;
@@ -731,6 +739,8 @@ tr:hover {
   gap: 4rem;
 }
 
+.h {}
+
 .header.profile {
   height: 10rem;
   display: flex;
@@ -742,6 +752,10 @@ tr:hover {
   padding-top: 0;
   margin: 0;
   line-height: 1;
+}
+
+.h-auto {
+  height: auto;
 }
 
 .h-100 {
@@ -770,6 +784,10 @@ tr:hover {
 .justify-end {
   display: flex;
   justify-content: flex-end;
+}
+
+.justify-center-sa {
+  justify-content: space-around;
 }
 
 .justify-sb {
@@ -885,6 +903,10 @@ label.small {
   }
 }
 
+.p-1 {
+  padding: 1rem;
+}
+
 .pt-1 {
   padding-top: 1rem;
 }
@@ -896,6 +918,8 @@ label.small {
 .pt-5 {
   padding-top: 5rem;
 }
+
+.s {}
 
 .sidebar {
   height: 100vh;

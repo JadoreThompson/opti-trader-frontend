@@ -90,6 +90,8 @@ const TickerChart: FC<{ ticker: string }> = ({ ticker }) => {
         seriesRef.current.setData(data);
 
         chart.timeScale().fitContent();
+
+        window.addEventListener('resize', () => chart.resize(window.innerWidth, window.innerHeight))
       }
     })();
   }, [data, bodyStyles]);
@@ -97,7 +99,7 @@ const TickerChart: FC<{ ticker: string }> = ({ ticker }) => {
   return (
     <>
       <>
-        <div className="card chart-container ticker-chart">
+        <div className="card chart-container ticker-chart border-box w-100">
           <div className="d-row align-center justify-sb">
             <div className="btn-radio-group transparent">
               {Object.values(ChartIntervals).map((value, index) => (

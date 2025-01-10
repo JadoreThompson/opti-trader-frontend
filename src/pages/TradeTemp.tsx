@@ -5,6 +5,7 @@ import DOM from "../components/DOM";
 import Header from "../components/Header";
 import OrderCreationForm from "../components/OrderCreationForm";
 import OrderFolder from "../components/OrderFolder";
+import TickerChart from "../components/TickerChart";
 import RequestBuilder from "../utils/RequestBuilder";
 
 const TradeTemp: FC = () => {
@@ -60,16 +61,36 @@ const TradeTemp: FC = () => {
       <Header
         content={
           <>
-            {/* <TickerChart ticker={ticker!} /> */}
-            <OrderFolder ticker={ticker!} />
-            <DOM
-              asks={asks}
-              bids={bids}
-              ticker={ticker!}
-              currentPrice={currentPrice!}
-              lastPrice={lastPrice!}
-            />
-            <OrderCreationForm ticker={ticker!} websocket={websocket} />
+            <div className="w-100 h-auto p-1 border-box">
+              <div
+                // className="d-row g-1 mb-1"
+                style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gridGap: '1rem' }}
+              >
+                <div className="d-col">
+                  <div
+                    className="grid mb-1"
+                    style={{
+                      gridTemplateColumns: "3fr 1fr",
+                      gridGap: "1rem",
+                      maxHeight: "20rem",
+                    }}
+                  >
+                    <TickerChart ticker={ticker!} />
+                    <DOM
+                      asks={asks}
+                      bids={bids}
+                      ticker={ticker!}
+                      currentPrice={currentPrice!}
+                      lastPrice={lastPrice!}
+                    />
+                  </div>
+                  <OrderFolder ticker={ticker!} />
+                </div>
+                <div className="">
+                  <OrderCreationForm ticker={ticker!} websocket={websocket!} />
+                </div>
+              </div>
+            </div>
           </>
         }
       />

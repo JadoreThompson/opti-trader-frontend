@@ -25,14 +25,18 @@ const DOM: FC<{
     let nums: number[] = [];
     Object.values(bids).forEach((item) => nums.push(item));
 
-    const maxAsk = Math.max(...Object.values(asks));
-    const maxBid = Math.max(...Object.values(bids));
+    const maxAsk = Math.max(
+      ...Object.keys(asks).map((key) => Number(key) * Number(asks[Number(key)]))
+    );
+    const maxBid = Math.max(
+      ...Object.keys(bids).map((key) => Number(key) * Number(bids[Number(key)]))
+    );
     setMaxNum(maxAsk > maxBid ? maxAsk : maxBid);
   }, [asks, bids]);
 
   return (
     <div
-      className="card w-100"
+      className="card w-100 h-100"
       style={{
         width: "100%",
         display: `${
@@ -42,7 +46,7 @@ const DOM: FC<{
         }`,
       }}
     >
-      <div className="w-100 d-col">
+      <div className="w-100 h-100 d-col justify-sa" style={{ height: '100%' }}>
         <ul className="w-100 d-flex justify-sb">
           <li className="secondary small w-100">Price (USDT)</li>
           <li className="secondary small w-100 right">Quantity ({ticker})</li>
@@ -53,7 +57,7 @@ const DOM: FC<{
           .reverse()
           .map(([price, quantity], index) => (
             <>
-              <div key={index} className="w-100" style={{ display: "grid" }}>
+              <div key={index} className="w-100 h-100 align-center" style={{ display: "grid" }}>
                 <ul
                   className="w-100 d-flex justify-sb"
                   style={{ gridColumn: 1, gridRow: 1 }}
@@ -68,8 +72,9 @@ const DOM: FC<{
                     gridColumn: 1,
                     gridRow: 1,
                     height: "100%",
-                    width: `${(quantity * price) / maxNum}%`,
+                    width: `${((quantity * price) / maxNum) * 100}%`,
                     backgroundColor: bodyStyles.getPropertyValue("--red-soft"),
+                    boxSizing: "border-box",
                   }}
                 ></div>
               </div>
@@ -126,7 +131,7 @@ const DOM: FC<{
           .reverse()
           .map(([price, quantity], index) => (
             <>
-              <div key={index} className="w-100" style={{ display: "grid" }}>
+              <div key={index} className="w-100 h-100 align-center" style={{ display: "grid" }}>
                 <ul
                   className="w-100 d-flex justify-sb"
                   style={{ gridColumn: 1, gridRow: 1 }}
@@ -141,7 +146,7 @@ const DOM: FC<{
                     gridColumn: 1,
                     gridRow: 1,
                     height: "100%",
-                    width: `${(quantity * price) / maxNum}%`,
+                    width: `${((quantity * price) / maxNum) * 100}%`,
                     backgroundColor:
                       bodyStyles.getPropertyValue("--green-soft"),
                   }}

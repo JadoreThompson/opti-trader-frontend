@@ -8,7 +8,7 @@ const OrderCreationForm: FC<{ ticker: string; websocket: WebSocket }> = ({
   const [currentOrderType, setCurrentOrderType] = useState<OrderType>(
     OrderType.MARKET_ORDER
   );
-  const [currentMarketType, setMarketType] = useState<null | MarketType>(null);
+  const [currentMarketType, setMarketType] = useState<null | MarketType>(MarketType.SPOT);
 
   const formSubmitHandler: (e: React.FormEvent<HTMLFormElement>) => void = (
     e: React.FormEvent<HTMLFormElement>
@@ -95,6 +95,7 @@ const OrderCreationForm: FC<{ ticker: string; websocket: WebSocket }> = ({
               name="quantity"
               min={1}
               step={1}
+              required
             />
           </div>
           <div className="w-100 d-row justify-sb gap-1">
@@ -127,9 +128,7 @@ const OrderCreationForm: FC<{ ticker: string; websocket: WebSocket }> = ({
                 type="number"
                 name="limit_price"
                 id="limitPrice"
-                required={
-                  currentOrderType === OrderType.LIMIT_ORDER ? true : false
-                }
+                required={currentOrderType === OrderType.LIMIT_ORDER}
               />
             </div>
           ) : null}
