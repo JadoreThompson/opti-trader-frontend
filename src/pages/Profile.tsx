@@ -2,13 +2,14 @@ import { FC, useEffect, useState } from "react";
 
 // Local
 import { useParams } from "react-router-dom";
-import Header from "../components/Header";
-import { MarketType, OrderStatus } from "../types/CommonTypes";
 import AssetAllocation from "../components/AssetAllocation";
+import CopyTradeForm from "../components/CopyTradeForm";
+import Header from "../components/Header";
 import PerformanceCard from "../components/PerformanceCard";
 import PortfolioGrowthCard from "../components/PortfolioGrowthCard";
 import UserOrdersProfileCard from "../components/UserOrdersProfileCard";
 import WeekdayGains from "../components/WeekdayGains";
+import { MarketType, OrderStatus } from "../types/CommonTypes";
 
 const imgUrl: string =
   "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgDw7HXLDZfXQoJReyeHR8IqyPYAp6RWpjs4Dp9MwZ49HoJl2RsXRTGxqnUlzPgtFTbsA7a2upeCQeyPg-2w5qEmpBOxlPkqbfGv48AFW1OyNZ6WIuZt5dI-NVtflu1NPjqE8oJUi4I57oMVtiAStrRnmgjjAf5WQ6_sbd8UYoDhloMBdSRnpIgjY6EdOML/s1920/photo_6291852644980997101_w.jpg";
@@ -16,7 +17,9 @@ const imgUrl: string =
 const Profile: FC = () => {
   const { user } = useParams();
 
+  const [tab, setTab] = useState<number>(0);
   const [displayName, setDisplayName] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState<boolean>(false);
   const [username, setUsername] = useState<string | null>(null);
   const [currentMarketType, setCurrentMarketType] = useState<MarketType>(
     MarketType.SPOT
@@ -27,6 +30,8 @@ const Profile: FC = () => {
     setDisplayName(user!);
     storedUser === user ? null : setUsername(user!);
   }, []);
+
+  useEffect(() => console.log(currentMarketType), [currentMarketType]);
 
   return (
     <>
@@ -74,51 +79,87 @@ const Profile: FC = () => {
                   </div>
                   <div className="pt-1" style={{ flex: 2 }}>
                     <button
-                      className="btn primary border-radius-2"
-                      style={{ width: "100%" }}
+                      className="btn primary border-radius-2 w-100"
+                      // style={{ width: "100%" }}
+                      onClick={() => setShowForm(true)}
                     >
-                      Follow
+                      Copy
                     </button>
                   </div>
                 </div>
                 <div>
-                  <div className="tab-bar underline">
-                    <button className="btn active">
+                  <div className="tab-bar mb-1">
+                    <button
+                      className={`btn ${tab === 0 ? "active" : ""}`}
+                      onClick={() => setTab(0)}
+                    >
                       <span className="secondary">Overview</span>
                     </button>
-                    <button className="btn">
+                    <button
+                      className={`btn ${tab === 1 ? "active" : ""}`}
+                      onClick={() => setTab(1)}
+                    >
                       <span className="secondary">Performance</span>
                     </button>
-                    <button className="btn">
+                    <button
+                      className={`btn ${tab === 2 ? "active" : ""}`}
+                      onClick={() => setTab(2)}
+                    >
                       <span className="secondary">Orders</span>
                     </button>
                   </div>
                 </div>
-                <div>
+                {tab === 0 ? (
+                  <>
+                    <div
+                      className=""
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 2fr",
+                        gridGap: "1rem",
+                      }}
+                    >
+                      <div className="">
+                        <PerformanceCard
+                          username={username!}
+                          marketType={currentMarketType}
+                        />
+                      </div>
+                      <div className="d-col g-1">
+                        <WeekdayGains
+                          username={username}
+                          marketType={currentMarketType}
+                        />
+                        <AssetAllocation
+                          username={username}
+                          marketType={currentMarketType}
+                        />
+                      </div>
+                    </div>
+                  </>
+                ) : null}
+                {tab === 1 ? (
                   <PortfolioGrowthCard
                     username={username}
                     marketType={currentMarketType}
                   />
-                  <PerformanceCard
-                    username={username!}
-                    marketType={currentMarketType}
-                  />
-                  <AssetAllocation
-                    username={username}
-                    marketType={currentMarketType}
-                  />
-                  <WeekdayGains
-                    username={username}
-                    marketType={currentMarketType}
-                  />
+                ) : null}
+                {tab === 2 ? (
                   <UserOrdersProfileCard
                     username={username}
                     marketType={currentMarketType}
                     orderStatus={OrderStatus.CLOSED}
                   />
-                </div>
+                ) : null}
               </div>
             </div>
+            {showForm ? (
+              <CopyTradeForm
+                username={username!}
+                visible={showForm}
+                setVisible={setShowForm}
+              />
+            ) : null}
           </>
         }
       />

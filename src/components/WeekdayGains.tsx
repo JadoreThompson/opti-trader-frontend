@@ -18,8 +18,9 @@ const WeekdayGains: FC<{ username: string | null; marketType: MarketType }> = ({
     }
 
     const container = document.getElementById("weekdayGainsChart")!;
+    container.innerHTML = '';
     var chartDom = container;
-    var myChart = echarts.init(chartDom);
+    var chart = echarts.init(chartDom);
     var option: echarts.EChartsOption;
 
     var series = [
@@ -105,10 +106,12 @@ const WeekdayGains: FC<{ username: string | null; marketType: MarketType }> = ({
       series: series as any,
     };
 
-    option && myChart.setOption(option);
+    option && chart.setOption(option);
     window.addEventListener("resize", () => {
-      myChart.resize();
+      chart.resize();
     });
+
+    return chart.dispose();
   };
 
   useEffect(() => {
@@ -140,7 +143,7 @@ const WeekdayGains: FC<{ username: string | null; marketType: MarketType }> = ({
 
   return (
     <>
-      <div className="card chart-container weekday-gains">
+      <div className="card chart-container weekday-gains w-100">
         <h2>Weekday Gains</h2>
         <div className="chart" id="weekdayGainsChart"></div>
       </div>

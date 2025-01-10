@@ -94,17 +94,17 @@ const FollowTemp: FC = () => {
     }
     
     lastPageNum.current = -1;
-    // try {
-    //   const { data } = await axios.get(
-    //     RequestBuilder.getBaseUrl() +
-    //       `/accounts/search?prefix=${element.value}`,
-    //     RequestBuilder.constructHeader()
-    //   );
-    // } catch (err) {
-    //   if (err instanceof axios.AxiosError) {
-    //     console.error(err.response?.data.error);
-    //   }
-    // }
+    try {
+      const { data } = await axios.get(
+        RequestBuilder.getBaseUrl() +
+          `/accounts/search?prefix=${element.value}`,
+        RequestBuilder.constructHeader()
+      );
+    } catch (err) {
+      if (err instanceof axios.AxiosError) {
+        console.error(err.response?.data.error);
+      }
+    }
   }
 
   useEffect(() => {

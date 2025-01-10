@@ -862,7 +862,7 @@ label.small {
 
 .profile-collection {
   display: grid;
-  grid-template-columns: repeat(4, 100% - (1rem * 4));
+  grid-template-columns: repeat(3, calc((100% / 3) - 0.67rem));
   grid-gap: 1rem;
   box-sizing: border-box;
 }

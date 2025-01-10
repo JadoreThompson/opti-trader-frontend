@@ -102,31 +102,6 @@ const CopyTradeForm: FC<{
               className="d-row dual-button w-100 align-center"
               style={{ boxSizing: "border-box" }}
             >
-              {/* {[OrderType.LIMIT_ORDER, OrderType.MARKET_ORDER].map(
-                (value, index) => (
-                  <>
-                    <div className="w-100" style={{ display: "grid" }}>
-                      <button
-                        key={index}
-                        className="btn w-100 h-100 text-secondary"
-                        // style={{ boxSizing: "border-box" }}
-                        style={{ gridColumn: 1, gridRow: 1, borderRadius:  }}
-                        onClick={checkboxHandler}
-                      >
-                        {value.toUpperCase()}
-                        <input
-                          type="checkbox"
-                          name={value}
-                          id={value}
-                          // style={{ height: 0 }}
-                          style={{ gridColumn: 1, gridRow: 1, height: 0 }}
-                        />
-                      </button>
-                    </div>
-                  </>
-                )
-              )} */}
-
               <div className="w-100" style={{ display: "grid" }}>
                 <button
                   className="btn w-100 h-100 text-secondary"

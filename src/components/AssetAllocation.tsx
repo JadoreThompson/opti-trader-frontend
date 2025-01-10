@@ -12,14 +12,9 @@ const AssetAllocation: FC<{
     null | Record<string, string | number>[]
   >(null);
 
-  const loadChart: (data: Record<string, string | number>[]) => void = (
-    data
-  ): void => {
-    if (!data) {
-      return;
-    }
-
+  function loadChart(data: Record<string, string | number>[]): void {
     const container = document.getElementById("assetAllocationChart")!;
+    // container.innerHTML = "";
     var chartDom = container;
     var chart = echarts.init(chartDom);
     var option: echarts.EChartOption;
@@ -68,7 +63,7 @@ const AssetAllocation: FC<{
 
     option && chart.setOption(option);
     window.addEventListener("resize", () => chart.resize());
-  };
+  }
 
   useEffect(() => {
     (async () => {
@@ -81,7 +76,10 @@ const AssetAllocation: FC<{
               }`,
             RequestBuilder.constructHeader()
           )
-          .then((response) => response.data)
+          .then((response) => {
+            console.log('asset allocation', response.data, marketType);
+            return response.data
+          })
           .catch((err) => {
             if (err instanceof axios.AxiosError) {
               console.error(err);
@@ -93,7 +91,9 @@ const AssetAllocation: FC<{
   }, [username, marketType]);
 
   useEffect(() => {
-    loadChart(chartData);
+    if (chartData) {
+      loadChart(chartData);
+    }
   }, [chartData]);
 
   return (
