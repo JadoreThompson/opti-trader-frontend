@@ -27,7 +27,6 @@ const OrdersTableTemp: FC<{
   orderStatus: null | OrderStatus[];
   websocket: undefined | WebSocket;
 }> = ({ ticker, marketType, orderStatus, websocket }) => {
-  // () => {
   const pageSize = 10;
 
   const [revealTable, setRevealTable] = useState<boolean>(false);
@@ -57,9 +56,9 @@ const OrdersTableTemp: FC<{
         await axios
           .get(
             RequestBuilder.getBaseUrl() +
-              `/portfolio/orders?${
-                ticker ? `ticker=${ticker}&` : ""
-              }${params.join("&")}`,
+              `/portfolio/orders?${params.join("&")}${
+                ticker ? `&ticker=${ticker}` : ""
+              }`,
             RequestBuilder.constructHeader()
           )
           .then((response) => response.data)
@@ -71,7 +70,7 @@ const OrdersTableTemp: FC<{
           })
       );
     })();
-  }, [orderStatus, marketType]);
+  }, [orderStatus, marketType, ticker]);
 
   useEffect(() => {
     setSortedData(data);

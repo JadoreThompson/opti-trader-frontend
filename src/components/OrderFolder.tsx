@@ -51,9 +51,7 @@ const OrderFolder: FC<{ ticker: undefined | string }> = ({ ticker }) => {
             <button
               className={`btn ${currentTab === Number(key) ? "active" : ""}`}
               key={ind}
-              onClick={(e) => {
-                setCurrentTab(Number(key));
-              }}
+              onClick={() => setCurrentTab(Number(key))}
             >
               <span className="secondary">
                 {tabs[Number(key)]["title"] as string}

@@ -991,11 +991,11 @@ label.small {
 }
 
 .tab-bar .btn.active {
-  border-bottom: 1px solid var(--primary-color) !important;
+  border-bottom: 1px solid var(--text-color-primary) !important;
 }
 
 .tab-bar .btn.active:hover {
-  border-bottom: 1px solid var(--primary-color) !important;
+  border-bottom: 1px solid var(--text-color-primary) !important;
 }
 
 .tab-bar .btn.active span {
