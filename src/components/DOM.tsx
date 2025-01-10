@@ -1,22 +1,24 @@
-import { FC, useEffect, useState } from "react";
-import { useBodyStyles } from "../utils/BodyStyles";
+import { FC, useContext, useEffect, useState } from "react";
+import { useBodyStyles } from "../hooks/BodyStyles";
+import TickerPriceContext from "../hooks/TickerPriceContext";
 
 const DOM: FC<{
   asks: null | Record<number, number>;
   bids: null | Record<number, number>;
   ticker: string;
-  currentPrice: Number;
-  lastPrice: Number;
-}> = ({ asks, bids, ticker, currentPrice, lastPrice }) => {
+}> = ({ asks, bids, ticker }) => {
   const bodyStyles = useBodyStyles();
+  const { lastPrice, currentPrice } = useContext(TickerPriceContext);
   const [increase, setIncrease] = useState<number>(0);
   // 0, 1, 2
   const [maxNum, setMaxNum] = useState<number>(0);
 
+  useEffect(() => console.log(increase), [increase]);
+
   useEffect(() => {
-    currentPrice > lastPrice
+    currentPrice! > lastPrice!
       ? setIncrease(2)
-      : currentPrice < lastPrice
+      : currentPrice! < lastPrice!
       ? setIncrease(1)
       : setIncrease(0);
   }, [lastPrice, currentPrice]);
@@ -98,11 +100,7 @@ const DOM: FC<{
             <div className="d-flex align-center">
               <h2
                 className={
-                  currentPrice > lastPrice
-                    ? "positive"
-                    : currentPrice < lastPrice
-                    ? "negative"
-                    : ""
+                  increase === 2 ? "positive" : increase === 1 ? "negative" : ""
                 }
               >
                 {String(currentPrice)}

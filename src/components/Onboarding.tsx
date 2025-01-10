@@ -1,7 +1,7 @@
 import axios from "axios";
 import { FC, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useBodyStyles } from "../utils/BodyStyles";
+import { useBodyStyles } from "../hooks/BodyStyles";
 import RequestBuilder from "../utils/RequestBuilder";
 
 const Onboarding: FC<{ setIsLoggedIn: (arg: boolean) => void }> = ({

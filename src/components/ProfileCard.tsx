@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
 import { Link } from "react-router-dom";
-import { useBodyStyles } from "../utils/BodyStyles";
+import { useBodyStyles } from "../hooks/BodyStyles";
 import CopyTradeForm from "./CopyTradeForm";
 
 export interface FollowCount {
@@ -29,7 +29,7 @@ const ProfileCard: FC<Profile> = ({
     <>
       <div className="card container">
         <Link to={`/profile/${username}`}>
-          <div className="w-100" style={{ boxSizing: 'border-box' }}>
+          <div className="w-100" style={{ boxSizing: "border-box" }}>
             <div className="img-container profile">
               <img src="" alt="PFP" />
             </div>
@@ -66,7 +66,7 @@ const ProfileCard: FC<Profile> = ({
               <span className="secondary small">30d Winrate</span>
               <span className="large">
                 {winrate !== null && winrate !== undefined
-                  ? String(Number(winrate) * 100) + '%'
+                  ? String(Number(winrate) * 100) + "%"
                   : "-"}
               </span>
             </div>

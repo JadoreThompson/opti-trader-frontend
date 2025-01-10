@@ -6,16 +6,16 @@ import {
   TimeScaleOptions,
   createChart,
 } from "lightweight-charts";
-import { FC, MutableRefObject, useEffect, useState } from "react";
-import { useBodyStyles } from "../utils/BodyStyles";
+import { FC, MutableRefObject, useContext, useEffect, useState } from "react";
+import { useBodyStyles } from "../hooks/BodyStyles";
 import RequestBuilder from "../utils/RequestBuilder";
+import TickerContext from "../hooks/TickerPriceContext";
 
 export enum ChartIntervals {
   M1 = "1m",
   M15 = "15m",
   H4 = "4h",
-
-};
+}
 
 export function toSeconds(interval: string): number {
   switch (interval) {
@@ -26,7 +26,7 @@ export function toSeconds(interval: string): number {
     case "4h":
       return 14400;
     default:
-      throw new Error('Invalid interval');
+      throw new Error("Invalid interval");
   }
 }
 
@@ -44,8 +44,9 @@ const TickerChart: FC<{
   setCurrentInterval,
 }) => {
   /*
-    chartRef: useRef for the chart instance to be held in
+    seriesRef: Holds the reference to the areaSeries used for the chart.
   */
+  const { setCurrentPrice } = useContext(TickerContext);
   const bodyStyles = useBodyStyles();
   const [data, setData] = useState<null | Record<string, Number | null>[]>(
     null
@@ -62,6 +63,11 @@ const TickerChart: FC<{
           )
           .then((response) => {
             seriesDataRef.current = response.data;
+
+            if (response.data.length > 0) {
+              setCurrentPrice(response.data[response.data.length - 1].close);
+            }
+
             return response.data;
           })
           .catch((err) => {

@@ -172,12 +172,18 @@ li.small {
   font-size: 0.75rem;
 }
 
-.p {
-  padding: var(--padding);
+p {}
+
+path.negative {
+  color: var(--red);
 }
 
 path.positive {
   color: var(--green);
+}
+
+.p {
+  padding: var(--padding);
 }
 
 .r {
