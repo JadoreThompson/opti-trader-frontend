@@ -27,14 +27,14 @@ const ProfileCard: FC<Profile> = ({
 
   return (
     <>
-      <div className="card container d-col">
+      <div className="card container">
         <Link to={`/profile/${username}`}>
-          <div className="d-row">
+          <div className="w-100" style={{ boxSizing: 'border-box' }}>
             <div className="img-container profile">
               <img src="" alt="PFP" />
             </div>
             <div className="d-col pt-1">
-              <h1>{username}</h1>
+              <h2>{username}</h2>
               <div className="d-row">
                 <svg
                   className="icon"
@@ -54,7 +54,7 @@ const ProfileCard: FC<Profile> = ({
             </div>
           </div>
           <div className="d-col border-underline mb-1">
-            <div className="d-row justify-sb">
+            <div className="d-row justify-sb align-center">
               <span className="secondary small">30d Profit</span>
               <span className="large">
                 {totalProfit !== null && totalProfit !== undefined
@@ -62,15 +62,15 @@ const ProfileCard: FC<Profile> = ({
                   : "-"}
               </span>
             </div>
-            <div className="d-row justify-sb">
+            <div className="d-row justify-sb align-center">
               <span className="secondary small">30d Winrate</span>
               <span className="large">
                 {winrate !== null && winrate !== undefined
-                  ? String(Number(winrate) * 100)
+                  ? String(Number(winrate) * 100) + '%'
                   : "-"}
               </span>
             </div>
-            <div className="d-row justify-sb">
+            <div className="d-row justify-sb align-center">
               <span className="secondary small">AUM</span>
               <span className="large">
                 {balance !== null && balance !== undefined

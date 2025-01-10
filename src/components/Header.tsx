@@ -5,13 +5,15 @@ import SiteThemeSwitch from "./SiteThemeSwitch";
 const Header: FC<{ content: ReactElement }> = ({ content }) => {
   return (
     <>
-        <header>
-            <Sidebar />
-            <SiteThemeSwitch />
-        </header>
-        <div style={{ paddingTop: "3rem", height: "100vh" }}>
-            {content}
-        </div>
+      <header>
+        <Sidebar />
+        <SiteThemeSwitch />
+      </header>
+      <div
+        style={{ paddingTop: "6rem", paddingBottom: "6rem", height: "100vh" }}
+      >
+        {content}
+      </div>
     </>
   );
 };

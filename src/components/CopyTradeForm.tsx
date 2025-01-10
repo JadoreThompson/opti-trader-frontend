@@ -1,6 +1,6 @@
 import axios from "axios";
 import { FC } from "react";
-import { MarketType, OrderType } from "../types/CommonTypes";
+import { MarketType } from "../types/CommonTypes";
 import RequestBuilder from "../utils/RequestBuilder";
 
 const CopyTradeForm: FC<{
@@ -75,12 +75,17 @@ const CopyTradeForm: FC<{
               />{" "}
             </svg>
           </div>
-          <form action="" onSubmit={handleSubmit}>
+          <form
+            action=""
+            onSubmit={handleSubmit}
+            className="h-100 d-col justify-center align-center"
+          >
             <div className="d-row dual-button w-100 align-center">
               {Object.values(MarketType).map((value, index) => (
                 <button
                   key={index}
                   className="btn w-100 text-secondary"
+                  style={{ boxSizing: "border-box" }}
                   onClick={checkboxHandler}
                 >
                   {value.toUpperCase()}
@@ -93,25 +98,78 @@ const CopyTradeForm: FC<{
                 </button>
               ))}
             </div>
-            <div className="d-row dual-button w-100 align-center">
-              {[OrderType.LIMIT_ORDER, OrderType.MARKET_ORDER].map(
+            <div
+              className="d-row dual-button w-100 align-center"
+              style={{ boxSizing: "border-box" }}
+            >
+              {/* {[OrderType.LIMIT_ORDER, OrderType.MARKET_ORDER].map(
                 (value, index) => (
-                  <button
-                    className="btn w-100 text-secondary"
-                    onClick={checkboxHandler}
-                  >
-                    {value.toUpperCase()}
-                    <input
-                      type="checkbox"
-                      name={value}
-                      id={value}
-                      style={{ height: 0 }}
-                    />
-                  </button>
+                  <>
+                    <div className="w-100" style={{ display: "grid" }}>
+                      <button
+                        key={index}
+                        className="btn w-100 h-100 text-secondary"
+                        // style={{ boxSizing: "border-box" }}
+                        style={{ gridColumn: 1, gridRow: 1, borderRadius:  }}
+                        onClick={checkboxHandler}
+                      >
+                        {value.toUpperCase()}
+                        <input
+                          type="checkbox"
+                          name={value}
+                          id={value}
+                          // style={{ height: 0 }}
+                          style={{ gridColumn: 1, gridRow: 1, height: 0 }}
+                        />
+                      </button>
+                    </div>
+                  </>
                 )
-              )}
+              )} */}
+
+              <div className="w-100" style={{ display: "grid" }}>
+                <button
+                  className="btn w-100 h-100 text-secondary"
+                  style={{
+                    gridColumn: 1,
+                    gridRow: 1,
+                    borderRadius:
+                      "var(--border-radius-primary) 0 0 var(--border-radius-primary)",
+                    border: "1px solid var(--border-color)",
+                  }}
+                  onClick={checkboxHandler}
+                >
+                  LIMIT ORDER
+                  <input
+                    type="checkbox"
+                    name="limit_order"
+                    id="limit_order"
+                    style={{ gridColumn: 1, gridRow: 1, height: 0 }}
+                  />
+                </button>
+              </div>
+
+              <div className="w-100" style={{ display: "grid" }}>
+                <button
+                  className="btn w-100 h-100 text-secondary"
+                  style={{
+                    gridColumn: 1,
+                    gridRow: 1,
+                    border: "1px solid var(--border-color)",
+                  }}
+                  onClick={checkboxHandler}
+                >
+                  MARKET ORDER
+                  <input
+                    type="checkbox"
+                    name="market_order"
+                    id="market_order"
+                    style={{ gridColumn: 1, gridRow: 1, height: 0 }}
+                  />
+                </button>
+              </div>
             </div>
-            <div className="">
+            <div className="w-100">
               <button
                 className="btn w-100 border-radius-2 primary"
                 type="submit"

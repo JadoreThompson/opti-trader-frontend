@@ -132,6 +132,10 @@ input.text-secondary {
   color: var(--text-color-secondary);
 }
 
+input.transparent {
+  border: none;
+}
+
 input.rounded {
   border-radius: var(--border-radius-secondary) !important;
 }
@@ -168,8 +172,19 @@ li.small {
   font-size: 0.75rem;
 }
 
+.p {
+  padding: var(--padding);
+}
+
 path.positive {
   color: var(--green);
+}
+
+.r {
+}
+
+.rounded {
+  border-radius: var(--border-radius-secondary);
 }
 
 span {
@@ -260,6 +275,71 @@ thead:hover tr {
 
 tr:hover {
   background-color: var(--background-color-secondary);
+}
+
+#a {
+}
+#b {
+}
+#c {
+}
+#d {
+}
+#e {
+}
+
+#f {
+}
+
+#followInner #expandButton {
+  width: 100%;
+}
+
+@media (min-width: 900px) {
+  #followInner #expandButton {
+    width: 50%;
+  }
+}
+
+#g {
+}
+#h {
+}
+#i {
+}
+#j {
+}
+#k {
+}
+#l {
+}
+#m {
+}
+#n {
+}
+#o {
+}
+#p {
+}
+#q {
+}
+#r {
+}
+#s {
+}
+#t {
+}
+#u {
+}
+#v {
+}
+#w {
+}
+#x {
+}
+#y {
+}
+#z {
 }
 
 .a {
@@ -473,7 +553,7 @@ tr:hover {
 }
 
 @media (min-width: 425px) {
-  .card.card.overlay {
+  .card.overlay {
     width: 50%;
     top: 20%;
   }
@@ -604,8 +684,9 @@ tr:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  height: auto;
   width: 100%;
+  padding-bottom: 4rem;
 }
 
 .global-layout-inner {
@@ -733,6 +814,10 @@ label.small {
   margin-bottom: 5rem;
 }
 
+.mr-1 {
+  margin-right: 1rem;
+}
+
 .mt-1 {
   margin-top: 1rem;
 }
@@ -757,11 +842,47 @@ label.small {
   top: 0;
   left: 0;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 5;
+  z-index: 90;
+}
+
+@media (max-width: 455px) {
+  .card.overlay {
+    top: 2% !important;
+    bottom: 2%;
+    width: 96% !important;
+  }
+}
+
+.p {
 }
 
 .pointer {
   cursor: pointer;
+}
+
+.profile-collection {
+  display: grid;
+  grid-template-columns: repeat(4, 100% - (1rem * 4));
+  grid-gap: 1rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1500px) {
+  .profile-collection {
+    grid-template-columns: repeat(3, calc((100% / 3) - 0.67rem)) !important;
+  }
+}
+
+@media (max-width: 1200px) {
+  .profile-collection {
+    grid-template-columns: repeat(2, 50%) !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .profile-collection {
+    grid-template-columns: repeat(1, 100%) !important;
+  }
 }
 
 .pt-1 {
