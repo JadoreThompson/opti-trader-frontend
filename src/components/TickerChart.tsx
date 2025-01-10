@@ -6,25 +6,50 @@ import {
   TimeScaleOptions,
   createChart,
 } from "lightweight-charts";
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, MutableRefObject, useEffect, useState } from "react";
 import { useBodyStyles } from "../utils/BodyStyles";
 import RequestBuilder from "../utils/RequestBuilder";
-enum ChartIntervals {
+
+export enum ChartIntervals {
   M1 = "1m",
   M15 = "15m",
   H4 = "4h",
+
+};
+
+export function toSeconds(interval: string): number {
+  switch (interval) {
+    case "1m":
+      return 60;
+    case "15m":
+      return 900;
+    case "4h":
+      return 14400;
+    default:
+      throw new Error('Invalid interval');
+  }
 }
 
-const TickerChart: FC<{ ticker: string }> = ({ ticker }) => {
+const TickerChart: FC<{
+  ticker: string;
+  seriesRef: MutableRefObject<any>;
+  seriesDataRef: MutableRefObject<undefined | Record<string, number>[]>;
+  currentInterval: ChartIntervals;
+  setCurrentInterval: (arg: ChartIntervals) => void;
+}> = ({
+  ticker,
+  seriesRef,
+  seriesDataRef,
+  currentInterval,
+  setCurrentInterval,
+}) => {
+  /*
+    chartRef: useRef for the chart instance to be held in
+  */
   const bodyStyles = useBodyStyles();
-
-  const [currentInterval, setCurrentInterval] = useState<ChartIntervals>(
-    ChartIntervals.H4
-  );
   const [data, setData] = useState<null | Record<string, Number | null>[]>(
     null
   );
-  const seriesRef = useRef<any>();
 
   useEffect(() => {
     (async () => {
@@ -35,7 +60,10 @@ const TickerChart: FC<{ ticker: string }> = ({ ticker }) => {
               `/instruments?ticker=${ticker}&interval=${currentInterval}`,
             RequestBuilder.constructHeader()
           )
-          .then((response) => response.data)
+          .then((response) => {
+            seriesDataRef.current = response.data;
+            return response.data;
+          })
           .catch((err) => {
             if (err instanceof axios.AxiosError) {
               console.error(err);
@@ -91,7 +119,9 @@ const TickerChart: FC<{ ticker: string }> = ({ ticker }) => {
 
         chart.timeScale().fitContent();
 
-        window.addEventListener('resize', () => chart.resize(window.innerWidth, window.innerHeight))
+        window.addEventListener("resize", () =>
+          chart.resize(window.innerWidth, window.innerHeight)
+        );
       }
     })();
   }, [data, bodyStyles]);
