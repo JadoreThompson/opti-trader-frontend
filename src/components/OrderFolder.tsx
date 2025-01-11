@@ -13,23 +13,11 @@ const tabs: Record<
       OrderStatus.PARTIALLY_FILLED,
       OrderStatus.PARTIALLY_CLOSED_ACTIVE,
     ],
-    marketType: [MarketType.FUTURES],
   },
 
   1: {
-    title: "Open Orders",
-    orderStatus: [
-      OrderStatus.FILLED,
-      OrderStatus.PARTIALLY_FILLED,
-      OrderStatus.PARTIALLY_CLOSED_ACTIVE,
-    ],
-    marketType: [MarketType.SPOT],
-  },
-
-  2: {
     title: "History",
     orderStatus: [OrderStatus.CLOSED],
-    marketType: [MarketType.SPOT, MarketType.FUTURES],
   },
 };
 
@@ -37,12 +25,11 @@ const OrderFolder: FC<{
   ticker: undefined | string;
   currentTab: number;
   setCurrentTab: (arg: number) => void;
-}> = ({ ticker, currentTab, setCurrentTab }) => {
+  pageMarketType: MarketType;
+}> = ({ ticker, currentTab, setCurrentTab, pageMarketType }) => {
   const [statusList, setStatusList] = useState<null | OrderStatus[]>(null);
-  const [marketType, setMarketType] = useState<null | MarketType[]>(null);
 
   useEffect(() => {
-    setMarketType(tabs[currentTab]["marketType"] as MarketType[]);
     setStatusList(tabs[currentTab]["orderStatus"] as OrderStatus[]);
   }, [currentTab]);
 
@@ -64,7 +51,7 @@ const OrderFolder: FC<{
         </div>
         <OrdersTableTemp
           ticker={ticker}
-          marketType={marketType}
+          marketType={pageMarketType}
           orderStatus={statusList}
           currentTab={currentTab}
         />

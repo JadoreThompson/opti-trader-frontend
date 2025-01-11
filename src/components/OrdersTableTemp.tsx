@@ -29,26 +29,26 @@ const closedTableHeaders: Record<string, string> = {
   side: "Side",
 };
 
-const tableHeaders: Record<string, string> = {
-  ticker: "Ticker",
-  quantity: "Quantity",
-  standing_quantity: "Remaning",
-  filled_price: "Entry Price",
-  close_price: "Exit Price",
-  realised_pnl: "Realised PnL",
-  market_type: "Market Type",
-};
+// const tableHeaders: Record<string, string> = {
+//   ticker: "Ticker",
+//   quantity: "Quantity",
+//   standing_quantity: "Remaning",
+//   filled_price: "Entry Price",
+//   close_price: "Exit Price",
+//   realised_pnl: "Realised PnL",
+//   market_type: "Market Type",
+// };
 
-const futuresTableHeaders: Record<string, string> = {
-  ...tableHeaders,
-  ...{
-    side: "Type",
-  },
-};
+// const futuresTableHeaders: Record<string, string> = {
+//   ...tableHeaders,
+//   ...{
+//     side: "Type",
+//   },
+// };
 
 const OrdersTableTemp: FC<{
   ticker: undefined | string;
-  marketType: null | MarketType[];
+  marketType: null | MarketType;
   orderStatus: null | OrderStatus[];
   websocket: undefined | WebSocket;
   currentTab: number;
@@ -80,18 +80,13 @@ const OrdersTableTemp: FC<{
         return;
       }
 
-      const params: string[] = [
-        orderStatus.map((item) => `order_status=${item}`).join("&"),
-        marketType.map((item) => `market_type=${item}`).join("&"),
-      ];
-
       setCurrentOrders(
         await axios
           .get(
             RequestBuilder.getBaseUrl() +
-              `/portfolio/orders?${params.join("&")}${
-                ticker ? `&ticker=${ticker}` : ""
-              }`,
+              `/portfolio/orders?market_type=${marketType}&${orderStatus
+                .map((item) => `order_status=${item}`)
+                .join("&")}${ticker ? `&ticker=${ticker}` : ""}`,
             RequestBuilder.constructHeader()
           )
           .then((response) => response.data)
@@ -116,17 +111,20 @@ const OrdersTableTemp: FC<{
     setCurrentIndex(0);
     setSortCategory(null);
     setSortNum(0);
+    setRevealTable(false);
   }, [currentTab]);
 
   useEffect(() => {
     if (sortedData) {
       if (sortedData.length > 0) {
         setMaxPages(Math.floor(sortedData.length / pageSize) + 1);
+        console.log("true");
         setRevealTable(true);
         return;
       }
     }
 
+    console.log("false");
     setRevealTable(false);
     return;
   }, [sortedData]);
@@ -156,7 +154,7 @@ const OrdersTableTemp: FC<{
   // useEffect(() => console.log(currentIndex), [currentIndex]);
 
   function getCellClass(key: string, value: string | Number): string {
-    if (key === "realised_pnl") {
+    if (key === "realised_pnl" || key === "unrealised_pnl") {
       return Number(value) < 0 ? "negative" : "positive";
     }
     return "";
@@ -173,6 +171,9 @@ const OrdersTableTemp: FC<{
     }
 
     if (key === "realised_pnl" || key === "unrealised_pnl") {
+      if (key === "unrealised_pnl") {
+        console.log(Number(value) < 0 ? `$${value}` : `+${value}`);
+      }
       return Number(value) < 0 ? `$${value}` : `+${value}`;
     }
 
@@ -308,13 +309,12 @@ const OrdersTableTemp: FC<{
         {!revealTable ? (
           <>
             <div
-              className="h-100 w-100 d-col"
               style={{
-                // height: "100%",
+                height: "100%",
                 maxHeight: "100%",
-                // width: "100%",
-                // display: "flex",
-                // flexDirection: "column",
+                width: "100%",
+                display: "flex",
+                flexDirection: "column",
               }}
             >
               <svg

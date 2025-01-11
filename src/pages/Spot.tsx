@@ -1,5 +1,4 @@
 import { FC, useContext, useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import { getCookie } from "typescript-cookie";
 import DOM from "../components/DOM";
 import Header from "../components/Header";
@@ -19,9 +18,26 @@ import {
 } from "../types/WebSocketMessage";
 import RequestBuilder from "../utils/RequestBuilder";
 
-const TradeTemp: FC = () => {
-  const navigate = useNavigate();
-  const { marketType, ticker } = useParams();
+// type Message = Record<string, null | string | Record<any, any>>;
+// enum MessageCategory {
+//   PRICE = "price",
+//   DOM = "dom",
+//   SUCCESS = "success",
+// }
+
+// enum UpdateScope {
+//   NEW = "new",
+//   EXISTING = "existing",
+// }
+
+// interface Message {
+//   category: MessageCategory;
+//   message: string;
+//   on: UpdateScope;
+//   details: null | Record<string, string | Number | Record<number, number>>;
+// }
+
+const SpotPage: FC<{ ticker: string }> = ({ ticker }) => {
   const { setLastPrice, setCurrentPrice } = useContext(TickerPriceContext);
   const { setCurrentOrders } = useContext(CurrentOrders);
 
@@ -46,10 +62,8 @@ const TradeTemp: FC = () => {
   const currentIntervalSecondsRef = useRef<number>();
 
   useEffect(() => {
-    if (!Object.values(MarketType).includes(marketType)) {
-      navigate("/404", { replace: false });
-    }
-  }, []);
+    currentIntervalSecondsRef.current = toSeconds(currentInterval.toString());
+  }, [currentInterval]);
 
   function updateChartPrice(message: Message): boolean {
     const details: Record<string, number> = message.details as Record<
@@ -162,10 +176,6 @@ const TradeTemp: FC = () => {
   }
 
   useEffect(() => {
-    currentIntervalSecondsRef.current = toSeconds(currentInterval.toString());
-  }, [currentInterval]);
-
-  useEffect(() => {
     const ws = new WebSocket(
       RequestBuilder.getBaseUrl().replace("http", "ws") + "/stream/trade"
     );
@@ -260,14 +270,14 @@ const TradeTemp: FC = () => {
                     ticker={ticker!}
                     currentTab={folderTab}
                     setCurrentTab={setFolderTab}
-                    pageMarketType={marketType as MarketType}
+                    pageMarketType={MarketType.SPOT}
                   />
                 </div>
                 <div className="">
                   <OrderCreationForm
                     ticker={ticker!}
                     websocket={websocket!}
-                    marketType={marketType as MarketType}
+                    marketType={MarketType.SPOT}
                   />
                 </div>
               </div>
@@ -307,4 +317,4 @@ const TradeTemp: FC = () => {
   );
 };
 
-export default TradeTemp;
+export default SpotPage;

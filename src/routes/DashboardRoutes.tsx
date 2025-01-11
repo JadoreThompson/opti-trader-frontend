@@ -29,8 +29,19 @@ const DashboardRoutes: FC = () => {
           <Route path="profile/:user" element={<Profile />} />
           <Route path="follow" element={<FollowTemp />} />
           <Route path="leaderboard" element={<Leaderboard />} />
-          <Route path="trade" element={<Navigate to="APPL" replace />} />
-          <Route path="trade/:ticker" element={<TradeTemp />} />
+          <Route
+            path="trade"
+            element={<Navigate to="/trade/spot/APPL" replace />}
+          />
+          <Route
+            path="trade/spot"
+            element={<Navigate to="/trade/spot/APPL" replace />}
+          />
+          <Route
+            path="trade/futures"
+            element={<Navigate to="/trade/futures/APPL" replace />}
+          />
+          <Route path="trade/:marketType/:ticker" element={<TradeTemp />} />
           <Route path="pairs" element={<Pairs />} />
         </Routes>
       </CurrentOrders.Provider>
