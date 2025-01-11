@@ -571,12 +571,19 @@ tr:hover {
 .card.overlay {
   position: fixed;
   background-color: var(--background-color-primary);
+  /* background-color: red; */
   width: 100%;
 }
 
-@media (min-width: 425px) {
+/* @media (min-width: 900px) {
   .card.overlay {
     width: 50%;
+  }
+} */
+
+@media (min-width: 425px) {
+  .card.overlay {
+    width: 20%;
     top: 20%;
   }
 }
@@ -1023,6 +1030,7 @@ label.small {
 
 .tab-bar .btn.active {
   border-bottom: 1px solid var(--text-color-primary) !important;
+  color: var(--text-color-primary) !important;
 }
 
 .tab-bar .btn.active:hover {

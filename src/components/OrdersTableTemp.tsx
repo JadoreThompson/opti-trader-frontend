@@ -5,13 +5,36 @@ import "../index.css";
 import { MarketType, OrderStatus } from "../types/CommonTypes";
 import RequestBuilder from "../utils/RequestBuilder";
 
+const openTableHeaders: Record<string, string> = {
+  ticker: "Ticker",
+  quantity: "Quantity",
+  standing_quantity: "Remaning",
+  filled_price: "Entry Price",
+  unrealised_pnl: "Unrealised PnL",
+  realised_pnl: "Realised PnL",
+};
+
+const openFuturesHeaders: Record<string, string> = {
+  ...openTableHeaders,
+  ...{
+    side: "Side",
+  },
+};
+
+const closedTableHeaders: Record<string, string> = {
+  ticker: "Ticker",
+  quantity: "Quantity",
+  realised_pnl: "Realised PnL",
+  market_type: "Market Type",
+  side: "Side",
+};
+
 const tableHeaders: Record<string, string> = {
   ticker: "Ticker",
   quantity: "Quantity",
   standing_quantity: "Remaning",
   filled_price: "Entry Price",
   close_price: "Exit Price",
-  order_status: "Status",
   realised_pnl: "Realised PnL",
   market_type: "Market Type",
 };
@@ -34,21 +57,22 @@ const OrdersTableTemp: FC<{
 
   const { currentOrders, setCurrentOrders } = useContext(CurrentOrders);
   const [revealTable, setRevealTable] = useState<boolean>(false);
-  const [data, setData] = useState<
-    null | Record<string, null | string | Number>[]
-  >(null);
   const [sortedData, setSortedData] = useState<
     null | Record<string, null | string | Number>[]
   >(null);
+
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [maxPages, setMaxPages] = useState<number>(0);
-  const [blocked, setBlocked] = useState<boolean>(false);
+
+  const ordersRef = useRef<Record<string, string | Number>[] | null>();
   const [sortCategory, setSortCategory] = useState<string | null>(null);
   const [sortNum, setSortNum] = useState<number>(0);
   // 0: No sort, 1: Asc, 2: Desc
-  const ordersRef = useRef<Record<string, string | Number>[] | null>();
-  const sortedOrdersRef = useRef<Record<string, string | Number>[] | null>();
-  const currentModifyIndex = useRef<number>();
+
+  const [modifyCardChoice, setModifyCardChoice] = useState<number>(0);
+  const currentModifyIndexRef = useRef<number>();
+
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -90,6 +114,8 @@ const OrdersTableTemp: FC<{
 
   useEffect(() => {
     setCurrentIndex(0);
+    setSortCategory(null);
+    setSortNum(0);
   }, [currentTab]);
 
   useEffect(() => {
@@ -169,12 +195,25 @@ const OrdersTableTemp: FC<{
   const showModifyOverlay: (
     e: React.PointerEvent<HTMLTableRowElement>
   ) => void = (e: React.PointerEvent<HTMLTableRowElement>): void => {
-    currentModifyIndex.current = Number(
-      (e.target as HTMLElement).getAttribute("data-key")
+    currentModifyIndexRef.current = Number(
+      (e.target as HTMLElement)!.closest("tr")!.getAttribute("data-key")
     )!;
     (
       document.getElementById("modifyOrderCard") as HTMLDivElement
     ).style.display = "flex";
+
+    const tds = Array.from(
+      (e.target as HTMLElement).closest("tr")?.querySelectorAll("td")!
+    );
+    const result = tds.filter(
+      (item) => item.getAttribute("data-key") === "standing_quantity"
+    );
+    if (result) {
+      const element = document.getElementById(
+        "closeQuantity"
+      ) as HTMLInputElement;
+      element.value = result[0].textContent!;
+    }
   };
 
   function hideModifyOverlay(): void {
@@ -185,15 +224,19 @@ const OrdersTableTemp: FC<{
     card.style.display = "none";
   }
 
-  function handleFormSubmit(e: React.FormEvent<HTMLFormElement>): void {
+  function handleModifyFormSubmit(e: React.FormEvent<HTMLFormElement>): void {
     e.preventDefault();
 
     if (websocket) {
       let payload: Record<string, null | number | string> = {
-        order_id: String(sortedData![currentModifyIndex.current!]["order_id"])!,
-        type: String(sortedData![currentModifyIndex.current!]["order_type"])!,
+        order_id: String(
+          sortedData![currentModifyIndexRef.current!]["order_id"]
+        )!,
+        type: String(
+          sortedData![currentModifyIndexRef.current!]["order_type"]
+        )!,
         market_type: String(
-          sortedData![currentModifyIndex.current!]["market_type"]
+          sortedData![currentModifyIndexRef.current!]["market_type"]
         )!,
       };
       const modifyData = Object.fromEntries(
@@ -206,6 +249,32 @@ const OrdersTableTemp: FC<{
     }
 
     hideModifyOverlay();
+  }
+
+  function handleCloseFormSubmit(e: React.FormEvent<HTMLFormElement>): void {
+    e.preventDefault();
+
+    const requestedQuantity = Number(
+      new FormData(e.target as HTMLFormElement).get("quantity")
+    );
+    const currentQuantity = Number(
+      sortedData![currentModifyIndexRef.current!].standing_quantity
+    );
+
+    if (requestedQuantity > currentQuantity) {
+      setErrorMessage(
+        `Quantity must be less than current quantity: ${currentQuantity}`
+      );
+    }
+
+    const payload = {
+      order_id: sortedData![currentModifyIndexRef.current!].order_id,
+      quantity: Number(
+        new FormData(e.target as HTMLFormElement).get("quantity")
+      ),
+    };
+
+    websocket?.send(JSON.stringify(payload));
   }
 
   function sortData(
@@ -289,29 +358,84 @@ const OrdersTableTemp: FC<{
                     />{" "}
                   </svg>
                 </div>
-                <div className="card-body">
-                  <form
-                    className="d-col justify-center"
-                    onSubmit={handleFormSubmit}
+                <div className="tab-bar mb-1 w-100">
+                  <button
+                    className={`btn w-100 text-secondary ${
+                      modifyCardChoice === 0 ? "active" : ""
+                    }`}
+                    value={0}
+                    onClick={(e) =>
+                      setModifyCardChoice(
+                        Number((e.target as HTMLButtonElement).value)
+                      )
+                    }
                   >
-                    <label htmlFor="takeProfit">Take Profit</label>
-                    <input
-                      type="number"
-                      id="takeProfit"
-                      name="take_profit"
-                      min={0}
-                    />
-                    <label htmlFor="stopLoss">Stop Loss</label>
-                    <input
-                      type="number"
-                      id="stopLoss"
-                      name="stop_loss"
-                      min={0}
-                    />
-                    <button className="btn" type="submit">
-                      Modify
-                    </button>
-                  </form>
+                    Modify
+                    {/* <span className="secondary">Modify</span> */}
+                  </button>
+                  <button
+                    className={`btn w-100 text-secondary ${
+                      modifyCardChoice === 1 ? "active" : ""
+                    }`}
+                    value={1}
+                    onClick={(e) =>
+                      setModifyCardChoice(
+                        Number((e.target as HTMLButtonElement).value)
+                      )
+                    }
+                  >
+                    Close
+                    {/* <span className="secondary ">Close</span> */}
+                  </button>
+                </div>
+                <div className="card-body h-100">
+                  {modifyCardChoice === 0 ? (
+                    <form
+                      className="d-col justify-center"
+                      onSubmit={handleModifyFormSubmit}
+                    >
+                      <label htmlFor="takeProfit">Take Profit</label>
+                      <input
+                        type="number"
+                        id="takeProfit"
+                        name="take_profit"
+                        min={0}
+                      />
+                      <label htmlFor="stopLoss">Stop Loss</label>
+                      <input
+                        type="number"
+                        id="stopLoss"
+                        name="stop_loss"
+                        min={0}
+                      />
+                      <button className="btn" type="submit">
+                        Modify
+                      </button>
+                    </form>
+                  ) : (
+                    <>
+                      {}
+                      <form
+                        className="d-col justify-center mb-1"
+                        onSubmit={handleCloseFormSubmit}
+                      >
+                        <label htmlFor="closeQuantity">Quantity</label>
+                        <input
+                          type="number"
+                          min={0}
+                          id="closeQuantity"
+                          name="quantity"
+                          required
+                        />
+                        <button className="btn" type="submit">
+                          Close
+                        </button>
+                      </form>
+                      <div className="w-100 align-center justify-center">
+                        <span className="error">{errorMessage}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -319,9 +443,14 @@ const OrdersTableTemp: FC<{
               <thead>
                 <tr>
                   {Object.entries(
-                    marketType?.includes(MarketType.SPOT)
-                      ? tableHeaders
-                      : futuresTableHeaders
+                    currentTab === 0
+                      ? openFuturesHeaders
+                      : currentTab === 1
+                      ? openTableHeaders
+                      : closedTableHeaders
+                    // marketType?.includes(MarketType.SPOT)
+                    //   ? tableHeaders
+                    //   : futuresTableHeaders
                   ).map(([key, value], index) => (
                     <th
                       key={index}
@@ -389,12 +518,18 @@ const OrdersTableTemp: FC<{
                       }}
                     >
                       {Object.keys(
-                        marketType?.includes(MarketType.SPOT)
-                          ? tableHeaders
-                          : futuresTableHeaders
+                        currentTab === 0
+                          ? openFuturesHeaders
+                          : currentTab === 1
+                          ? openTableHeaders
+                          : closedTableHeaders
+                        // marketType?.includes(MarketType.SPOT)
+                        //   ? tableHeaders
+                        //   : futuresTableHeaders
                       ).map((key) => (
                         <td
                           key={key}
+                          data-key={key}
                           className={`underline ${getCellClass(
                             key,
                             order[key]!
