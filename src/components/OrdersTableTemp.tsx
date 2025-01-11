@@ -1,8 +1,9 @@
 import axios from "axios";
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useContext, useEffect, useRef, useState } from "react";
 import "../index.css";
 import { MarketType, OrderStatus } from "../types/CommonTypes";
 import RequestBuilder from "../utils/RequestBuilder";
+import CurrentOrders from "../hooks/CurrentOrders";
 
 const tableHeaders: Record<string, string> = {
   ticker: "Ticker",
@@ -29,6 +30,7 @@ const OrdersTableTemp: FC<{
 }> = ({ ticker, marketType, orderStatus, websocket }) => {
   const pageSize = 10;
 
+  const { currentOrders, setCurrentOrders } = useContext(CurrentOrders);
   const [revealTable, setRevealTable] = useState<boolean>(false);
   const [data, setData] = useState<
     null | Record<string, null | string | Number>[]
@@ -38,6 +40,7 @@ const OrdersTableTemp: FC<{
   >(null);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [maxPages, setMaxPages] = useState<number>(0);
+  const [blocked, setBlocked] = useState<boolean>(false);
 
   const currentModifyIndex = useRef<number>();
 
@@ -52,7 +55,7 @@ const OrdersTableTemp: FC<{
         marketType.map((item) => `market_type=${item}`).join("&"),
       ];
 
-      setData(
+      setCurrentOrders(
         await axios
           .get(
             RequestBuilder.getBaseUrl() +
@@ -73,8 +76,8 @@ const OrdersTableTemp: FC<{
   }, [orderStatus, marketType, ticker]);
 
   useEffect(() => {
-    setSortedData(data);
-  }, [data]);
+    setSortedData(currentOrders);
+  }, [currentOrders]);
 
   useEffect(() => {
     setCurrentIndex(0);

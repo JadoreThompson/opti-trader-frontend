@@ -8,6 +8,7 @@
   --green-soft: rgba(38, 201, 155, 0.1);
   --red: #f1493f;
   --red-soft: rgba(241, 73, 63, 0.1);
+  --orange: #FF9142;
 
   --padding: 0.5rem;
   --text-color-secondary: #8e8e92;
@@ -352,10 +353,19 @@ tr:hover {
 }
 
 .align-center {
+  display: flex;
   align-items: center;
 }
 
 .b {
+}
+
+.bg-primary {
+  background-color: var(--background-color-primary);
+}
+
+.bg-secondary {
+  background-color: var(--background-color-secondary);
 }
 
 .border-box {

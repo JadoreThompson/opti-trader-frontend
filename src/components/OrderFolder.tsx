@@ -33,9 +33,13 @@ const tabs: Record<
   },
 };
 
-const OrderFolder: FC<{ ticker: undefined | string }> = ({ ticker }) => {
+const OrderFolder: FC<{
+  ticker: undefined | string;
+  currentTab: number;
+  setCurrentTab: (arg: number) => void;
+}> = ({ ticker, currentTab, setCurrentTab }) => {
   const [statusList, setStatusList] = useState<null | OrderStatus[]>(null);
-  const [currentTab, setCurrentTab] = useState<number>(0);
+  // const [currentTab, setCurrentTab] = useState<number>(0);
   const [marketType, setMarketType] = useState<null | MarketType[]>(null);
 
   useEffect(() => {

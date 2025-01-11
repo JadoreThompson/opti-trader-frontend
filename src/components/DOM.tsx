@@ -13,7 +13,7 @@ const DOM: FC<{
   // 0, 1, 2
   const [maxNum, setMaxNum] = useState<number>(0);
 
-  useEffect(() => console.log(increase), [increase]);
+  // useEffect(() => console.log(increase), [increase]);
 
   useEffect(() => {
     currentPrice! > lastPrice!

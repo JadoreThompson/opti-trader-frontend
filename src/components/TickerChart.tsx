@@ -6,10 +6,17 @@ import {
   TimeScaleOptions,
   createChart,
 } from "lightweight-charts";
-import { FC, MutableRefObject, useContext, useEffect, useState } from "react";
+import {
+  FC,
+  MutableRefObject,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useBodyStyles } from "../hooks/BodyStyles";
-import RequestBuilder from "../utils/RequestBuilder";
 import TickerContext from "../hooks/TickerPriceContext";
+import RequestBuilder from "../utils/RequestBuilder";
 
 export enum ChartIntervals {
   M1 = "1m",
@@ -48,9 +55,11 @@ const TickerChart: FC<{
   */
   const { setCurrentPrice } = useContext(TickerContext);
   const bodyStyles = useBodyStyles();
-  const [data, setData] = useState<null | Record<string, Number | null>[]>(
+  const [data, setData] = useState<null | Record<string, number | null>[]>(
     null
   );
+  const dataRef = useRef<Record<string, number | null>[] | null>();
+  const chartRef = useRef<any>();
 
   useEffect(() => {
     (async () => {
@@ -81,55 +90,74 @@ const TickerChart: FC<{
   }, [ticker, currentInterval]);
 
   useEffect(() => {
-    (() => {
-      if (data) {
-        const chartOptions: {
-          autoSize: boolean;
-          layout: LayoutOptions;
-          grid: GridOptions;
-          timeScale: TimeScaleOptions;
-        } = {
-          autoSize: true,
-          layout: {
-            background: {
-              type: ColorType.Solid,
-              color: bodyStyles.getPropertyValue("--background-color-primary"),
-            },
-            textColor: bodyStyles.getPropertyValue("--text-color-primary"),
-            fontSize: 12,
-            fontFamily: bodyStyles.getPropertyValue("font-family"),
-            attributionLogo: false,
-          },
-          grid: {
-            vertLines: { visible: false },
-            horzLines: { visible: false },
-          },
-          timeScale: {
-            timeVisible: true,
-          },
-        };
+    const options: {
+      autoSize: boolean;
+      layout: LayoutOptions;
+      grid: GridOptions;
+      timeScale: TimeScaleOptions;
+    } = {
+      autoSize: true,
+      layout: {
+        background: {
+          type: ColorType.Solid,
+          color: bodyStyles.getPropertyValue("--background-color-primary"),
+        },
+        textColor: bodyStyles.getPropertyValue("--text-color-primary"),
+        fontSize: 12,
+        fontFamily: bodyStyles.getPropertyValue("font-family"),
+        attributionLogo: false,
+      },
+      grid: {
+        vertLines: { visible: false },
+        horzLines: { visible: false },
+      },
+      timeScale: {
+        timeVisible: true,
+      },
+    };
 
+    if (data === dataRef.current) {
+      chartRef.current.applyOptions(options);
+      return;
+    } else {
+      dataRef.current = data;
+    }
+
+    function loadChart(): void {
+      if (data) {
         const chartContainer = document.getElementById(
           "tickerChart"
         ) as HTMLElement;
         chartContainer.innerHTML = "";
-        const chart = createChart(chartContainer!, chartOptions);
-        seriesRef.current = chart.addCandlestickSeries({
+        chartRef.current = createChart(chartContainer!, options);
+        seriesRef.current = chartRef.current.addCandlestickSeries({
           upColor: "#26a69a",
           downColor: "#ef5350",
           borderVisible: false,
           wickUpColor: "#26a69a",
           wickDownColor: "#ef5350",
         });
-        seriesRef.current.setData(data);
+        try {
+          seriesRef.current.setData(data);
+        } catch (err) {
+          console.error(err);
+        }
 
-        chart.timeScale().fitContent();
+        chartRef.current.timeScale().fitContent();
 
         window.addEventListener("resize", () =>
-          chart.resize(window.innerWidth, window.innerHeight)
+          chartRef.current.resize(window.innerWidth, window.innerHeight)
         );
       }
-    })();
+    }
+
+    loadChart();
+
+    // return () => {
+    //   if (chart) {
+    //     chart.remove();
+    //   }
+    // };
   }, [data, bodyStyles]);
 
   return (
