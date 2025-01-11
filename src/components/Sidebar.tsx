@@ -18,6 +18,31 @@ const Sidebar: FC = () => {
       ?.classList.add("active");
   }, [location.pathname]);
 
+  useEffect(() => {
+    const element = document.querySelector(".sidebar-container") as HTMLElement;
+
+    function hide(e: KeyboardEvent): void {
+      if (e.key === "Escape") {
+        console.log("Escape key pressed");
+        setShow(false);
+      }
+    }
+
+    if (show) {
+      if (element) {
+        element.setAttribute("tabIndex", "0");
+        element.focus();
+        element.addEventListener("keydown", hide);
+      }
+    }
+
+    return () => {
+      if (element) {
+        element.removeEventListener("keydown", hide);
+      }
+    };
+  }, [show]);
+
   return (
     <>
       <svg
@@ -43,7 +68,11 @@ const Sidebar: FC = () => {
             onPointerUp={() => {
               setShow(false);
             }}
-            style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginBottom: "1rem",
+            }}
           >
             <svg
               className="icon"

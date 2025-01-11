@@ -29,23 +29,6 @@ const closedTableHeaders: Record<string, string> = {
   side: "Side",
 };
 
-// const tableHeaders: Record<string, string> = {
-//   ticker: "Ticker",
-//   quantity: "Quantity",
-//   standing_quantity: "Remaning",
-//   filled_price: "Entry Price",
-//   close_price: "Exit Price",
-//   realised_pnl: "Realised PnL",
-//   market_type: "Market Type",
-// };
-
-// const futuresTableHeaders: Record<string, string> = {
-//   ...tableHeaders,
-//   ...{
-//     side: "Type",
-//   },
-// };
-
 const OrdersTableTemp: FC<{
   ticker: undefined | string;
   marketType: null | MarketType;
@@ -54,8 +37,9 @@ const OrdersTableTemp: FC<{
   currentTab: number;
 }> = ({ ticker, marketType, orderStatus, websocket, currentTab }) => {
   const pageSize = 10;
-
   const { currentOrders, setCurrentOrders } = useContext(CurrentOrders);
+
+  const [showOverlay, setShowOverlay] = useState<boolean>(false);
   const [revealTable, setRevealTable] = useState<boolean>(false);
   const [sortedData, setSortedData] = useState<
     null | Record<string, null | string | Number>[]
@@ -69,10 +53,37 @@ const OrdersTableTemp: FC<{
   const [sortNum, setSortNum] = useState<number>(0);
   // 0: No sort, 1: Asc, 2: Desc
 
-  const [modifyCardChoice, setModifyCardChoice] = useState<number>(0);
   const currentModifyIndexRef = useRef<number>();
 
+  const [modifyCardTab, setModifyCardTab] = useState<number>(0);
+  // 0: Modify, 1: Close
+
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const element = document.getElementById("modifyOrderCard") as HTMLElement;
+
+    function hide(e: KeyboardEvent): void {
+      if (e.key === "Escape") {
+        console.log("Escape key pressed 2");
+        setShowOverlay(false);
+      }
+    }
+
+    if (showOverlay) {
+      if (element) {
+        element.setAttribute("tabIndex", "0");
+        element.focus();
+        element.addEventListener("keydown", hide);
+      }
+    }
+
+    return () => {
+      if (element) {
+        element.removeEventListener("keydown", hide);
+      }
+    };
+  }, [showOverlay]);
 
   useEffect(() => {
     (async () => {
@@ -101,8 +112,6 @@ const OrdersTableTemp: FC<{
   }, [orderStatus, marketType, ticker]);
 
   useEffect(() => {
-    // console.log("Current orders: ", currentOrders);
-    // sortedOrdersRef.current = currentOrders;
     ordersRef.current = currentOrders;
     setSortedData(currentOrders);
   }, [currentOrders]);
@@ -151,8 +160,6 @@ const OrdersTableTemp: FC<{
     });
   }, [sortNum]);
 
-  // useEffect(() => console.log(currentIndex), [currentIndex]);
-
   function getCellClass(key: string, value: string | Number): string {
     if (key === "realised_pnl" || key === "unrealised_pnl") {
       return Number(value) < 0 ? "negative" : "positive";
@@ -193,36 +200,19 @@ const OrdersTableTemp: FC<{
     return value;
   }
 
-  const showModifyOverlay: (
-    e: React.PointerEvent<HTMLTableRowElement>
-  ) => void = (e: React.PointerEvent<HTMLTableRowElement>): void => {
+  function constructOverlay(e: React.PointerEvent<HTMLTableRowElement>): void {
     currentModifyIndexRef.current = Number(
       (e.target as HTMLElement)!.closest("tr")!.getAttribute("data-key")
     )!;
-    (
-      document.getElementById("modifyOrderCard") as HTMLDivElement
-    ).style.display = "flex";
-
-    const tds = Array.from(
-      (e.target as HTMLElement).closest("tr")?.querySelectorAll("td")!
-    );
-    const result = tds.filter(
-      (item) => item.getAttribute("data-key") === "standing_quantity"
-    );
-    if (result) {
-      const element = document.getElementById(
-        "closeQuantity"
-      ) as HTMLInputElement;
-      element.value = result[0].textContent!;
-    }
-  };
+    setShowOverlay(true);
+  }
 
   function hideModifyOverlay(): void {
     const card = (document.getElementById(
       "modifyOrderCard"
     ) as HTMLDivElement)!;
     card.querySelector("form")?.reset();
-    card.style.display = "none";
+    setShowOverlay(false);
   }
 
   function handleModifyFormSubmit(e: React.FormEvent<HTMLFormElement>): void {
@@ -339,6 +329,7 @@ const OrdersTableTemp: FC<{
             <div
               className="overlay-container d-flex justify-center align-center"
               id="modifyOrderCard"
+              style={{ display: showOverlay ? "flex" : "none" }}
             >
               <div className="card overlay">
                 <div className="card-title justify-end">
@@ -361,35 +352,35 @@ const OrdersTableTemp: FC<{
                 <div className="tab-bar mb-1 w-100">
                   <button
                     className={`btn w-100 text-secondary ${
-                      modifyCardChoice === 0 ? "active" : ""
+                      modifyCardTab === 0 ? "active" : ""
                     }`}
                     value={0}
                     onClick={(e) =>
-                      setModifyCardChoice(
+                      setModifyCardTab(
                         Number((e.target as HTMLButtonElement).value)
                       )
                     }
                   >
                     Modify
-                    {/* <span className="secondary">Modify</span> */}
                   </button>
-                  <button
-                    className={`btn w-100 text-secondary ${
-                      modifyCardChoice === 1 ? "active" : ""
-                    }`}
-                    value={1}
-                    onClick={(e) =>
-                      setModifyCardChoice(
-                        Number((e.target as HTMLButtonElement).value)
-                      )
-                    }
-                  >
-                    Close
-                    {/* <span className="secondary ">Close</span> */}
-                  </button>
+                  {marketType === MarketType.FUTURES ? (
+                    <button
+                      className={`btn w-100 text-secondary ${
+                        modifyCardTab === 1 ? "active" : ""
+                      }`}
+                      value={1}
+                      onClick={(e) =>
+                        setModifyCardTab(
+                          Number((e.target as HTMLButtonElement).value)
+                        )
+                      }
+                    >
+                      Close
+                    </button>
+                  ) : null}
                 </div>
                 <div className="card-body h-100">
-                  {modifyCardChoice === 0 ? (
+                  {modifyCardTab === 0 ? (
                     <form
                       className="d-col justify-center"
                       onSubmit={handleModifyFormSubmit}
@@ -414,7 +405,6 @@ const OrdersTableTemp: FC<{
                     </form>
                   ) : (
                     <>
-                      {}
                       <form
                         className="d-col justify-center mb-1"
                         onSubmit={handleCloseFormSubmit}
@@ -448,15 +438,11 @@ const OrdersTableTemp: FC<{
                       : currentTab === 1
                       ? openTableHeaders
                       : closedTableHeaders
-                    // marketType?.includes(MarketType.SPOT)
-                    //   ? tableHeaders
-                    //   : futuresTableHeaders
                   ).map(([key, value], index) => (
                     <th
                       key={index}
                       data-key={key}
                       className="secondary nowrap"
-                      // style={{ height: 0 }}
                       onClick={sortData}
                     >
                       <div className="align-center">
@@ -478,7 +464,6 @@ const OrdersTableTemp: FC<{
                           ) : sortNum === 1 ? (
                             <svg
                               className="icon"
-                              // style={{ height: 0 }}
                               fill="none"
                               xmlns="http://www.w3.org/2000/svg"
                               viewBox="0 0 24 24"
@@ -514,7 +499,7 @@ const OrdersTableTemp: FC<{
                       onPointerUp={(e) => {
                         orderStatus!.includes(OrderStatus.CLOSED)
                           ? null
-                          : showModifyOverlay(e);
+                          : constructOverlay(e);
                       }}
                     >
                       {Object.keys(
@@ -523,9 +508,6 @@ const OrdersTableTemp: FC<{
                           : currentTab === 1
                           ? openTableHeaders
                           : closedTableHeaders
-                        // marketType?.includes(MarketType.SPOT)
-                        //   ? tableHeaders
-                        //   : futuresTableHeaders
                       ).map((key) => (
                         <td
                           key={key}

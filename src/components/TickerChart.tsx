@@ -97,6 +97,9 @@ const TickerChart: FC<{
       timeScale: TimeScaleOptions;
     } = {
       autoSize: true,
+      rightPriceScale: {
+        ticksVisible: true
+      },
       layout: {
         background: {
           type: ColorType.Solid,
@@ -105,14 +108,15 @@ const TickerChart: FC<{
         textColor: bodyStyles.getPropertyValue("--text-color-primary"),
         fontSize: 12,
         fontFamily: bodyStyles.getPropertyValue("font-family"),
-        attributionLogo: false,
+        attributionLogo: true,
       },
       grid: {
         vertLines: { visible: false },
         horzLines: { visible: false },
       },
       timeScale: {
-        timeVisible: true,
+        // timeVisible: true,
+        ticksVisible: true,
       },
     };
 
