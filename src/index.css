@@ -8,7 +8,7 @@
   --green-soft: rgba(38, 201, 155, 0.1);
   --red: #f1493f;
   --red-soft: rgba(241, 73, 63, 0.1);
-  --orange: #FF9142;
+  --orange: #ff9142;
 
   --padding: 0.5rem;
   --text-color-secondary: #8e8e92;
@@ -173,7 +173,8 @@ li.small {
   font-size: 0.75rem;
 }
 
-p {}
+p {
+}
 
 path.negative {
   color: var(--red);
@@ -278,6 +279,11 @@ thead:hover {
 
 thead:hover tr {
   background-color: transparent;
+}
+
+th,
+td {
+  padding: 0.5rem;
 }
 
 tr:hover {
@@ -755,7 +761,8 @@ tr:hover {
   gap: 4rem;
 }
 
-.h {}
+.h {
+}
 
 .header.profile {
   height: 10rem;
@@ -868,6 +875,13 @@ label.small {
   margin-top: 5rem;
 }
 
+.n {
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
 .overlay-container {
   position: fixed;
   display: none;
@@ -935,7 +949,8 @@ label.small {
   padding-top: 5rem;
 }
 
-.s {}
+.s {
+}
 
 .sidebar {
   height: 100vh;

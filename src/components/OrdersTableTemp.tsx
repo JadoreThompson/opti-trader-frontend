@@ -1,9 +1,9 @@
 import axios from "axios";
 import { FC, useContext, useEffect, useRef, useState } from "react";
+import CurrentOrders from "../hooks/CurrentOrders";
 import "../index.css";
 import { MarketType, OrderStatus } from "../types/CommonTypes";
 import RequestBuilder from "../utils/RequestBuilder";
-import CurrentOrders from "../hooks/CurrentOrders";
 
 const tableHeaders: Record<string, string> = {
   ticker: "Ticker",
@@ -13,6 +13,7 @@ const tableHeaders: Record<string, string> = {
   close_price: "Exit Price",
   order_status: "Status",
   realised_pnl: "Realised PnL",
+  market_type: "Market Type",
 };
 
 const futuresTableHeaders: Record<string, string> = {
@@ -27,7 +28,8 @@ const OrdersTableTemp: FC<{
   marketType: null | MarketType[];
   orderStatus: null | OrderStatus[];
   websocket: undefined | WebSocket;
-}> = ({ ticker, marketType, orderStatus, websocket }) => {
+  currentTab: number;
+}> = ({ ticker, marketType, orderStatus, websocket, currentTab }) => {
   const pageSize = 10;
 
   const { currentOrders, setCurrentOrders } = useContext(CurrentOrders);
@@ -41,7 +43,11 @@ const OrdersTableTemp: FC<{
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [maxPages, setMaxPages] = useState<number>(0);
   const [blocked, setBlocked] = useState<boolean>(false);
-
+  const [sortCategory, setSortCategory] = useState<string | null>(null);
+  const [sortNum, setSortNum] = useState<number>(0);
+  // 0: No sort, 1: Asc, 2: Desc
+  const ordersRef = useRef<Record<string, string | Number>[] | null>();
+  const sortedOrdersRef = useRef<Record<string, string | Number>[] | null>();
   const currentModifyIndex = useRef<number>();
 
   useEffect(() => {
@@ -76,12 +82,17 @@ const OrdersTableTemp: FC<{
   }, [orderStatus, marketType, ticker]);
 
   useEffect(() => {
+    // console.log("Current orders: ", currentOrders);
+    // sortedOrdersRef.current = currentOrders;
+    ordersRef.current = currentOrders;
     setSortedData(currentOrders);
   }, [currentOrders]);
 
   useEffect(() => {
     setCurrentIndex(0);
+  }, [currentTab]);
 
+  useEffect(() => {
     if (sortedData) {
       if (sortedData.length > 0) {
         setMaxPages(Math.floor(sortedData.length / pageSize) + 1);
@@ -94,29 +105,43 @@ const OrdersTableTemp: FC<{
     return;
   }, [sortedData]);
 
-  const getCellClass: (key: string, value: string | Number) => string = (
-    key: string,
-    value: string | Number
-  ): string => {
+  useEffect(() => {
+    if (!sortCategory) {
+      return;
+    }
+    console.log(sortNum);
+    setSortedData((prev) => {
+      if (sortNum === 1) {
+        return [...currentOrders]!.sort(
+          (a, b) => a[sortCategory!] - b[sortCategory!]
+        );
+      }
+
+      if (sortNum === 2) {
+        return [...currentOrders]!.sort(
+          (a, b) => b[sortCategory!] - a[sortCategory!]
+        );
+      }
+
+      return currentOrders;
+    });
+  }, [sortNum]);
+
+  // useEffect(() => console.log(currentIndex), [currentIndex]);
+
+  function getCellClass(key: string, value: string | Number): string {
     if (key === "realised_pnl") {
       return Number(value) < 0 ? "negative" : "positive";
     }
     return "";
-  };
+  }
 
-  const changeIndex = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (Number((e.target as HTMLButtonElement).value) === -1) {
-      if (currentIndex > 0) {
-        setCurrentIndex((prev) => prev - 1);
-      }
-    } else {
-      if (currentIndex < maxPages - 1) {
-        setCurrentIndex((prev) => prev + 1);
-      }
-    }
-  };
+  const changeIndex = (e: React.MouseEvent<HTMLButtonElement>): void =>
+    setCurrentIndex(
+      (prev) => prev + Number((e.target as HTMLButtonElement).value)
+    );
 
-  const getDisplayValue = (key: string, value: any) => {
+  function getDisplayValue(key: string, value: any): any {
     if (value === null || value == undefined) {
       return "-";
     }
@@ -134,8 +159,12 @@ const OrdersTableTemp: FC<{
       return value.charAt(0).toUpperCase() + value.slice(1);
     }
 
+    if (["closed_at", "created_at"].includes(key)) {
+      value = new Date(value);
+    }
+
     return value;
-  };
+  }
 
   const showModifyOverlay: (
     e: React.PointerEvent<HTMLTableRowElement>
@@ -148,15 +177,15 @@ const OrdersTableTemp: FC<{
     ).style.display = "flex";
   };
 
-  const hideModifyOverlay = (): void => {
+  function hideModifyOverlay(): void {
     const card = (document.getElementById(
       "modifyOrderCard"
     ) as HTMLDivElement)!;
     card.querySelector("form")?.reset();
     card.style.display = "none";
-  };
+  }
 
-  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
+  function handleFormSubmit(e: React.FormEvent<HTMLFormElement>): void {
     e.preventDefault();
 
     if (websocket) {
@@ -177,7 +206,27 @@ const OrdersTableTemp: FC<{
     }
 
     hideModifyOverlay();
-  };
+  }
+
+  function sortData(
+    e: React.MouseEvent<HTMLTableCellElement, MouseEvent>
+  ): void {
+    const selectedSortCategory = (e.target as HTMLElement)
+      .closest("th")
+      ?.getAttribute("data-key");
+    if (selectedSortCategory !== sortCategory) {
+      setSortCategory(selectedSortCategory as string);
+      setSortNum(1);
+    } else {
+      setSortNum((prev) => {
+        if (prev === 2) {
+          return 0;
+        }
+
+        return prev + 1;
+      });
+    }
+  }
 
   return (
     <>
@@ -190,13 +239,13 @@ const OrdersTableTemp: FC<{
         {!revealTable ? (
           <>
             <div
-              // className="h-100 w-100 d-col justify-center"
+              className="h-100 w-100 d-col"
               style={{
-                height: "100%",
+                // height: "100%",
                 maxHeight: "100%",
-                width: "100%",
-                display: "flex",
-                flexDirection: "column",
+                // width: "100%",
+                // display: "flex",
+                // flexDirection: "column",
               }}
             >
               <svg
@@ -269,20 +318,65 @@ const OrdersTableTemp: FC<{
             <table className="w-100 h-100" cellSpacing={0}>
               <thead>
                 <tr>
-                  {Object.values(
+                  {Object.entries(
                     marketType?.includes(MarketType.SPOT)
                       ? tableHeaders
                       : futuresTableHeaders
-                  ).map((value, index) => (
-                    <th key={index} className="secondary">
-                      {value}
+                  ).map(([key, value], index) => (
+                    <th
+                      key={index}
+                      data-key={key}
+                      className="secondary nowrap"
+                      // style={{ height: 0 }}
+                      onClick={sortData}
+                    >
+                      <div className="align-center">
+                        {value}
+                        {sortCategory === key ? (
+                          sortNum === 2 ? (
+                            <svg
+                              className="icon"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                            >
+                              {" "}
+                              <path
+                                d="M11 4h2v12h2v2h-2v2h-2v-2H9v-2h2V4zM7 14v2h2v-2H7zm0 0v-2H5v2h2zm10 0v2h-2v-2h2zm0 0v-2h2v2h-2z"
+                                fill="currentColor"
+                              />{" "}
+                            </svg>
+                          ) : sortNum === 1 ? (
+                            <svg
+                              className="icon"
+                              // style={{ height: 0 }}
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                            >
+                              {" "}
+                              <path
+                                d="M11 20h2V8h2V6h-2V4h-2v2H9v2h2v12zM7 10V8h2v2H7zm0 0v2H5v-2h2zm10 0V8h-2v2h2zm0 0v2h2v-2h-2z"
+                                fill="currentColor"
+                              />{" "}
+                            </svg>
+                          ) : (
+                            ""
+                          )
+                        ) : (
+                          ""
+                        )}
+                      </div>
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {sortedData!
-                  .slice(currentIndex, currentIndex + pageSize)!
+                  .slice(
+                    currentIndex * pageSize,
+                    (currentIndex + 1) * pageSize
+                  )!
                   .map((order, index) => (
                     <tr
                       key={index}

@@ -11,7 +11,7 @@ import TickerChart, {
 } from "../components/TickerChart";
 import CurrentOrders from "../hooks/CurrentOrders";
 import TickerPriceContext from "../hooks/TickerPriceContext";
-import { MarketType } from "../types/CommonTypes";
+import { MarketType, OrderStatus } from "../types/CommonTypes";
 import RequestBuilder from "../utils/RequestBuilder";
 
 // type Message = Record<string, null | string | Record<any, any>>;
@@ -124,18 +124,65 @@ const TradeTemp: FC = () => {
     return false;
   }
 
+  function handleExistingOrderUpdate(
+    data: Record<string, string | Number>
+  ): void {
+    setCurrentOrders((prev) => {
+      let Prev = [...prev];
+
+      if (data.order_status === OrderStatus.CLOSED) {
+        return Prev.filter((item) => item.order_id !== data.order_id);
+      }
+
+      return Prev.map((item) => {
+        return item.order_id === data.order_id ? data : item;
+      });
+    });
+  }
+
   function updateTable(message: Message): boolean {
+    if (!message.details) {
+      return true;
+    }
+
     if (folderTab === 0) {
       if (message.details!.market_type === MarketType.FUTURES) {
-        if (message.details!.on === UpdateScope.NEW) {
+        if (message.on === UpdateScope.NEW) {
           setCurrentOrders((prev) => {
-            let preV = [...prev];
-            preV.push(message.details as Record<string, string | Number>);
-            return preV;
+            let Prev = [...prev];
+            Prev.push(message.details as Record<string, string | Number>);
+            return Prev;
           });
+        } else {
+          handleExistingOrderUpdate(
+            message.details as Record<string, string | Number>
+          );
         }
       }
+    } else if (folderTab === 1) {
+      if (message.details.market_type === MarketType.SPOT) {
+        if (message.on === UpdateScope.NEW) {
+          setCurrentOrders((prev) => {
+            let Prev = [...prev];
+            Prev.push(message.details as Record<string, string | Number>);
+            return Prev;
+          });
+        } else {
+          handleExistingOrderUpdate(
+            message.details as Record<string, string | Number>
+          );
+        }
+      }
+    } else if (folderTab === 2) {
+      if (message.details.order_status === OrderStatus.CLOSED) {
+        setCurrentOrders((prev) => {
+          let Prev = [...prev];
+          Prev.push(message.details as Record<string, string | Number>);
+          return Prev;
+        });
+      }
     }
+
     return true;
   }
 
@@ -154,9 +201,9 @@ const TradeTemp: FC = () => {
 
     ws.onmessage = (e) => {
       const message: Message = JSON.parse(e.data);
-      console.log("Message received:", JSON.parse(e.data));
 
       if (message.category === "success") {
+        console.log("Message received:", JSON.parse(e.data));
         setWebsocketConnectionStatus({
           msg: "System Connected",
           color: "var(--green)",
@@ -166,7 +213,7 @@ const TradeTemp: FC = () => {
       const options: Record<MessageCategory, (arg: Message) => boolean> = {
         [MessageCategory.PRICE]: updateChartPrice,
         [MessageCategory.DOM]: updateDOM,
-        // [MessageCategory.SUCCESS]
+        [MessageCategory.SUCCESS]: updateTable,
       };
 
       const func = options[message.category as MessageCategory];
@@ -201,7 +248,10 @@ const TradeTemp: FC = () => {
       <Header
         content={
           <>
-            <div className="w-100 h-auto p-1 border-box">
+            <div
+              className="w-100 h-auto p-1 border-box"
+              style={{ overflowX: "auto" }}
+            >
               <div
                 style={{
                   display: "grid",
@@ -237,33 +287,34 @@ const TradeTemp: FC = () => {
                   <OrderCreationForm ticker={ticker!} websocket={websocket!} />
                 </div>
               </div>
-            </div>
-            <div
-              className="fixed bottom-0 p-1 w-100 align-center bg-primary"
-              style={{
-                // backgroundColor: "red",
-                // height: "1rem",
-                borderTop: "1px solid var(--border-color)",
-              }}
-            >
-              <span
-                className="mr-1"
-                style={{ color: websocketConnectionStatus.color }}
+              <div
+                className="fixed bottom-0 p-1 w-100 align-center bg-primary"
+                style={{
+                  // backgroundColor: "red",
+                  // height: "1rem",
+                  left: 0,
+                  borderTop: "1px solid var(--border-color)",
+                }}
               >
-                {websocketConnectionStatus.msg}
-              </span>
-              <svg
-                className="icon"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                {" "}
-                <path
+                <span
+                  className="mr-1"
                   style={{ color: websocketConnectionStatus.color }}
-                  d="M19 2h2v2h-2V2Zm2 14V4h2v12h-2Zm0 0v2h-2v-2h2ZM1 4h2v12H1V4Zm2 12h2v2H3v-2ZM3 4h2V2H3v2Zm2 2h2v8H5V6Zm2 8h2v2H7v-2Zm0-8h2V4H7v2Zm10 0h2v8h-2V6Zm0 0h-2V4h2v2Zm0 8v2h-2v-2h2Zm-6-7h4v6h-2v9h-2v-9H9V7h2Zm0 4h2V9h-2v2Z"
-                />{" "}
-              </svg>
+                >
+                  {websocketConnectionStatus.msg}
+                </span>
+                <svg
+                  className="icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  {" "}
+                  <path
+                    style={{ color: websocketConnectionStatus.color }}
+                    d="M19 2h2v2h-2V2Zm2 14V4h2v12h-2Zm0 0v2h-2v-2h2ZM1 4h2v12H1V4Zm2 12h2v2H3v-2ZM3 4h2V2H3v2Zm2 2h2v8H5V6Zm2 8h2v2H7v-2Zm0-8h2V4H7v2Zm10 0h2v8h-2V6Zm0 0h-2V4h2v2Zm0 8v2h-2v-2h2Zm-6-7h4v6h-2v9h-2v-9H9V7h2Zm0 4h2V9h-2v2Z"
+                  />{" "}
+                </svg>
+              </div>
             </div>
           </>
         }

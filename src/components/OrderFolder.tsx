@@ -39,7 +39,6 @@ const OrderFolder: FC<{
   setCurrentTab: (arg: number) => void;
 }> = ({ ticker, currentTab, setCurrentTab }) => {
   const [statusList, setStatusList] = useState<null | OrderStatus[]>(null);
-  // const [currentTab, setCurrentTab] = useState<number>(0);
   const [marketType, setMarketType] = useState<null | MarketType[]>(null);
 
   useEffect(() => {
@@ -67,6 +66,7 @@ const OrderFolder: FC<{
           ticker={ticker}
           marketType={marketType}
           orderStatus={statusList}
+          currentTab={currentTab}
         />
       </div>
     </>

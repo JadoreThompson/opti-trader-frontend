@@ -117,7 +117,7 @@ const TickerChart: FC<{
     };
 
     if (data === dataRef.current) {
-      chartRef.current.applyOptions(options);
+      chartRef.current ? chartRef.current.applyOptions(options) : null;
       return;
     } else {
       dataRef.current = data;

@@ -8,7 +8,9 @@ const OrderCreationForm: FC<{ ticker: string; websocket: WebSocket }> = ({
   const [currentOrderType, setCurrentOrderType] = useState<OrderType>(
     OrderType.MARKET_ORDER
   );
-  const [currentMarketType, setMarketType] = useState<null | MarketType>(MarketType.SPOT);
+  const [currentMarketType, setMarketType] = useState<null | MarketType>(
+    MarketType.SPOT
+  );
 
   const formSubmitHandler: (e: React.FormEvent<HTMLFormElement>) => void = (
     e: React.FormEvent<HTMLFormElement>
@@ -53,7 +55,7 @@ const OrderCreationForm: FC<{ ticker: string; websocket: WebSocket }> = ({
     }
 
     websocket.send(JSON.stringify(payload));
-    form.reset();
+    // form.reset();
   };
 
   return (
@@ -100,7 +102,9 @@ const OrderCreationForm: FC<{ ticker: string; websocket: WebSocket }> = ({
           </div>
           <div className="w-100 d-row justify-sb gap-1">
             <div className="w-100 border-box">
-              <label htmlFor="takeProfit">Take Profit</label>
+              <label htmlFor="takeProfit" className="nowrap">
+                Take Profit
+              </label>
               <input
                 type="number"
                 className="w-100 border-box"
@@ -109,7 +113,7 @@ const OrderCreationForm: FC<{ ticker: string; websocket: WebSocket }> = ({
               />
             </div>
             <div className="w-100">
-              <label htmlFor="stopLoss">Stop Loss</label>
+              <label htmlFor="stopLoss" className="nowrap">Stop Loss</label>
               <input
                 type="number"
                 className="w-100 border-box"
