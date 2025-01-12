@@ -22,7 +22,7 @@ const Sidebar: FC = () => {
     const element = document.querySelector(".sidebar-container") as HTMLElement;
 
     function hide(e: KeyboardEvent): void {
-      e.key === 'Escape' ? setShow(false) : null
+      e.key === "Escape" ? setShow(false) : null;
     }
 
     if (show) {
@@ -40,6 +40,34 @@ const Sidebar: FC = () => {
     };
   }, [show]);
 
+  useEffect(() => {
+    function displayOptions(e: Event): void {
+      const element = (e.target as HTMLElement).closest(".sidebar-item")!;
+      const nextElement = element.nextElementSibling as HTMLElement;
+
+      if (nextElement.classList.contains("sidebar-options")) {
+        nextElement.style.display =
+          nextElement.style.display === "flex" ? "none" : "flex";
+      }
+    }
+
+    const elements = document.querySelectorAll(".sidebar-item");
+
+    if (elements) {
+      elements.forEach((element) => {
+        element.addEventListener("click", displayOptions);
+      });
+    }
+
+    return () => {
+      if (elements) {
+        elements.forEach((element) => {
+          element.removeEventListener("click", displayOptions);
+        });
+      }
+    };
+  }, []);
+
   return (
     <>
       <svg
@@ -55,7 +83,7 @@ const Sidebar: FC = () => {
       >
         {" "}
         <path
-          d="M20 5H4v2h16V5zm0 4H4v2h16V9zM4 13h16v2H4v-2zm16 4H4v2h16v-2z"
+          d="M20 5H4v2h16V5zm-8 4H4v2h8V9zm8 4v2H4v-2h16zm-8 4H4v2h8v-2z"
           fill="currentColor"
         />{" "}
       </svg>
@@ -85,7 +113,7 @@ const Sidebar: FC = () => {
             </svg>
           </div>
           <Link to={`/profile/${localStorage.getItem("username")}`}>
-            <div className="sidebar-item" id="profile">
+            <div className="sidebar-item cursor-pointer" id="profile">
               <svg
                 className="icon"
                 fill="none"
@@ -101,26 +129,27 @@ const Sidebar: FC = () => {
               <span>Profile</span>
             </div>
           </Link>
-          <Link to="/trade">
-            <div className="sidebar-item" id="trade">
-              <svg
-                className="icon"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-              >
-                {" "}
-                <path
-                  d="M14 6h8v8h-2v-4h-2V8h-4V6zm2 6v-2h2v2h-2zm-2 2v-2h2v2h-2zm-2 0h2v2h-2v-2zm-2-2h2v2h-2v-2zm-2 0v-2h2v2H8zm-2 2v-2h2v2H6zm-2 2v-2h2v2H4zm0 0v2H2v-2h2z"
-                  fill="currentColor"
-                />{" "}
-              </svg>
-              <span>Trade</span>
-            </div>
-          </Link>
-          <div className="sidebar-icon-container">
-            <Link to="/leaderboard">
-              <div className="sidebar-item" id="leaderboard">
+          <div className="sidebar-item cursor-pointer" id="trade">
+            <svg
+              className="icon"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+            >
+              {" "}
+              <path
+                d="M14 6h8v8h-2v-4h-2V8h-4V6zm2 6v-2h2v2h-2zm-2 2v-2h2v2h-2zm-2 0h2v2h-2v-2zm-2-2h2v2h-2v-2zm-2 0v-2h2v2H8zm-2 2v-2h2v2H6zm-2 2v-2h2v2H4zm0 0v2H2v-2h2z"
+                fill="currentColor"
+              />{" "}
+            </svg>
+            <span>Trade</span>
+          </div>
+          <div
+            className="d-col sidebar-options d-none cursor-pointer"
+            style={{ marginLeft: "1rem" }}
+          >
+            <Link to="/trade/spot">
+              <div className="w-100 align-center mb-1 mt-1">
                 <svg
                   className="icon"
                   fill="none"
@@ -129,15 +158,32 @@ const Sidebar: FC = () => {
                 >
                   {" "}
                   <path
-                    d="M16 3H6v2H2v10h6V5h8v10h6V5h-4V3h-2zm4 4v6h-2V7h2zM6 13H4V7h2v6zm12 2H6v2h12v-2zm-7 2h2v2h3v2H8v-2h3v-2z"
+                    d="M11 2h2v4h6v2H7v3H5V6h6V2zM5 18h6v4h2v-4h6v-2H5v2zm14-7H5v2h12v3h2v-5z"
                     fill="currentColor"
                   />{" "}
                 </svg>
-                <span>Leaderboard</span>
+                <span style={{ marginLeft: "0.5rem" }}>Spot</span>
+              </div>
+            </Link>
+            <Link to="/trade/futures">
+              <div className="w-100 align-center mb-1 mt-1 cursor-pointer">
+                <svg
+                  className="icon"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                >
+                  {" "}
+                  <path
+                    d="M6 2h10v2H6V2zM4 6V4h2v2H4zm0 12H2V6h2v12zm2 2H4v-2h2v2zm12 0H6v2h12v-2zm2-2v2h-2v-2h2zm0 0h2V8h-2v10zM12 6H8v2H6v8h2v2h8v-2h2v-4h-2v4H8V8h4V6zm2 8v-4h2V8h2V6h4V4h-2V2h-2v4h-2v2h-2v2h-4v4h4z"
+                    fill="currentColor"
+                  />{" "}
+                </svg>
+                <span style={{ marginLeft: "0.5rem" }}>Futures</span>
               </div>
             </Link>
           </div>
-          <div className="sidebar-icon-container">
+          <div className="sidebar-icon-container cursor-pointer">
             <Link to="/follow">
               <div className="sidebar-item" id="follow">
                 <svg

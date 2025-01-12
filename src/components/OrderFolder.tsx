@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import { MarketType, OrderStatus } from "../types/CommonTypes";
-import OrdersTableTemp from "./OrdersTableTemp";
+import OrdersTable from "./OrdersTable";
 
 const tabs: Record<
   number,
@@ -49,7 +49,7 @@ const OrderFolder: FC<{
             </button>
           ))}
         </div>
-        <OrdersTableTemp
+        <OrdersTable
           ticker={ticker}
           marketType={pageMarketType}
           orderStatus={statusList}

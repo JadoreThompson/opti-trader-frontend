@@ -9,7 +9,7 @@ import RequestBuilder from "../utils/RequestBuilder";
 const imgUrl: string =
   "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgDw7HXLDZfXQoJReyeHR8IqyPYAp6RWpjs4Dp9MwZ49HoJl2RsXRTGxqnUlzPgtFTbsA7a2upeCQeyPg-2w5qEmpBOxlPkqbfGv48AFW1OyNZ6WIuZt5dI-NVtflu1NPjqE8oJUi4I57oMVtiAStrRnmgjjAf5WQ6_sbd8UYoDhloMBdSRnpIgjY6EdOML/s1920/photo_6291852644980997101_w.jpg";
 
-const FollowTemp: FC = () => {
+const Follow: FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [profileData, setProfileData] = useState<
@@ -221,4 +221,4 @@ const FollowTemp: FC = () => {
   );
 };
 
-export default FollowTemp;
+export default Follow;

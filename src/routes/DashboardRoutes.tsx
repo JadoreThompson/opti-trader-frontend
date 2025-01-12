@@ -4,10 +4,10 @@ import { Navigate, Route, Routes } from "react-router-dom";
 // Local
 import CurrentOrders from "../hooks/CurrentOrders";
 import TickerPriceContext from "../hooks/TickerPriceContext";
-import FollowTemp from "../pages/FollowTemp";
+import Follow from "../pages/Follow";
 
 import Profile from "../pages/Profile";
-import TradeTemp from "../pages/TradeTemp";
+import Trade from "../pages/Trade";
 
 const DashboardRoutes: FC = () => {
   // TickerPriceContext
@@ -26,7 +26,7 @@ const DashboardRoutes: FC = () => {
       <CurrentOrders.Provider value={{ currentOrders, setCurrentOrders }}>
         <Routes>
           <Route path="profile/:user" element={<Profile />} />
-          <Route path="follow" element={<FollowTemp />} />
+          <Route path="follow" element={<Follow />} />
           {/* <Route path="leaderboard" element={<Leaderboard />} /> */}
           <Route
             path="trade"
@@ -40,7 +40,7 @@ const DashboardRoutes: FC = () => {
             path="trade/futures"
             element={<Navigate to="/trade/futures/APPL" replace />}
           />
-          <Route path="trade/:marketType/:ticker" element={<TradeTemp />} />
+          <Route path="trade/:marketType/:ticker" element={<Trade />} />
         </Routes>
       </CurrentOrders.Provider>
     </TickerPriceContext.Provider>

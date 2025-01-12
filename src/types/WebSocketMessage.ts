@@ -1,7 +1,16 @@
-export enum MessageCategory {
+export enum WebSocketMessageCategory {
+  CONNECTION = 'connection',
   PRICE = "price",
   DOM = "dom",
   SUCCESS = "success",
+  ORDER_UPDATE = 'order_update',
+  ERROR = 'error',
+  NOTIFICATION = 'notification'
+}
+
+export enum WebSocketConnectionStatus {
+  SUCCESS = 'success',
+  FAILED = 'failed'
 }
 
 export enum UpdateScope {
@@ -10,8 +19,9 @@ export enum UpdateScope {
 }
 
 export interface Message {
-  category: MessageCategory;
+  category: WebSocketMessageCategory;
   message: string;
-  on: UpdateScope;
-  details: null | Record<string, string | Number | Record<number, number>>;
+  details: Record<string, string | Number | Record<number, number>> | null;
+  status: WebSocketConnectionStatus | null;
+  on: UpdateScope | null;
 }

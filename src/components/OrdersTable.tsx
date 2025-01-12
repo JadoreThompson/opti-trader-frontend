@@ -29,7 +29,7 @@ const closedTableHeaders: Record<string, string> = {
   side: "Side",
 };
 
-const OrdersTableTemp: FC<{
+const OrdersTable: FC<{
   ticker: undefined | string;
   marketType: null | MarketType;
   orderStatus: null | OrderStatus[];
@@ -54,7 +54,6 @@ const OrdersTableTemp: FC<{
   // 0: No sort, 1: Asc, 2: Desc
 
   const currentModifyIndexRef = useRef<number>();
-
   const [modifyCardTab, setModifyCardTab] = useState<number>(0);
   // 0: Modify, 1: Close
 
@@ -320,7 +319,7 @@ const OrdersTableTemp: FC<{
         ) : (
           <>
             <div
-              className="overlay-container d-flex justify-center align-center"
+              className="overlay-container justify-center align-center"
               id="modifyOrderCard"
               style={{ display: showOverlay ? "flex" : "none" }}
             >
@@ -542,4 +541,4 @@ const OrdersTableTemp: FC<{
   );
 };
 
-export default OrdersTableTemp;
+export default OrdersTable;

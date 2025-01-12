@@ -36,7 +36,6 @@ const WeekdayGains: FC<{ username: string | null; marketType: MarketType }> = ({
 
   useEffect(() => {
     if (!chartData) {
-      console.log("no data");
       return;
     }
 
@@ -130,7 +129,7 @@ const WeekdayGains: FC<{ username: string | null; marketType: MarketType }> = ({
     };
 
     option && chart.setOption(option);
-    console.log("chart loaded");
+    
     window.addEventListener("resize", () => {
       chart.resize();
     });

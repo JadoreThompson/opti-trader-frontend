@@ -1,5 +1,6 @@
 import { FC, useContext, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import toastr from "toastr";
 import { getCookie } from "typescript-cookie";
 import DOM from "../components/DOM";
 import Header from "../components/Header";
@@ -14,12 +15,13 @@ import TickerPriceContext from "../hooks/TickerPriceContext";
 import { MarketType, OrderStatus } from "../types/CommonTypes";
 import {
   Message,
-  MessageCategory,
   UpdateScope,
+  WebSocketConnectionStatus,
+  WebSocketMessageCategory,
 } from "../types/WebSocketMessage";
 import RequestBuilder from "../utils/RequestBuilder";
 
-const TradeTemp: FC = () => {
+const Trade: FC = () => {
   const navigate = useNavigate();
   const { marketType, ticker } = useParams();
   const { setLastPrice, setCurrentPrice } = useContext(TickerPriceContext);
@@ -49,6 +51,107 @@ const TradeTemp: FC = () => {
     if (!Object.values(MarketType).includes(marketType)) {
       navigate("/404", { replace: false });
     }
+  }, []);
+
+  useEffect(() => {
+    toastr.options = {
+      closeButton: false,
+      debug: false,
+      newestOnTop: false,
+      progressBar: false,
+      positionClass: "toast-bottom-right",
+      preventDuplicates: false,
+      onclick: null,
+      showDuration: "150",
+      hideDuration: "1000",
+      timeOut: "2000",
+      extendedTimeOut: "1000",
+      showEasing: "swing",
+      hideEasing: "linear",
+      showMethod: "fadeIn",
+      hideMethod: "fadeOut",
+    };
+  }, []);
+
+  useEffect(() => {
+    currentIntervalSecondsRef.current = toSeconds(currentInterval.toString());
+  }, [currentInterval]);
+
+  useEffect(() => {
+    const ws = new WebSocket(
+      RequestBuilder.getBaseUrl().replace("http", "ws") + "/stream/trade"
+    );
+
+    ws.onopen = () => {
+      setWebsocketConnectionStatus({
+        msg: "System Reconnecting",
+        color: "var(--orange)",
+      });
+      ws.send(JSON.stringify({ token: getCookie("jwt") }));
+    };
+
+    ws.onmessage = (e) => {
+      const message: Message = JSON.parse(e.data);
+
+      if (message.category === WebSocketMessageCategory.CONNECTION) {
+        console.log("1");
+        console.log(message);
+        if (message.status === WebSocketConnectionStatus.SUCCESS) {
+          setWebsocketConnectionStatus({
+            msg: "System Connected",
+            color: "var(--green)",
+          });
+        }
+        return;
+      }
+
+      const options: Partial<
+        Record<WebSocketMessageCategory, (arg: Message) => boolean>
+      > = {
+        [WebSocketMessageCategory.PRICE]: updateChartPrice,
+        [WebSocketMessageCategory.DOM]: updateDOM,
+        [WebSocketMessageCategory.SUCCESS]: updateTable,
+      };
+
+      const func = options[message.category as WebSocketMessageCategory];
+      if (func) {
+        if (func(message)) {
+          switch (message.category) {
+            case WebSocketMessageCategory.SUCCESS:
+              toastr.success(message.message);
+              break;
+            case WebSocketMessageCategory.ORDER_UPDATE:
+              toastr.info(message.message);
+              break;
+            case WebSocketMessageCategory.ERROR:
+              toastr.warning(message.message);
+              break;
+            case WebSocketMessageCategory.NOTIFICATION:
+              toastr.info(message.message);
+              break;
+            default:
+              break;
+          }
+        }
+      }
+    };
+
+    ws.onclose = (e) => {
+      setWebsocketConnectionStatus({
+        msg: "System Disconnected",
+        color: "var(--red)",
+      });
+    };
+
+    ws.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    setWebSocket(ws);
+
+    return () => {
+      ws.close();
+    };
   }, []);
 
   function updateChartPrice(message: Message): boolean {
@@ -161,67 +264,6 @@ const TradeTemp: FC = () => {
     return true;
   }
 
-  useEffect(() => {
-    currentIntervalSecondsRef.current = toSeconds(currentInterval.toString());
-  }, [currentInterval]);
-
-  useEffect(() => {
-    const ws = new WebSocket(
-      RequestBuilder.getBaseUrl().replace("http", "ws") + "/stream/trade"
-    );
-
-    ws.onopen = () => {
-      setWebsocketConnectionStatus({
-        msg: "System Reconnecting",
-        color: "var(--orange)",
-      });
-      ws.send(JSON.stringify({ token: getCookie("jwt") }));
-    };
-
-    ws.onmessage = (e) => {
-      const message: Message = JSON.parse(e.data);
-
-      if (message.category === "success") {
-        console.log("Message received:", JSON.parse(e.data));
-        setWebsocketConnectionStatus({
-          msg: "System Connected",
-          color: "var(--green)",
-        });
-      }
-
-      const options: Record<MessageCategory, (arg: Message) => boolean> = {
-        [MessageCategory.PRICE]: updateChartPrice,
-        [MessageCategory.DOM]: updateDOM,
-        [MessageCategory.SUCCESS]: updateTable,
-      };
-
-      const func = options[message.category as MessageCategory];
-      if (func) {
-        if (func(message)) {
-          console.log("display message");
-        }
-      }
-    };
-
-    ws.onclose = (e) => {
-      console.log("WebSocket disconnected: ", e.reason);
-      setWebsocketConnectionStatus({
-        msg: "System Disconnected",
-        color: "var(--red)",
-      });
-    };
-
-    ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
-    };
-
-    setWebSocket(ws);
-
-    return () => {
-      ws.close();
-    };
-  }, []);
-
   return (
     <>
       <Header
@@ -307,4 +349,4 @@ const TradeTemp: FC = () => {
   );
 };
 
-export default TradeTemp;
+export default Trade;
