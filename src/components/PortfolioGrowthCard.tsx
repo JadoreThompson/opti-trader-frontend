@@ -87,10 +87,6 @@ const PortfolioGrowthCard: FC<{
     loadChart();
   }, [chartData, bodyStyles]);
 
-  // useEffect(() => {
-  //   console.log(chartData);
-  // }, [chartData]);
-
   return (
     <>
       <div className="card chart-container portfolio-growth">

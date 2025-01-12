@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
 import { Link } from "react-router-dom";
-import { useBodyStyles } from "../hooks/BodyStyles";
+import Utility from "../utils/Utility";
 import CopyTradeForm from "./CopyTradeForm";
 
 export interface FollowCount {
@@ -22,7 +22,6 @@ const ProfileCard: FC<Profile> = ({
   winrate,
   balance,
 }) => {
-  const bodyStyles = useBodyStyles();
   const [showForm, setShowForm] = useState<boolean>(false);
 
   return (
@@ -58,7 +57,7 @@ const ProfileCard: FC<Profile> = ({
               <span className="secondary small">30d Profit</span>
               <span className="large">
                 {totalProfit !== null && totalProfit !== undefined
-                  ? String(totalProfit)
+                  ? Utility.displayNumber(String(totalProfit))
                   : "-"}
               </span>
             </div>
@@ -74,7 +73,7 @@ const ProfileCard: FC<Profile> = ({
               <span className="secondary small">AUM</span>
               <span className="large">
                 {balance !== null && balance !== undefined
-                  ? String(balance)
+                  ? Utility.displayNumber(String(balance))
                   : "-"}
               </span>
             </div>

@@ -22,10 +22,7 @@ const Sidebar: FC = () => {
     const element = document.querySelector(".sidebar-container") as HTMLElement;
 
     function hide(e: KeyboardEvent): void {
-      if (e.key === "Escape") {
-        console.log("Escape key pressed");
-        setShow(false);
-      }
+      e.key === 'Escape' ? setShow(false) : null
     }
 
     if (show) {

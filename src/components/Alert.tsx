@@ -20,9 +20,9 @@ const Alert: FC<AlertProps> = ({ message, type, counter }) => {
 
   const displayMessage = async (alertMessage: string) => {
     /*
-            Displays the alert button with custom background
-            color and message depending on type
-        */
+        Displays the alert button with custom background
+        color and message depending on type
+    */
 
     const alertContainer = document.querySelector(
       ".alert-container"

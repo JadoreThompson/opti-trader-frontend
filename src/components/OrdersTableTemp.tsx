@@ -65,7 +65,6 @@ const OrdersTableTemp: FC<{
 
     function hide(e: KeyboardEvent): void {
       if (e.key === "Escape") {
-        console.log("Escape key pressed 2");
         setShowOverlay(false);
       }
     }
@@ -127,13 +126,11 @@ const OrdersTableTemp: FC<{
     if (sortedData) {
       if (sortedData.length > 0) {
         setMaxPages(Math.floor(sortedData.length / pageSize) + 1);
-        console.log("true");
         setRevealTable(true);
         return;
       }
     }
 
-    console.log("false");
     setRevealTable(false);
     return;
   }, [sortedData]);
@@ -142,7 +139,6 @@ const OrdersTableTemp: FC<{
     if (!sortCategory) {
       return;
     }
-    console.log(sortNum);
     setSortedData((prev) => {
       if (sortNum === 1) {
         return [...currentOrders]!.sort(
@@ -178,9 +174,6 @@ const OrdersTableTemp: FC<{
     }
 
     if (key === "realised_pnl" || key === "unrealised_pnl") {
-      if (key === "unrealised_pnl") {
-        console.log(Number(value) < 0 ? `$${value}` : `+${value}`);
-      }
       return Number(value) < 0 ? `$${value}` : `+${value}`;
     }
 

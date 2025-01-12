@@ -5,8 +5,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import CurrentOrders from "../hooks/CurrentOrders";
 import TickerPriceContext from "../hooks/TickerPriceContext";
 import FollowTemp from "../pages/FollowTemp";
-import Leaderboard from "../pages/Leaderboard";
-import Pairs from "../pages/Pairs";
+
 import Profile from "../pages/Profile";
 import TradeTemp from "../pages/TradeTemp";
 
@@ -28,7 +27,7 @@ const DashboardRoutes: FC = () => {
         <Routes>
           <Route path="profile/:user" element={<Profile />} />
           <Route path="follow" element={<FollowTemp />} />
-          <Route path="leaderboard" element={<Leaderboard />} />
+          {/* <Route path="leaderboard" element={<Leaderboard />} /> */}
           <Route
             path="trade"
             element={<Navigate to="/trade/spot/APPL" replace />}
@@ -42,7 +41,6 @@ const DashboardRoutes: FC = () => {
             element={<Navigate to="/trade/futures/APPL" replace />}
           />
           <Route path="trade/:marketType/:ticker" element={<TradeTemp />} />
-          <Route path="pairs" element={<Pairs />} />
         </Routes>
       </CurrentOrders.Provider>
     </TickerPriceContext.Provider>

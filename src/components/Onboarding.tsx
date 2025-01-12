@@ -1,14 +1,10 @@
 import axios from "axios";
 import { FC, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { useBodyStyles } from "../hooks/BodyStyles";
 import RequestBuilder from "../utils/RequestBuilder";
 
 const Onboarding: FC<{ setIsLoggedIn: (arg: boolean) => void }> = ({
   setIsLoggedIn,
 }) => {
-  const bodyStyles = useBodyStyles();
-  const navigate = useNavigate();
   const payload = useRef<Record<string, boolean>>({});
 
   async function handleChoice(
@@ -32,7 +28,6 @@ const Onboarding: FC<{ setIsLoggedIn: (arg: boolean) => void }> = ({
       console.error(err);
     }
     setIsLoggedIn(true);
-    // navigate("/trade");
   }
 
   return (
@@ -69,7 +64,6 @@ const Onboarding: FC<{ setIsLoggedIn: (arg: boolean) => void }> = ({
               value={"y"}
               name="visible"
               className="btn primary w-100"
-              // style={{ height: "3rem" }}
               onClick={handleChoice}
             >
               Make visible

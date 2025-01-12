@@ -14,7 +14,6 @@ const AssetAllocation: FC<{
 
   function loadChart(data: Record<string, string | number>[]): void {
     const container = document.getElementById("assetAllocationChart")!;
-    // container.innerHTML = "";
     var chartDom = container;
     var chart = echarts.init(chartDom);
     var option: echarts.EChartOption;
@@ -76,10 +75,7 @@ const AssetAllocation: FC<{
               }`,
             RequestBuilder.constructHeader()
           )
-          .then((response) => {
-            console.log('asset allocation', response.data, marketType);
-            return response.data
-          })
+          .then((response) => response.data)
           .catch((err) => {
             if (err instanceof axios.AxiosError) {
               console.error(err);

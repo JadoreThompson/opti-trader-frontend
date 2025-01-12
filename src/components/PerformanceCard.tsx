@@ -3,6 +3,7 @@ import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MarketType } from "../types/CommonTypes";
 import RequestBuilder from "../utils/RequestBuilder";
+import Utility from "../utils/Utility";
 
 const performanceKeys: Record<string, string> = {
   winrate: "Winrate",
@@ -10,8 +11,6 @@ const performanceKeys: Record<string, string> = {
   beta: "Beta",
   sharpe: "Sharpe",
   treynor: "Tryenor",
-  // ahpr: "AHPR",
-  // ghpr: "GHPR",
   risk_of_ruin: "Risk of Ruin",
 };
 
@@ -95,18 +94,20 @@ const PerformanceCard: FC<{ username: string; marketType: MarketType }> = ({
               {performanceData["total_profit"] >= 0 ? (
                 <>
                   <span key={0} className="large positive">
-                    +{performanceData["total_profit"]}
+                    +{Utility.displayNumber(performanceData["total_profit"])}
                   </span>
                 </>
               ) : (
                 <>
                   <span key={1} className="large negative">
-                    {performanceData["total_profit"]}
+                  {Utility.displayNumber(performanceData["total_profit"])}
                   </span>
                 </>
               )}
 
-              <span className="large">{performanceData["balance"]}</span>
+              <span className="large">
+                {Utility.displayNumber(performanceData["balance"])}
+              </span>
             </div>
             <div className="d-row justify-sb mb-1">
               <div className="dotted-bottom">
@@ -127,7 +128,7 @@ const PerformanceCard: FC<{ username: string; marketType: MarketType }> = ({
             {Object.keys(performanceKeys).map((key, index) => (
               <div key={index} className="d-row justify-sb mb-05">
                 <span className="secondary">{performanceKeys[key]}</span>
-                <span>{performanceData[key] ? performanceData[key] : '-'}</span>
+                <span>{performanceData[key] ? performanceData[key] : "-"}</span>
               </div>
             ))}
           </>

@@ -54,7 +54,7 @@ const OrderCreationForm: FC<{
     }
 
     websocket.send(JSON.stringify(payload));
-    // form.reset();
+    form.reset();
   };
 
   return (

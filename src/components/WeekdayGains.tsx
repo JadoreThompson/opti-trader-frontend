@@ -12,20 +12,43 @@ const WeekdayGains: FC<{ username: string | null; marketType: MarketType }> = ({
     null
   );
 
-  const loadChart: (data: Record<string, number[]>) => void = (data): void => {
-    if (!data) {
+  useEffect(() => {
+    (async () => {
+      setChartData(
+        await axios
+          .get(
+            RequestBuilder.getBaseUrl() +
+              `/portfolio/weekday-results?market_type=${marketType}${
+                username ? `&username=${username}` : ""
+              }`,
+            RequestBuilder.constructHeader()
+          )
+          .then((response) => response.data)
+          .catch((err) => {
+            if (err instanceof axios.AxiosError) {
+              console.error(err);
+            }
+            return null;
+          })
+      );
+    })();
+  }, [username, marketType]);
+
+  useEffect(() => {
+    if (!chartData) {
+      console.log("no data");
       return;
     }
 
     const container = document.getElementById("weekdayGainsChart")!;
-    container.innerHTML = '';
+    container.innerHTML = "";
     var chartDom = container;
     var chart = echarts.init(chartDom);
     var option: echarts.EChartsOption;
 
     var series = [
       {
-        data: data.wins,
+        data: chartData.wins,
         type: "bar",
         stack: "a",
         name: "Wins",
@@ -34,7 +57,7 @@ const WeekdayGains: FC<{ username: string | null; marketType: MarketType }> = ({
         },
       },
       {
-        data: data.losses,
+        data: chartData.losses,
         type: "bar",
         stack: "a",
         name: "Losses",
@@ -107,38 +130,14 @@ const WeekdayGains: FC<{ username: string | null; marketType: MarketType }> = ({
     };
 
     option && chart.setOption(option);
+    console.log("chart loaded");
     window.addEventListener("resize", () => {
       chart.resize();
     });
 
-    return chart.dispose();
-  };
-
-  useEffect(() => {
-    (async () => {
-      setChartData(
-        await axios
-          .get(
-            RequestBuilder.getBaseUrl() +
-              `/portfolio/weekday-results?${
-                username ? `username=${username}` : ""
-              }`,
-            RequestBuilder.constructHeader()
-          )
-          .then((response) => response.data)
-          .catch((err) => {
-            if (err instanceof axios.AxiosError) {
-              console.error(err);
-            }
-            return null;
-          })
-      );
-    })();
-  }, [username]);
-
-  useEffect(() => {
-    console.log(chartData);
-    loadChart(chartData);
+    return () => {
+      chart.dispose();
+    };
   }, [chartData]);
 
   return (

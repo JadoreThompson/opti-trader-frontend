@@ -108,7 +108,6 @@ const UserOrdersProfileCard: FC<{
         {!revealTable ? (
           <>
             <div
-              // className="h-100 w-100 d-col justify-center"
               style={{
                 height: "100%",
                 maxHeight: "100%",

@@ -156,12 +156,6 @@ const TickerChart: FC<{
     }
 
     loadChart();
-
-    // return () => {
-    //   if (chart) {
-    //     chart.remove();
-    //   }
-    // };
   }, [data, bodyStyles]);
 
   return (

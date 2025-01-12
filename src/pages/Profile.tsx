@@ -31,7 +31,6 @@ const Profile: FC = () => {
     storedUser === user ? null : setUsername(user!);
   }, []);
 
-  useEffect(() => console.log(currentMarketType), [currentMarketType]);
 
   return (
     <>

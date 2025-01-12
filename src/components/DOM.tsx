@@ -13,8 +13,6 @@ const DOM: FC<{
   // 0, 1, 2
   const [maxNum, setMaxNum] = useState<number>(0);
 
-  // useEffect(() => console.log(increase), [increase]);
-
   useEffect(() => {
     currentPrice! > lastPrice!
       ? setIncrease(2)
@@ -49,7 +47,6 @@ const DOM: FC<{
       className="card w-100 h-100"
       style={{
         width: "100%",
-        // display: `${asks && bids ? "flex" : "none"}`,
         display: "flex",
       }}
     >
