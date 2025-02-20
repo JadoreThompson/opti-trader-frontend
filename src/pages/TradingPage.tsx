@@ -1,6 +1,6 @@
-import { IChartApi, ISeriesApi } from "lightweight-charts";
 import { FC, useEffect, useRef, useState } from "react";
 import UtilsManager from "../classses/UtilsManager";
+import DOM from "../componenets/DOM";
 import InstrumentCard from "../componenets/InstrumentChart";
 import TradingHeader from "../componenets/TradingHeader";
 
@@ -12,11 +12,10 @@ const TradingPage: FC = () => {
   useEffect(() => {
     (async () => {
       while (true) {
-        await UtilsManager.sleep(2000);
-        setPrice((price) => Math.round(Math.random() * 2 * price));
+        await UtilsManager.sleep(5000);
+        setPrice(Math.floor(Math.random() * 100));
       }
     })();
-    // setPrice((price) => Math.round(Math.random() * 2 * price));
   }, []);
 
   return (
@@ -27,13 +26,25 @@ const TradingPage: FC = () => {
         username="zenz"
       />
       <div className="w-full p-md">
-        <div className="w-full" style={{ height: "20rem", marginTop: "6rem" }}>
-          <InstrumentCard
-            instrument={"bitcoin"}
-            price={price}
-            chartRef={chartRef}
-            seriesRef={seriesRef}
-          />
+        <div
+          className="w-full flex"
+          style={{ height: "30rem", marginTop: "6rem" }}
+        >
+          <div className="h-full" style={{ width: "80%" }}>
+            <InstrumentCard
+              instrument={"bitcoin"}
+              price={price}
+              chartRef={chartRef}
+              seriesRef={seriesRef}
+            />
+          </div>
+          <div className="h-full" style={{ width: "20%" }}>
+            <DOM
+              instrument={"bitcoin"}
+              price={price}
+              orderbook={UtilsManager.generateOrderbook()}
+            />
+          </div>
         </div>
       </div>
     </>

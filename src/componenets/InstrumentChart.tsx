@@ -8,6 +8,8 @@ import {
 } from "lightweight-charts";
 import { FC, MutableRefObject, useEffect, useRef, useState } from "react";
 import UtilsManager from "../classses/UtilsManager";
+import ArrowDown from "./icons/ArrowDown";
+import ArrowUp from "./icons/ArrowUp";
 
 export interface OHLC {
   time: number;
@@ -42,8 +44,6 @@ const InstrumentCard: FC<{
   }, [price]);
 
   useEffect(() => {
-    // if (!false) return;
-
     const generateOHLC = (): OHLC => {
       const open = lastPriceRef.current[1];
       const high = open + Math.random() * 10;
@@ -52,15 +52,6 @@ const InstrumentCard: FC<{
       return { open, high, low, close, time: Number(Date.now().toString()) };
     };
     setChartData((prev) => [...prev, generateOHLC()]);
-
-    // const interval = setInterval(() => {
-    //   setChartData((prevData) => {
-    //     const newOHLC = generateOHLC();
-    //     return [...prevData.slice(-20), newOHLC];
-    //   });
-    // }, 5000);
-
-    // return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -135,10 +126,6 @@ const InstrumentCard: FC<{
       loadChart();
       chartPlacedRef.current = true;
     }
-
-    // return () => {
-    //   chartContainerRef.current!.innerHTML = "";
-    // };
   }, [chartData]);
 
   return (
@@ -156,8 +143,15 @@ const InstrumentCard: FC<{
               price > lastPrice ? "text-green increase" : "text-red decrease"
             }`}
           >
-            {UtilsManager.formatNumber(price)}
+            {UtilsManager.formatPrice(price)}
           </span>
+          <div className="w-auto h-full">
+            {price > lastPrice ? (
+              <ArrowUp className="fill-green" size="100%" />
+            ) : (
+              <ArrowDown className="fill-red" size="100%" />
+            )}
+          </div>
         </div>
       </div>
 

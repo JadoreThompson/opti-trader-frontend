@@ -47,6 +47,10 @@ img.container {
   object-fit: contain;
 }
 
+li {
+  list-style: none;
+}
+
 .a {
 }
 
@@ -168,9 +172,22 @@ img.container {
 }
 .d {
 }
+
+.dom-volume {
+  transition: all 0.5s ease;
+}
+
 .e {
 }
 .f {
+}
+
+.fill-green * {
+  fill: rgb(28, 176, 28);
+}
+
+.fill-red * {
+  fill: red;
 }
 
 .flex {
@@ -210,6 +227,10 @@ img.container {
   display: grid;
 }
 
+.grid-col-1 {
+  grid-column: 1;
+}
+
 .grid-cols-1 {
   grid-template-columns: repeat(1, 1fr);
 }
@@ -232,6 +253,10 @@ img.container {
 
 .grid-cols-6 {
   grid-template-columns: repeat(6, 1fr);
+}
+
+.grid-row-1 {
+  grid-row: 1;
 }
 
 .grid-rows-1 {
@@ -543,7 +568,11 @@ img.container {
 }
 
 .text-green.increase {
-  text-shadow: 0 0 20px green;
+  text-shadow: 0 0 10px green;
+}
+
+.text-grey {
+  color: grey;
 }
 
 .text-red {
@@ -551,7 +580,7 @@ img.container {
 }
 
 .text-red.decrease {
-  text-shadow: 0 0 20px red;
+  text-shadow: 0 0 10px red;
 }
 
 .u {

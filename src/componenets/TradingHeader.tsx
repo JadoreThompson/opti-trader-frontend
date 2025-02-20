@@ -24,7 +24,7 @@ const TradingHeader: FC<{
             <div className="h-full w-auto flex g-1 align-center">
               <Coin size={"100%"} />
               <span className="span-lg bold">
-                {UtilsManager.formatNumber(balance)}
+                {UtilsManager.formatPrice(balance)}
               </span>
             </div>
             <div className="h-full w-auto flex align-center">
