@@ -1,10 +1,10 @@
 import { FC } from "react";
 
 // Local
-import DashboardPage from "./pages/TradingPage";
+import TradingPage from "./pages/TradingPage";
 
 const App: FC = () => {
-  return <DashboardPage />;
+  return <TradingPage />;
 };
 
 export default App;

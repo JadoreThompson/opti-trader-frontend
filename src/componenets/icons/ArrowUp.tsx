@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-const Wallet: FC<{ fill?: string; size?: string }> = ({
+const ArrowUp: FC<{ fill?: string; size?: string }> = ({
   fill = "var(--color)",
   size = "100px",
 }) => {
@@ -13,11 +13,11 @@ const Wallet: FC<{ fill?: string; size?: string }> = ({
       viewBox="0 0 24 24"
     >
       <path
-        d="M18 3H2v18h18v-4h2V7h-2V3h-2zm0 14v2H4V5h14v2h-8v10h8zm2-2h-8V9h8v6zm-4-4h-2v2h2v-2z"
+        d="M11 20h2V8h2V6h-2V4h-2v2H9v2h2v12zM7 10V8h2v2H7zm0 0v2H5v-2h2zm10 0V8h-2v2h2zm0 0v2h2v-2h-2z"
         fill={fill}
       />
     </svg>
   );
 };
 
-export default Wallet;
+export default ArrowUp;

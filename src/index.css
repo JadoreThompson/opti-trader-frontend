@@ -1,5 +1,6 @@
 :root {
   /* Variables */
+  --font-family: "Switzer", sans-serif;
   --border-radius-primary: 0.3rem;
   --border-radius-secondary: 5rem;
   --primary-color: #3dd973;
@@ -16,10 +17,9 @@
 * {
   margin: 0;
   padding: 0;
-  color: var(--color);
   box-sizing: border-box;
-
-  font-family: "Switzer", sans-serif;
+  color: var(--color);
+  font-family: var(--font-family);
   letter-spacing: 0.105rem;
 }
 
@@ -492,7 +492,7 @@ img.container {
 }
 
 .span-md {
-  font-size: 1rem; 
+  font-size: 1rem;
 }
 
 .span-lg {
@@ -504,7 +504,7 @@ img.container {
 }
 
 .span-2xl {
-  font-size: 2rem; 
+  font-size: 2rem;
 }
 
 .span-3xl {
@@ -512,31 +512,48 @@ img.container {
 }
 
 .span-4xl {
-  font-size: 3rem; 
+  font-size: 3rem;
 }
 
 .span-5xl {
-  font-size: 4rem; 
+  font-size: 4rem;
 }
 
 .span-tiny {
-  font-size: 0.625rem; 
+  font-size: 0.625rem;
 }
 
 .span-small {
-  font-size: 0.875rem; 
+  font-size: 0.875rem;
 }
 
 .span-base {
-  font-size: 1rem; 
+  font-size: 1rem;
 }
 
 .span-huge {
-  font-size: 3.5
+  font-size: 3.5;
 }
 
 .t {
 }
+
+.text-green {
+  color: rgb(28, 176, 28);
+}
+
+.text-green.increase {
+  text-shadow: 0 0 20px green;
+}
+
+.text-red {
+  color: red;
+}
+
+.text-red.decrease {
+  text-shadow: 0 0 20px red;
+}
+
 .u {
 }
 .v {
