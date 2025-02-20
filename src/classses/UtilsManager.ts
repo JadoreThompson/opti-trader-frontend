@@ -1,4 +1,4 @@
-export default class Utility {
+export default class UtilsManager {
     public static displayNumber(value: Number | String): string {
         let nparts = String(value).split('');
         let tag: string = '';
