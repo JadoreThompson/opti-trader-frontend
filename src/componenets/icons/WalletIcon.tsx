@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-const Wallet: FC<{ fill?: string; size?: string }> = ({
+const WalletIcon: FC<{ fill?: string; size?: string }> = ({
   fill = "var(--color)",
   size = "100px",
 }) => {
@@ -20,4 +20,4 @@ const Wallet: FC<{ fill?: string; size?: string }> = ({
   );
 };
 
-export default Wallet;
+export default WalletIcon;

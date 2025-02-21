@@ -1,5 +1,5 @@
 import { FC, useEffect, useRef } from "react";
-import UtilsManager from "../classses/UtilsManager";
+import UtilsManager from "../utils/classses/UtilsManager";
 
 // {price: quantity}
 // Ordered
@@ -9,10 +9,9 @@ export interface Orderbook {
 }
 
 const DOM: FC<{
-  instrument: string;
   price: number;
   orderbook: Orderbook;
-}> = ({ instrument, price, orderbook }) => {
+}> = ({ price, orderbook }) => {
   const maxAskVolumeRef = useRef<number | undefined>(undefined);
   const maxBidVolumeRef = useRef<number | undefined>(undefined);
 

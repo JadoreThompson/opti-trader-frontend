@@ -1,4 +1,4 @@
-import { Orderbook } from "../componenets/DOM";
+import { Orderbook } from "../../componenets/DOM";
 
 export default class UtilsManager {
   public static formatPrice(value: Number | String): string {

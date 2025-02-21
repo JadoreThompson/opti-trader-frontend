@@ -7,7 +7,7 @@ import {
   createChart,
 } from "lightweight-charts";
 import { FC, MutableRefObject, useEffect, useRef, useState } from "react";
-import UtilsManager from "../classses/UtilsManager";
+import UtilsManager from "../utils/classses/UtilsManager";
 import ArrowDown from "./icons/ArrowDown";
 import ArrowUp from "./icons/ArrowUp";
 

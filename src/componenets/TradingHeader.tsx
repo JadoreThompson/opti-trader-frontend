@@ -1,7 +1,7 @@
 import { FC } from "react";
-import UtilsManager from "../classses/UtilsManager";
+import UtilsManager from "../utils/classses/UtilsManager";
 import Coin from "./icons/Coin";
-import Wallet from "./icons/Wallet";
+import WalletIcon from "./icons/WalletIcon";
 
 const TradingHeader: FC<{
   avatar: string;
@@ -28,7 +28,7 @@ const TradingHeader: FC<{
               </span>
             </div>
             <div className="h-full w-auto flex align-center">
-              <Wallet size="100%" />
+              <WalletIcon size="100%" />
             </div>
           </div>
         </div>

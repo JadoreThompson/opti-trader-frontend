@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@sinclair/typebox": "^0.31.3",
     "@types/echarts": "^4.9.22",
     "axios": "^1.7.7",
     "dotenv": "^16.4.5",
@@ -17,7 +18,7 @@
     "lightweight-charts": "^4.2.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "toastr": "^2.1.4",
+    "react-toastify": "^11.0.3",
     "typescript-cookie": "^1.0.6"
   },
   "devDependencies": {

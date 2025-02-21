@@ -1,8 +1,7 @@
 import { FC, useEffect, useRef, useState } from "react";
-import UtilsManager from "../classses/UtilsManager";
-import DOM from "../componenets/DOM";
-import InstrumentCard from "../componenets/InstrumentChart";
+import OrderCard from "../componenets/OrderCard";
 import TradingHeader from "../componenets/TradingHeader";
+import UtilsManager from "../utils/classses/UtilsManager";
 
 const TradingPage: FC = () => {
   const [price, setPrice] = useState<number>(100);
@@ -28,23 +27,9 @@ const TradingPage: FC = () => {
       <div className="w-full p-md">
         <div
           className="w-full flex"
-          style={{ height: "30rem", marginTop: "6rem" }}
+          style={{ height: "30rem", width: "20rem", marginTop: "6rem" }}
         >
-          <div className="h-full" style={{ width: "80%" }}>
-            <InstrumentCard
-              instrument={"bitcoin"}
-              price={price}
-              chartRef={chartRef}
-              seriesRef={seriesRef}
-            />
-          </div>
-          <div className="h-full" style={{ width: "20%" }}>
-            <DOM
-              instrument={"bitcoin"}
-              price={price}
-              orderbook={UtilsManager.generateOrderbook()}
-            />
-          </div>
+          <OrderCard balance={10000} />
         </div>
       </div>
     </>
