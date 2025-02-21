@@ -20,7 +20,6 @@ export interface OHLC {
 }
 
 const InstrumentCard: FC<{
-  instrument: string;
   price: number;
   chartRef: MutableRefObject<any>;
   seriesRef: MutableRefObject<any>;

@@ -3,8 +3,8 @@
   --font-family: "Switzer", sans-serif;
   --border-radius-primary: 0.3rem;
   --border-radius-secondary: 5rem;
-  --primary-color: #3dd973;
-  --secondary-color: red;
+  --primary-color: #ff3030;
+  --secondary-color: #43ba53;
   --tertiary-color: rgba(38, 201, 155, 0.1);
   --padding: 0.5rem;
 
@@ -58,6 +58,11 @@ input:focus {
 
 li {
   list-style: none;
+}
+
+th {
+  text-align: left;
+  width: 100;
 }
 
 .a {
@@ -182,7 +187,8 @@ li {
 
 .btn.btn-primary {
   background-color: var(--primary-color);
-  color: rgb(25, 25, 28);
+  /* color: rgb(25, 25, 28); */
+  color: white;
 }
 
 .btn.short {
@@ -190,11 +196,12 @@ li {
 }
 
 .btn.long {
-  border-bottom: 4px solid #006600;
+  background-color: #43ba53;
+  border-bottom: 4px solid #136a1f;
 }
 
 .btn.scale-down:active {
-  border-bottom-width: 1px;
+  border-bottom-width: 2px;
 }
 
 .c {
@@ -212,11 +219,11 @@ li {
 }
 
 .fill-green * {
-  fill: rgb(28, 176, 28);
+  fill: #43ba53;
 }
 
 .fill-red * {
-  fill: red;
+  fill: #ff3030;
 }
 
 .flex {
@@ -568,9 +575,13 @@ li {
 }
 
 .snackbar .btn.active {
-  /* border: 2px solid var(--background-color-secondary); */
-  background-color: rgb(11, 10, 10);
   color: var(--color);
+}
+
+.snackbar .btn.active {
+  border-radius: 0;
+  border-bottom: 3px solid rgba(68, 187, 84, 1);
+  box-shadow: 0px 4px 2px -2px rgba(118, 199, 77, 0.6);
 }
 
 .snackbar.order-type .btn:hover {
@@ -639,7 +650,7 @@ li {
 }
 
 .text-green {
-  color: rgb(28, 176, 28);
+  color: #43ba53;
 }
 
 .text-green.increase {
@@ -651,7 +662,7 @@ li {
 }
 
 .text-red {
-  color: red;
+  color: #ff3030;
 }
 
 .text-red.decrease {

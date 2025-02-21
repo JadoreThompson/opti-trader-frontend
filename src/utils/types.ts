@@ -1,6 +1,6 @@
 import { Static, Type } from "@sinclair/typebox";
 
-export const Order = Type.Object({
+export const OrderRequest = Type.Object({
   amount: Type.Number(),
   order_type: Type.Union([Type.Literal("market"), Type.Literal("limit")]),
   limit_price: Type.Optional(Type.Number()),
@@ -9,4 +9,4 @@ export const Order = Type.Object({
   side: Type.Union([Type.Literal("long"), Type.Literal("short")]),
 });
 
-export type Order = Static<typeof Order>;
+export type OrderRequest = Static<typeof OrderRequest>;

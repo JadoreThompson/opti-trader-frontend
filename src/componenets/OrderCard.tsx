@@ -1,32 +1,15 @@
 import { Value } from "@sinclair/typebox/value";
 import { FC, FormEvent, useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
-import { Order } from "../utils/types";
+import { ToastContainer } from "react-toastify";
+import UtilsManager from "../utils/classses/UtilsManager";
+
 import Coin from "./icons/Coin";
-import DollarIcon from "./icons/DollarIcon";
+import { OrderRequest } from "../utils/types";
 
 enum OrderType {
   MARKET = "market",
   LIMIT = "limit",
 }
-
-// interface Order {
-//   amount: number;
-//   order_type: OrderType;
-//   limit_price?: number;
-//   take_profit?: number;
-//   stop_loss?: number;
-//   side: "long" | "short";
-// }
-
-const toastOptions = {
-  theme: "dark",
-};
-
-const toastSuccessOptions = {
-  icon: <DollarIcon size="50px" fill="green" />,
-  ...toastOptions,
-};
 
 const OrderCard: FC<{ balance: number }> = ({ balance }) => {
   const [selectedOrderType, setSelectedOrderType] = useState<
@@ -40,7 +23,7 @@ const OrderCard: FC<{ balance: number }> = ({ balance }) => {
     let payload: Record<any, any> = {
       ...(Object.fromEntries(
         new FormData(e.target as HTMLFormElement).entries()
-      ) as unknown as Order),
+      ) as unknown as OrderRequest),
       order_type: selectedOrderType!,
       side: ((e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement)
         .value as "long" | "short",
@@ -52,9 +35,10 @@ const OrderCard: FC<{ balance: number }> = ({ balance }) => {
       }
     });
 
-    if (Value.Check(Order, payload)) {
-      toast.success("Order placed", toastSuccessOptions);
+    if (Value.Check(OrderRequest, payload)) {
       try {
+        if (balance < payload.amount) throw new Error("Amount exceeds balance");
+
         const rsp = await fetch(import.meta.env.VITE_BASE_URL + "/api/order", {
           method: "POST",
           headers: {
@@ -67,9 +51,9 @@ const OrderCard: FC<{ balance: number }> = ({ balance }) => {
         const data = await rsp.json();
         if (!rsp.ok) throw new Error(data["error"]);
 
-        toast.success(data["message"], toastSuccessOptions);
+        UtilsManager.toastSuccess(data["message"]);
       } catch (err) {
-        toast.error((err as Error).message, toastOptions);
+        UtilsManager.toastError((err as Error).message);
       }
     }
   }
@@ -165,19 +149,19 @@ const OrderCard: FC<{ balance: number }> = ({ balance }) => {
           <div className="w-full flex g-1 justify-between align-center">
             <button
               type="submit"
-              className="btn w-full h-full border-none hover-pointer long scale-down"
+              className="btn btn-primary w-full h-full border-none hover-pointer long scale-down"
               name="side"
               value="long"
-              style={{ backgroundColor: "green" }}
+              // style={{ backgroundColor: "#43ba53", color: 'white' }}
             >
               LONG
             </button>
             <button
               type="submit"
-              className="btn w-full h-full border-none hover-pointer short scale-down"
+              className="btn btn-primary w-full h-full border-none hover-pointer short scale-down"
               name="side"
               value="long"
-              style={{ backgroundColor: "red" }}
+              // style={{ backgroundColor: "red" }}
             >
               SHORT
             </button>

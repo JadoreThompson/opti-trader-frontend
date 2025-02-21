@@ -1,20 +1,27 @@
 import { FC, useEffect, useRef, useState } from "react";
+import DOM from "../componenets/DOM";
+import InstrumentChart from "../componenets/InstrumentCard";
 import OrderCard from "../componenets/OrderCard";
+import OrdersTable from "../componenets/OrdersTable";
 import TradingHeader from "../componenets/TradingHeader";
 import UtilsManager from "../utils/classses/UtilsManager";
 
 const TradingPage: FC = () => {
   const [price, setPrice] = useState<number>(100);
+
   const chartRef = useRef<any>(undefined);
   const seriesRef = useRef<any>(undefined);
+  const ordersRef = useRef<Record<string, any>[]>(
+    UtilsManager.generateOrders(90)
+  );
 
   useEffect(() => {
-    (async () => {
-      while (true) {
-        await UtilsManager.sleep(5000);
-        setPrice(Math.floor(Math.random() * 100));
-      }
-    })();
+    // (async () => {
+    //   while (true) {
+    //     await UtilsManager.sleep(1000);
+    //     setPrice(Math.floor(Math.random() * 100));
+    //   }
+    // })();
   }, []);
 
   return (
@@ -27,10 +34,17 @@ const TradingPage: FC = () => {
       <div className="w-full p-md">
         <div
           className="w-full flex"
-          style={{ height: "30rem", width: "20rem", marginTop: "6rem" }}
+          style={{ height: "30rem", marginTop: "6rem" }}
         >
           <OrderCard balance={10000} />
+          <InstrumentChart
+            price={price}
+            chartRef={chartRef}
+            seriesRef={seriesRef}
+          />
+          <DOM price={price} orderbook={UtilsManager.generateOrderbook()} />
         </div>
+        <OrdersTable orders={ordersRef.current} />
       </div>
     </>
   );
