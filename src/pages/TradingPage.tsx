@@ -36,13 +36,13 @@ const TradingPage: FC = () => {
           className="w-full flex"
           style={{ height: "30rem", marginTop: "6rem" }}
         >
-          <OrderCard balance={10000} />
+          {/* <OrderCard balance={10000} />
           <InstrumentChart
             price={price}
             chartRef={chartRef}
             seriesRef={seriesRef}
           />
-          <DOM price={price} orderbook={UtilsManager.generateOrderbook()} />
+          <DOM price={price} orderbook={UtilsManager.generateOrderbook()} /> */}
         </div>
         <OrdersTable orders={ordersRef.current} />
       </div>

@@ -1,6 +1,8 @@
 import { FC, useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import UtilsManager from "../utils/classses/UtilsManager";
+import ChevronLeft from "./icons/ChevronLeft";
+import ChevronRight from "./icons/ChevronRight";
 
 const openOrdersTableHeaders: Record<string, string> = {
   amount: "AMOUNT",
@@ -24,18 +26,17 @@ const OrdersTable: FC<{
   filter?: "open" | "closed";
 }> = ({ orders, filter = "open" }) => {
   const [tab, setTab] = useState<number>(filter === "open" ? 0 : 1);
+  const [page, setPage] = useState<number>(1);
+  const maxPageSize = 10;
+  const maxPages = Math.ceil(
+    orders!.filter((order) => order.status === filter)!.length / maxPageSize
+  );
 
-  const formatValues = (value?: string | number): string => {
-    if (value === undefined) {
-      return "";
+  useEffect(() => {
+    if (page > maxPages) {
+      setPage(maxPages);
     }
-
-    if (isNaN(value)) {
-      return String(value);
-    } else {
-      return UtilsManager.formatPrice(value);
-    }
-  };
+  }, [page]);
 
   useEffect(() => {
     // (async () => {
@@ -51,6 +52,18 @@ const OrdersTable: FC<{
     //   }
     // })();
   }, []);
+
+  const formatValues = (value?: string | number): string => {
+    if (value === undefined) {
+      return "";
+    }
+
+    if (isNaN(value)) {
+      return String(value);
+    } else {
+      return UtilsManager.formatPrice(value);
+    }
+  };
 
   return (
     <>
@@ -82,15 +95,12 @@ const OrdersTable: FC<{
                   {header}
                 </th>
               ))}
-              {/* <th>AMOUNT</th>
-              <th>ENTRY PRICE</th>
-              <th>P/L</th>
-              <th>STATUS</th> */}
             </tr>
           </thead>
           <tbody>
             {orders!
               .filter((order) => order.status === filter)
+              .slice((page - 1) * maxPageSize, page * maxPageSize)
               ?.map((order, orderInd) => (
                 <tr key={orderInd}>
                   {Object.keys(
@@ -98,7 +108,6 @@ const OrdersTable: FC<{
                       ? openOrdersTableHeaders
                       : closedOrdersTableHeaders
                   ).map((key, keyInd) => (
-                    // <td key={keyInd}>{order[key]}</td>
                     <td
                       key={keyInd}
                       className={`${
@@ -117,6 +126,31 @@ const OrdersTable: FC<{
               ))}
           </tbody>
         </table>
+        <div className="w-full flex justify-end" style={{ height: "2rem" }}>
+          <div className="w-auto h-full flex justify-between align-center">
+            <button
+              type="button"
+              className="btn bg-transparent border-none h-full flex justify-center align-center hover-pointer"
+              onClick={() => {
+                if (page === 1) return;
+                setPage(page - 1);
+              }}
+            >
+              <ChevronLeft fill="white" size="1.5rem" />
+            </button>
+            <span className="span-lg">{page}</span>
+            <button
+              type="button"
+              className="btn bg-transparent border-none h-full flex justify-center align-center hover-pointer"
+              onClick={() => {
+                if (page === maxPages) return;
+                setPage(page + 1);
+              }}
+            >
+              <ChevronRight fill="white" size="1.5rem" />
+            </button>
+          </div>
+        </div>
       </div>
     </>
   );
