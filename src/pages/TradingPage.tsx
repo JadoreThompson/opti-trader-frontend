@@ -18,12 +18,12 @@ const TradingPage: FC = () => {
   );
 
   useEffect(() => {
-    // (async () => {
-    //   while (true) {
-    //     await UtilsManager.sleep(1000);
-    //     setPrice(Math.floor(Math.random() * 100));
-    //   }
-    // })();
+    (async () => {
+      while (true) {
+        await UtilsManager.sleep(1000);
+        setPrice(Math.floor(Math.random() * 100));
+      }
+    })();
   }, []);
 
   return (
@@ -98,7 +98,7 @@ const TradingPage: FC = () => {
         </div>
 
         {/* Mobile */}
-        <div className="w-full snackbar flex justify-start mb-3">
+        <div className="mobile w-full snackbar d-none justify-start mb-3">
           <button
             type="button"
             className={`btn hover-pointer ${tab === 0 ? "active" : ""}`}
@@ -134,8 +134,8 @@ const TradingPage: FC = () => {
         </div>
 
         {/* Desktop */}
-        <div id="desktop" className="w-full grid-3 g-3">
-          <div className="w-full" style={{ height: "30rem" }}>
+        <div id="desktop" className="w-full flex g-3" style={{ overflowX: "auto" }}>
+          <div className="h-full" style={{ width: "900px" }}>
             <InstrumentChart
               showBorder
               price={price}
@@ -143,14 +143,16 @@ const TradingPage: FC = () => {
               seriesRef={seriesRef}
             />
           </div>
-          <div className="w-full h-full">
+          
+          <div className="h-full" style={{ width: "400px", minWidth: "400px" }}>
             <DOM
               showBorder
               price={price}
               orderbook={UtilsManager.generateOrderbook()}
             />
           </div>
-          <div className="w-full">
+          
+          <div className="h-full" style={{ width: "400px", minWidth: "400px" }}>
             <OrderCard balance={10000} />
           </div>
         </div>

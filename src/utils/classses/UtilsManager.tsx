@@ -34,7 +34,7 @@ export default class UtilsManager {
     }
 
     allParts.reverse();
-    
+
     const partsJoined = allParts.map((item) => item.join(""));
     let dollarAmount: String;
 
@@ -57,22 +57,40 @@ export default class UtilsManager {
     maxPrice?: number,
     quantity?: number
   ): Orderbook {
-    const priceRange = { min: minPrice ?? 100, max: maxPrice ?? 200 };
+    const priceRange = { min: minPrice ?? 100, max: maxPrice ?? 500 };
 
     const bids: Record<number, number> = {};
     for (let i = 0; i < (quantity ?? 10); i++) {
-      const price =
-        Math.floor(Math.random() * (priceRange.max - priceRange.min + 1)) +
-        priceRange.min;
+      let price: number;
+      
+      while (true) {
+        price =
+          Math.floor(Math.random() * (priceRange.max - priceRange.min + 1)) +
+          priceRange.min;
+
+        if (!(price in bids)) {
+          break;
+        }
+      }
+
       const qty = Math.floor(Math.random() * 50) + 1;
       bids[price] = qty;
     }
 
     const asks: Record<number, number> = {};
     for (let i = 0; i < (quantity ?? 10); i++) {
-      const price =
-        Math.floor(Math.random() * (priceRange.max - priceRange.min + 1)) +
-        priceRange.min;
+      let price: number;
+
+      while (true) {
+        price =
+          Math.floor(Math.random() * (priceRange.max - priceRange.min + 1)) +
+          priceRange.min;
+
+        if (!(price in asks)) {
+          break;
+        }
+      }
+
       const qty = Math.floor(Math.random() * 50) + 1;
       asks[price] = qty;
     }
@@ -110,7 +128,7 @@ export default class UtilsManager {
         stop_loss: isClosed
           ? undefined
           : (Math.random() * 3000 + 1000).toFixed(2),
-          side: isLong ? 'long' : 'short'
+        side: isLong ? "long" : "short",
       };
 
       orders.push(order);

@@ -2,7 +2,6 @@ import { FC, useEffect, useRef } from "react";
 import UtilsManager from "../utils/classses/UtilsManager";
 
 // {price: quantity}
-// Ordered
 export interface Orderbook {
   bids: Record<number, number>;
   asks: Record<number, number>;
@@ -36,7 +35,7 @@ const DOM: FC<{
         showBorder ? "border-bg-secondary" : ""
       } border-radius-primary p-sm`}
     >
-      <div className="w-full flex justify-between">
+      <div className="w-full flex justify-between" style={{ height: '1.5rem',}}>
         <span className="text-grey">Price</span>
         <span className="text-grey">Quantity</span>
         <span className="text-grey">Total</span>
@@ -76,7 +75,9 @@ const DOM: FC<{
           </li>
         ))}
       </ul>
+
       <span className="span-xl bold">{UtilsManager.formatPrice(price)}</span>
+
       <ul>
         {Object.keys(orderbook.bids).map((key, ind) => (
           <li key={ind} style={{ height: "40%" }} className="grid w-full">

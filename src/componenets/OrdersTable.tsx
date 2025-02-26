@@ -70,7 +70,6 @@ const OrdersTable: FC<{
       <ToastContainer />
       <div
         className="w-full h-full"
-        // style={{ backgroundColor: "rgba(50, 0, 0, 0.9)" }}
       >
         <div className="w-full snackbar flex justify-start">
           <button

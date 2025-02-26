@@ -56,6 +56,13 @@ body {
   }
 }
 
+@media (min-width: 768px) {
+  #tradePage #desktop {
+    /* display: grid;
+    grid-template-columns: 3fr 1fr 1fr;
+    grid-template-rows: repeat(30rem, 1fr); */
+  }
+}
 
 @media (max-width: 768px) {
   #tradePage #desktop {
@@ -67,6 +74,10 @@ body {
   }
 
   #tradeButton {
+    display: flex;
+  }
+
+  #tradePage .snackbar.mobile {
     display: flex;
   }
 }
