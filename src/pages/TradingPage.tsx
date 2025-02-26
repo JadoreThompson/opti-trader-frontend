@@ -120,7 +120,7 @@ const TradingPage: FC = () => {
         </div>
 
         {/* Mobile */}
-        <div id="mobile" className="w-full d-none" style={{ height: '20rem'}}>
+        <div id="mobile" className="w-full d-none" style={{ height: "20rem" }}>
           {tab === 0 && (
             <InstrumentChart
               price={price}
@@ -128,20 +128,27 @@ const TradingPage: FC = () => {
               seriesRef={seriesRef}
             />
           )}
-          {tab === 1 && <DOM price={price} orderbook={UtilsManager.generateOrderbook()} />}
+          {tab === 1 && (
+            <DOM price={price} orderbook={UtilsManager.generateOrderbook()} />
+          )}
         </div>
 
         {/* Desktop */}
         <div id="desktop" className="w-full grid-3 g-3">
           <div className="w-full" style={{ height: "30rem" }}>
             <InstrumentChart
+              showBorder
               price={price}
               chartRef={chartRef}
               seriesRef={seriesRef}
             />
           </div>
           <div className="w-full h-full">
-            <DOM price={price} orderbook={UtilsManager.generateOrderbook()} />
+            <DOM
+              showBorder
+              price={price}
+              orderbook={UtilsManager.generateOrderbook()}
+            />
           </div>
           <div className="w-full">
             <OrderCard balance={10000} />

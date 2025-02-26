@@ -23,7 +23,8 @@ const InstrumentCard: FC<{
   price: number;
   chartRef: MutableRefObject<any>;
   seriesRef: MutableRefObject<any>;
-}> = ({ price, chartRef, seriesRef }) => {
+  showBorder?: boolean;
+}> = ({ price, chartRef, seriesRef, showBorder = false }) => {
   const [lastPrice, setLastPrice] = useState<number>(0);
   const [chartData, setChartData] = useState<OHLC[]>([]);
   const lastPriceRef = useRef<number[]>([0, price]);
@@ -128,7 +129,7 @@ const InstrumentCard: FC<{
   }, [chartData]);
 
   return (
-    <div className="w-full h-full border-bg-secondary border-radius-primary flex-col p-sm">
+    <div className={`w-full h-full ${showBorder ? "border-bg-secondary" : ""} border-radius-primary flex-col p-sm`}>
       <div className="w-full" style={{ height: "2rem" }}>
         <div className="h-full flex align-center g-1">
           <img

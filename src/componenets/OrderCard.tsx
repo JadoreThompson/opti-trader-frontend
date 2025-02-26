@@ -3,8 +3,8 @@ import { FC, FormEvent, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import UtilsManager from "../utils/classses/UtilsManager";
 
-import Coin from "./icons/Coin";
 import { OrderRequest } from "../utils/types";
+import Coin from "./icons/Coin";
 
 enum OrderType {
   MARKET = "market",
@@ -64,7 +64,7 @@ const OrderCard: FC<{ balance: number }> = ({ balance }) => {
       <div className="h-full w-full order-card">
         <form className="h-full w-full flex-column g-2" onSubmit={placeTrade}>
           <div className="w-full flex justify-start align-center border-radius-primary border-bg-secondary p-xs">
-            <div className="h-full" style={{ width: '10%'}}>
+            <div className="h-full" style={{ width: "10%" }}>
               <Coin size="100%" />
             </div>
             <div className="h-full w-full flex justify-start align-center">

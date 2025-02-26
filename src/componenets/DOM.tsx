@@ -11,7 +11,8 @@ export interface Orderbook {
 const DOM: FC<{
   price: number;
   orderbook: Orderbook;
-}> = ({ price, orderbook }) => {
+  showBorder?: boolean;
+}> = ({ price, orderbook, showBorder = false }) => {
   const maxAskVolumeRef = useRef<number | undefined>(undefined);
   const maxBidVolumeRef = useRef<number | undefined>(undefined);
 
@@ -30,7 +31,11 @@ const DOM: FC<{
   }, [orderbook]);
 
   return (
-    <div className="h-full w-full flex-col justify-start overflow-hidden border-bg-secondary border-radius-primary p-sm">
+    <div
+      className={`h-full w-full flex-col justify-start overflow-hidden ${
+        showBorder ? "border-bg-secondary" : ""
+      } border-radius-primary p-sm`}
+    >
       <div className="w-full flex justify-between">
         <span className="text-grey">Price</span>
         <span className="text-grey">Quantity</span>
