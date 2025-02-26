@@ -28,11 +28,7 @@ const TradingPage: FC = () => {
 
   return (
     <>
-      <TradingHeader
-        avatar="https://imgs.search.brave.com/xu9bKhtZbi0F4vLYrz2NJ6cyTSaNZK3EXviEZLVNIwY/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly93YWxs/cGFwZXJzLmNvbS9p/bWFnZXMvaGQvYW5n/cnktdGFpLWx1bmct/Y2xvc2UtdXAtZWhr/ZHNoODRiZmwyMXVl/di5qcGc"
-        balance={1000}
-        username="zenz"
-      />
+      <TradingHeader />
       <div
         id="tradePage"
         className="w-full p-md"
@@ -102,7 +98,7 @@ const TradingPage: FC = () => {
         </div>
 
         {/* Mobile */}
-        <div className="w-full snackbar flex justify-start">
+        <div className="w-full snackbar flex justify-start mb-3">
           <button
             type="button"
             className={`btn hover-pointer ${tab === 0 ? "active" : ""}`}
@@ -120,7 +116,11 @@ const TradingPage: FC = () => {
         </div>
 
         {/* Mobile */}
-        <div id="mobile" className="w-full d-none" style={{ height: "20rem" }}>
+        <div
+          id="mobile"
+          className="w-full d-none mb-3"
+          style={{ height: "20rem" }}
+        >
           {tab === 0 && (
             <InstrumentChart
               price={price}
