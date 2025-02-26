@@ -152,7 +152,6 @@ const OrderCard: FC<{ balance: number }> = ({ balance }) => {
               className="btn btn-primary w-full h-full border-none hover-pointer long scale-down"
               name="side"
               value="long"
-              // style={{ backgroundColor: "#43ba53", color: 'white' }}
             >
               LONG
             </button>
@@ -161,7 +160,6 @@ const OrderCard: FC<{ balance: number }> = ({ balance }) => {
               className="btn btn-primary w-full h-full border-none hover-pointer short scale-down"
               name="side"
               value="long"
-              // style={{ backgroundColor: "red" }}
             >
               SHORT
             </button>
