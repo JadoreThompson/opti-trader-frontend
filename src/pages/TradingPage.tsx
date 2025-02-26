@@ -2,7 +2,6 @@ import { FC, useEffect, useRef, useState } from "react";
 import DOM from "../componenets/DOM";
 import InstrumentChart from "../componenets/InstrumentCard";
 import OrderCard from "../componenets/OrderCard";
-import OrdersTable from "../componenets/OrdersTable";
 import TradingHeader from "../componenets/TradingHeader";
 import UtilsManager from "../utils/classses/UtilsManager";
 
@@ -32,19 +31,21 @@ const TradingPage: FC = () => {
         username="zenz"
       />
       <div className="w-full p-md">
-        <div
-          className="w-full flex"
-          style={{ height: "30rem", marginTop: "6rem" }}
-        >
-          <OrderCard balance={10000} />
-          <InstrumentChart
-            price={price}
-            chartRef={chartRef}
-            seriesRef={seriesRef}
-          />
-          <DOM price={price} orderbook={UtilsManager.generateOrderbook()} />
+        <div className="w-full grid-3">
+          <div>
+            <InstrumentChart
+              price={price}
+              chartRef={chartRef}
+              seriesRef={seriesRef}
+            />
+          </div>
+          <div>
+            <DOM price={price} orderbook={UtilsManager.generateOrderbook()} />
+          </div>
+          <div>
+            <OrderCard balance={10000} />
+          </div>
         </div>
-        <OrdersTable orders={ordersRef.current} />
       </div>
     </>
   );

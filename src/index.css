@@ -277,6 +277,35 @@ th {
   display: grid;
 }
 
+.grid-1 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 1024px) {
+  .grid-2, .grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .grid-1, .grid-2, .grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
 .grid-col-1 {
   grid-column: 1;
 }
@@ -409,7 +438,6 @@ th {
 .order-card form > div {
   margin-bottom: 0.5rem;
   height: 2rem;
-  /* background-color: red; */
 }
 
 .overflow-hidden {
@@ -426,24 +454,31 @@ th {
 .p-0 {
   padding: 0;
 }
+
 .p-xs {
   padding: 0.25rem;
 }
+
 .p-sm {
   padding: 0.5rem;
 }
+
 .p-md {
   padding: 1rem;
 }
+
 .p-lg {
   padding: 1.5rem;
 }
+
 .p-xl {
   padding: 2rem;
 }
+
 .p-2xl {
   padding: 3rem;
 }
+
 .p-3xl {
   padding: 4rem;
 }
@@ -451,18 +486,23 @@ th {
 .pt-0 {
   padding-top: 0;
 }
+
 .pt-xs {
   padding-top: 0.25rem;
 }
+
 .pt-sm {
   padding-top: 0.5rem;
 }
+
 .pt-md {
   padding-top: 1rem;
 }
+
 .pt-lg {
   padding-top: 1.5rem;
 }
+
 .pt-xl {
   padding-top: 2rem;
 }
@@ -470,18 +510,23 @@ th {
 .pb-0 {
   padding-bottom: 0;
 }
+
 .pb-xs {
   padding-bottom: 0.25rem;
 }
+
 .pb-sm {
   padding-bottom: 0.5rem;
 }
+
 .pb-md {
   padding-bottom: 1rem;
 }
+
 .pb-lg {
   padding-bottom: 1.5rem;
 }
+
 .pb-xl {
   padding-bottom: 2rem;
 }
@@ -489,18 +534,23 @@ th {
 .pl-0 {
   padding-left: 0;
 }
+
 .pl-xs {
   padding-left: 0.25rem;
 }
+
 .pl-sm {
   padding-left: 0.5rem;
 }
+
 .pl-md {
   padding-left: 1rem;
 }
+
 .pl-lg {
   padding-left: 1.5rem;
 }
+
 .pl-xl {
   padding-left: 2rem;
 }
@@ -508,18 +558,23 @@ th {
 .pr-0 {
   padding-right: 0;
 }
+
 .pr-xs {
   padding-right: 0.25rem;
 }
+
 .pr-sm {
   padding-right: 0.5rem;
 }
+
 .pr-md {
   padding-right: 1rem;
 }
+
 .pr-lg {
   padding-right: 1.5rem;
 }
+
 .pr-xl {
   padding-right: 2rem;
 }
@@ -528,22 +583,27 @@ th {
   padding-left: 0;
   padding-right: 0;
 }
+
 .px-xs {
   padding-left: 0.25rem;
   padding-right: 0.25rem;
 }
+
 .px-sm {
   padding-left: 0.5rem;
   padding-right: 0.5rem;
 }
+
 .px-md {
   padding-left: 1rem;
   padding-right: 1rem;
 }
+
 .px-lg {
   padding-left: 1.5rem;
   padding-right: 1.5rem;
 }
+
 .px-xl {
   padding-left: 2rem;
   padding-right: 2rem;
@@ -553,22 +613,27 @@ th {
   padding-top: 0;
   padding-bottom: 0;
 }
+
 .py-xs {
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
 }
+
 .py-sm {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
 }
+
 .py-md {
   padding-top: 1rem;
   padding-bottom: 1rem;
 }
+
 .py-lg {
   padding-top: 1.5rem;
   padding-bottom: 1.5rem;
 }
+
 .py-xl {
   padding-top: 2rem;
   padding-bottom: 2rem;
