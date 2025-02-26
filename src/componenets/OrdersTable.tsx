@@ -68,7 +68,10 @@ const OrdersTable: FC<{
   return (
     <>
       <ToastContainer />
-      <div className="w-full h-full">
+      <div
+        className="w-full h-full"
+        // style={{ backgroundColor: "rgba(50, 0, 0, 0.9)" }}
+      >
         <div className="w-full snackbar flex justify-start">
           <button
             type="button"
@@ -85,47 +88,49 @@ const OrdersTable: FC<{
             CLOSED ORDERS
           </button>
         </div>
-        <table className="w-full h-full" style={{ overflowX: "scroll" }}>
-          <thead>
-            <tr>
-              {Object.values(
-                tab === 0 ? openOrdersTableHeaders : closedOrdersTableHeaders
-              ).map((header, ind) => (
-                <th key={ind} className="text-grey">
-                  {header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {orders!
-              .filter((order) => order.status === filter)
-              .slice((page - 1) * maxPageSize, page * maxPageSize)
-              ?.map((order, orderInd) => (
-                <tr key={orderInd}>
-                  {Object.keys(
-                    tab === 0
-                      ? openOrdersTableHeaders
-                      : closedOrdersTableHeaders
-                  ).map((key, keyInd) => (
-                    <td
-                      key={keyInd}
-                      className={`${
-                        ["pl", "upl"].includes(key)
-                          ? Number(order[key]) < 0
-                            ? "text-red decrease"
-                            : "text-green increase"
-                          : undefined
-                      }`}
-                      style={{}}
-                    >
-                      {formatValues(order[key])}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-          </tbody>
-        </table>
+        <div className="w-full mt-3" style={{ overflowX: "scroll" }}>
+          <table id="ordersTable" className="w-full h-full">
+            <thead style={{ height: '30px'}}>
+              <tr>
+                {Object.values(
+                  tab === 0 ? openOrdersTableHeaders : closedOrdersTableHeaders
+                ).map((header, ind) => (
+                  <th key={ind} className="text-grey">
+                    {header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {orders!
+                .filter((order) => order.status === filter)
+                .slice((page - 1) * maxPageSize, page * maxPageSize)
+                ?.map((order, orderInd) => (
+                  <tr key={orderInd}>
+                    {Object.keys(
+                      tab === 0
+                        ? openOrdersTableHeaders
+                        : closedOrdersTableHeaders
+                    ).map((key, keyInd) => (
+                      <td
+                        key={keyInd}
+                        className={`${
+                          ["pl", "upl"].includes(key)
+                            ? Number(order[key]) < 0
+                              ? "text-red decrease"
+                              : "text-green increase"
+                            : undefined
+                        }`}
+                        style={{ whiteSpace: 'nowrap'}}
+                      >
+                        {formatValues(order[key])}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
         <div className="w-full flex justify-end" style={{ height: "2rem" }}>
           <div className="w-auto h-full flex justify-between align-center">
             <button

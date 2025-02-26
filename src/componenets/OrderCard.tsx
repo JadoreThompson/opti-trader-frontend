@@ -64,10 +64,10 @@ const OrderCard: FC<{ balance: number }> = ({ balance }) => {
       <div className="h-full w-full order-card">
         <form className="h-full w-full flex-column g-2" onSubmit={placeTrade}>
           <div className="w-full flex justify-start align-center border-radius-primary border-bg-secondary p-xs">
-            <div className="h-full">
+            <div className="h-full" style={{ width: '10%'}}>
               <Coin size="100%" />
             </div>
-            <div className="h-full w-full flex align-center">
+            <div className="h-full w-full flex justify-start align-center">
               <span className="span-md bold">$</span>
               <input
                 type="number"

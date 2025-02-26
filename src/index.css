@@ -49,6 +49,28 @@ body {
   overflow-x: hidden;
 }
 
+@media (max-width: 768px) {
+  #ordersTable {
+    border-collapse: separate;
+    border-spacing: 10px;
+  }
+}
+
+
+@media (max-width: 768px) {
+  #tradePage #desktop {
+    display: none;
+  }
+
+  #tradePage #mobile {
+    display: flex;
+  }
+
+  #tradeButton {
+    display: flex;
+  }
+}
+
 a {
   text-decoration: none;
   color: var(--color);
@@ -77,6 +99,7 @@ li {
 
 th {
   text-align: left;
+  white-space: nowrap;
   width: 100;
 }
 
@@ -104,6 +127,14 @@ th {
 }
 
 .b {
+}
+
+.bg-background-primary {
+  background-color: var(--background-color-primary);
+}
+
+.bg-background-secondary {
+  background-color: var(--background-color-secondary);
 }
 
 .bg-transparent {
@@ -220,7 +251,12 @@ th {
 
 .c {
 }
+
 .d {
+}
+
+.d-none {
+  display: none;
 }
 
 .dom-volume {
@@ -229,6 +265,7 @@ th {
 
 .e {
 }
+
 .f {
 }
 
@@ -238,6 +275,10 @@ th {
 
 .fill-red * {
   fill: #ff3030;
+}
+
+.fixed {
+  position: fixed;
 }
 
 .flex {
@@ -295,13 +336,16 @@ th {
 }
 
 @media (max-width: 1024px) {
-  .grid-2, .grid-3 {
+  .grid-2,
+  .grid-3 {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 768px) {
-  .grid-1, .grid-2, .grid-3 {
+  .grid-1,
+  .grid-2,
+  .grid-3 {
     grid-template-columns: 1fr;
   }
 }
@@ -373,6 +417,10 @@ th {
 .h {
 }
 
+.hide-scrollbar::-webkit-scrollbar {
+  width: 0rem !important;
+}
+
 .hover-pointer:hover {
   cursor: pointer;
 }
@@ -427,6 +475,18 @@ th {
 
 .mb-3 {
   margin-bottom: 1rem;
+}
+
+.mt-1 {
+  margin-top: 0.25rem;
+}
+
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
+.mt-3 {
+  margin-top: 1rem;
 }
 
 .n {
@@ -664,12 +724,12 @@ th {
 }
 
 .snackbar.order-type .btn:hover {
-  color:rgb(109, 200, 250);
+  color: rgb(109, 200, 250);
   text-shadow: 0 0 10px rgb(109, 200, 250);
 }
 
 .snackbar.order-type .btn.active {
-  color:rgb(109, 200, 250);
+  color: rgb(109, 200, 250);
   text-shadow: 0 0 10px rgb(109, 200, 250);
 }
 
