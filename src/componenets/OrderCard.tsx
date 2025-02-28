@@ -29,12 +29,14 @@ const OrderCard: FC<{ balance: number }> = ({ balance }) => {
         .value as "long" | "short",
     };
 
+    
     ["amount", "limit_price", "stop_loss", "take_profit"].forEach((key) => {
       if (typeof payload[key] == "string") {
         payload[key] = Number(payload[key]);
       }
     });
-
+    
+    console.log(payload);
     if (Value.Check(OrderRequest, payload)) {
       try {
         if (balance < payload.amount) throw new Error("Amount exceeds balance");

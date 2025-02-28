@@ -5,25 +5,17 @@ import Coin from "./icons/Coin";
 import WalletIcon from "./icons/WalletIcon";
 
 const TradingHeader: FC<{
-  // avatar: string;
-  // balance: number;
-  // username: string;
   profile?: Profile;
-}> = ({
-  // avatar,
-  // balance,
-  // username
-  profile,
-}) => {
-  if (!profile) {
-    profile = {
-      avatar:
-        "https://i.seadn.io/s/primary-drops/0xa06096e4640902c9713fcd91acf3d856ba4b0cc8/34399034:about:preview_media:b9117ca9-c56a-4c69-b3bf-5ec2d1ff3493.gif?auto=format&dpr=1&w=2048",
-      email: "john@doe.com",
-      username: "john_doe",
-      balance: 1000,
-    };
-  }
+}> = ({ profile }) => {
+  // if (!profile) {
+  //   profile = {
+  //     avatar:
+  //       "https://i.seadn.io/s/primary-drops/0xa06096e4640902c9713fcd91acf3d856ba4b0cc8/34399034:about:preview_media:b9117ca9-c56a-4c69-b3bf-5ec2d1ff3493.gif?auto=format&dpr=1&w=2048",
+  //     // email: "john@doe.com",
+  //     username: "john_doe",
+  //     balance: 1000,
+  //   };
+  // }
 
   return (
     <header
@@ -41,7 +33,7 @@ const TradingHeader: FC<{
             <div className="h-full w-auto flex g-1 align-center">
               <Coin size={"100%"} />
               <span className="span-lg bold">
-                {UtilsManager.formatPrice(profile.balance)}
+                {profile ? UtilsManager.formatPrice(profile.balance) : ""}
               </span>
             </div>
             <div className="h-full w-auto flex align-center">
@@ -51,7 +43,7 @@ const TradingHeader: FC<{
         </div>
         <div className="h-full w-full flex justify-end">
           <a
-            href={`/user/${profile.username}`}
+            href={`/user/${profile ? profile.username : ""}`}
             className="h-full flex align-center g-1 border-radius-primary p-xs hover-pointer"
           >
             <div
@@ -59,12 +51,14 @@ const TradingHeader: FC<{
               style={{ width: "2rem" }}
             >
               <img
-                src={profile.avatar}
+                src={profile ? profile.avatar : ""}
                 alt=""
                 className="h-full w-full cover"
               />
             </div>
-            <span className="bold span-lg">{profile.username}</span>
+            <span className="bold span-lg">
+              {profile ? profile.username : ""}
+            </span>
           </a>
         </div>
       </div>

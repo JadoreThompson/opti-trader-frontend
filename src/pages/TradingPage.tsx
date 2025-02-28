@@ -6,11 +6,15 @@ import OrderCard from "../componenets/OrderCard";
 import OrdersTable from "../componenets/OrdersTable";
 import TradingHeader from "../componenets/TradingHeader";
 import UtilsManager from "../utils/classses/UtilsManager";
+import { Profile } from "./AccountPage";
 
 const TradingPage: FC = () => {
   const [price, setPrice] = useState<number>(100);
   const [tab, setTab] = useState<number>(0);
   const [showOrderCard, setShowOrderCard] = useState<boolean>(false);
+  const [profileData, setProfileData] = useState<Profile | undefined>(
+    undefined
+  );
   const chartRef = useRef<any>(undefined);
   const seriesRef = useRef<any>(undefined);
   const ordersRef = useRef<Record<string, any>[]>(
@@ -26,9 +30,17 @@ const TradingPage: FC = () => {
     })();
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      try {
+        setProfileData(await UtilsManager.fetchProfile());
+      } catch (err) {}
+    })();
+  }, []);
+
   return (
     <>
-      <TradingHeader />
+      <TradingHeader profile={profileData}/>
       <div
         id="tradePage"
         className="w-full p-md"
@@ -134,8 +146,21 @@ const TradingPage: FC = () => {
         </div>
 
         {/* Desktop */}
-        <div id="desktop" className="w-full flex g-3" style={{ overflowX: "auto" }}>
-          <div className="h-full" style={{ width: "900px" }}>
+        <div
+          id="desktop"
+          className="w-full flex g-3"
+          style={{
+            overflowX: "auto",
+          }}
+        >
+          <div
+            className="h-full"
+            style={{
+              minWidth: "900px",
+              width: "900px",
+              minHeight: "75%",
+            }}
+          >
             <InstrumentChart
               showBorder
               price={price}
@@ -143,16 +168,16 @@ const TradingPage: FC = () => {
               seriesRef={seriesRef}
             />
           </div>
-          
-          <div className="h-full" style={{ width: "400px", minWidth: "400px" }}>
+
+          <div className="h-full" style={{ width: "300px", minWidth: "300px" }}>
             <DOM
               showBorder
               price={price}
               orderbook={UtilsManager.generateOrderbook()}
             />
           </div>
-          
-          <div className="h-full" style={{ width: "400px", minWidth: "400px" }}>
+
+          <div className="h-full" style={{ width: "300px", minWidth: "300px" }}>
             <OrderCard balance={10000} />
           </div>
         </div>

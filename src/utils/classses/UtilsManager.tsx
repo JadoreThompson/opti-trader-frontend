@@ -2,6 +2,7 @@ import { toast } from "react-toastify";
 import { Orderbook } from "../../componenets/DOM";
 import AlertIcon from "../../componenets/icons/Alert";
 import DollarIcon from "../../componenets/icons/DollarIcon";
+import { Profile } from "../../pages/AccountPage";
 
 export default class UtilsManager {
   static toastOptions = {
@@ -62,7 +63,7 @@ export default class UtilsManager {
     const bids: Record<number, number> = {};
     for (let i = 0; i < (quantity ?? 10); i++) {
       let price: number;
-      
+
       while (true) {
         price =
           Math.floor(Math.random() * (priceRange.max - priceRange.min + 1)) +
@@ -143,5 +144,20 @@ export default class UtilsManager {
 
   public static toastSuccess(message: string): void {
     toast.success(message, this.toastSuccessOptions);
+  }
+
+  public static async fetchProfile(): Promise<Profile> {
+    try {
+      const rsp = await fetch(import.meta.env.VITE_BASE_URL + "/api/account/", {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (!rsp.ok) throw new Error(rsp.statusText);
+
+      return await rsp.json();
+    } catch (err) {
+      throw err;
+    }
   }
 }

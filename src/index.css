@@ -56,12 +56,8 @@ body {
   }
 }
 
-@media (min-width: 768px) {
-  #tradePage #desktop {
-    /* display: grid;
-    grid-template-columns: 3fr 1fr 1fr;
-    grid-template-rows: repeat(30rem, 1fr); */
-  }
+#tradePage #desktop {
+  height: 31.5rem;
 }
 
 @media (max-width: 768px) {

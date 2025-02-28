@@ -1,31 +1,28 @@
 import { FC, FormEvent, useRef } from "react";
 import { ToastContainer, toast } from "react-toastify";
 
-const RegisterPage: FC = () => {
+const LoginPage: FC = () => {
   const passwordRef = useRef<HTMLInputElement>(null);
-  const confirmPasswordRef = useRef<HTMLInputElement>(null);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
-    
-    if (passwordRef.current?.value !== confirmPasswordRef.current?.value) {
-      toast.error("Passwords do not match");
-      return;
-    }
 
     try {
-      const rsp = await fetch(import.meta.env.VITE_BASE_URL + "/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(
-          Object.fromEntries(
-            new FormData(e.target as HTMLFormElement).entries()
-          )
-        ),
-      });
+      const rsp = await fetch(
+        import.meta.env.VITE_BASE_URL + "/api/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(
+            Object.fromEntries(
+              new FormData(e.target as HTMLFormElement).entries()
+            )
+          ),
+        }
+      );
 
       const data = await rsp.json();
       if (!rsp.ok) throw new Error(data["error"]);
@@ -42,12 +39,6 @@ const RegisterPage: FC = () => {
       <div className="w-full h-full flex align-center justify-center">
         <form className=" flex-col g-2 p-md" onSubmit={handleSubmit}>
           <input
-            type="text"
-            placeholder="Username"
-            name="username"
-            className="w-full"
-          />
-          <input
             type="email"
             placeholder="Email"
             name="email"
@@ -60,14 +51,8 @@ const RegisterPage: FC = () => {
             placeholder="Password"
             className="w-full"
           />
-          <input
-            ref={confirmPasswordRef}
-            type="password"
-            placeholder="Confirm password"
-            className="w-full"
-          />
           <button type="submit" className="btn btn-primary w-full">
-            Register
+            Login
           </button>
         </form>
       </div>
@@ -75,4 +60,4 @@ const RegisterPage: FC = () => {
   );
 };
 
-export default RegisterPage;
+export default LoginPage;

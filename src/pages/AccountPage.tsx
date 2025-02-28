@@ -2,7 +2,7 @@ import { FC } from "react";
 
 export interface Profile {
   avatar: string;
-  email: string;
+  // email: string;
   username: string;
   balance: number;
 }
@@ -12,7 +12,7 @@ const AccountPage: FC<{ profile?: Profile }> = ({ profile }) => {
     profile = {
       avatar:
         "https://i.seadn.io/s/primary-drops/0xa06096e4640902c9713fcd91acf3d856ba4b0cc8/34399034:about:preview_media:b9117ca9-c56a-4c69-b3bf-5ec2d1ff3493.gif?auto=format&dpr=1&w=2048",
-      email: "john@doe.com",
+      // email: "john@doe.com",
       username: "john_doe",
       balance: 1000,
     };
@@ -34,7 +34,7 @@ const AccountPage: FC<{ profile?: Profile }> = ({ profile }) => {
 
         <div className="h-full flex-col justify-center p-md">
           <span className="span-lg bold">{profile!.username}</span>
-          <span className="span-sm">{profile!.email}</span>
+          {/* <span className="span-sm">{profile!.email}</span> */}
         </div>
       </div>
     </div>

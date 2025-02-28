@@ -122,14 +122,21 @@ const InstrumentCard: FC<{
       );
     };
 
-    if (!chartPlacedRef.current) {
+    if (!chartPlacedRef.current && chartContainerRef.current) {
       loadChart();
       chartPlacedRef.current = true;
     }
   }, [chartData]);
 
   return (
-    <div className={`w-full h-full ${showBorder ? "border-bg-secondary" : ""} border-radius-primary flex-col p-sm`}>
+    <div
+      className={`w-full h-full ${
+        showBorder ? "border-bg-secondary" : ""
+      } border-radius-primary flex-col p-sm`}
+      style={{
+        // backgroundColor: 'pink'
+      }}
+    >
       <div className="w-full" style={{ height: "2rem" }}>
         <div className="h-full flex align-center g-1">
           <img
@@ -158,9 +165,10 @@ const InstrumentCard: FC<{
       <div
         ref={chartContainerRef}
         id="chartContainer"
-        className="w-full"
+        className="w-full flex"
         style={{
           height: "calc(100% - 2rem)",
+          // backgroundColor: "green",
         }}
       ></div>
     </div>
