@@ -22,15 +22,15 @@ const closedOrdersTableHeaders: Record<string, string> = {
   status: "STATUS",
 };
 
-export type OrderFilter = "filled" | "closed";
+export type OrderFilter = "filled" | "pending" | "closed";
 
 const OrdersTable: FC<{
   renderProp?: any;
   orders: Record<string, any>[];
-  filterChoice?: OrderFilter;
-}> = ({ renderProp, orders, filterChoice = "filled" }) => {
-  const [filter, setFilter] = useState<OrderFilter>(filterChoice);
-  const [tab, setTab] = useState<number>(filterChoice === "filled" ? 0 : 1);
+  filterChoice?: OrderFilter[];
+}> = ({ renderProp, orders, filterChoice = ["filled", "pending"] }) => {
+  const [filter, setFilter] = useState<OrderFilter[]>(filterChoice);
+  const [tab, setTab] = useState<number>(filterChoice.includes( "filled") ? 0 : 1);
   const [page, setPage] = useState<number>(1);
   const [maxPages, setMaxPages] = useState<number>(0);
   const maxPageSize = 10;
@@ -48,7 +48,7 @@ const OrdersTable: FC<{
   useEffect(() => {
     console.log("render prop value changed");
     const maxPages = Math.ceil(
-      orders!.filter((order) => order.status === filter)!.length /
+      orders!.filter((order) => filter.includes(order.status))!.length /
         maxPageSize
     );
     setMaxPages(maxPages);
@@ -78,7 +78,7 @@ const OrdersTable: FC<{
             onClick={() => {
               setTab(0);
               setPage(1);
-              setFilter("filled");
+              setFilter(["filled", "pending"]);
             }}
           >
             OPEN ORDERS
@@ -89,7 +89,7 @@ const OrdersTable: FC<{
             onClick={() => {
               setTab(1);
               setPage(1);
-              setFilter("closed");
+              setFilter(["closed"]);
             }}
           >
             CLOSED ORDERS
@@ -110,7 +110,7 @@ const OrdersTable: FC<{
             </thead>
             <tbody>
               {orders!
-                .filter((order) => order.status === filter)
+                .filter((order) => filter.includes(order.status))
                 .slice((page - 1) * maxPageSize, page * maxPageSize)
                 ?.map((order, orderInd) => (
                   <tr key={orderInd}>

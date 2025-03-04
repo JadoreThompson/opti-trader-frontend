@@ -31,24 +31,13 @@ const TradingPage: FC = () => {
   const [profileData, setProfileData] = useState<Profile | undefined>(
     undefined
   );
-  // const [orders, setOrders] = useState<Record<string, any>[]>([]);
+  const [orders, setOrders] = useState<Record<string, any>[]>([]);
   const [num, setNum] = useState<number>(0);
   const chartRef = useRef<any>(undefined);
   const seriesRef = useRef<any>(undefined);
   const seriesDataRef = useRef<OHLC[]>([]);
-  const ordersRef = useRef<Record<string, any>[]>(
-    UtilsManager.generateOrders(90)
-  );
-  const wsRef = useRef<WebSocket | undefined>(undefined);
 
-  useEffect(() => {
-    // (async () => {
-    //   while (true) {
-    //     await UtilsManager.sleep(1000);
-    //     setPrice(Math.floor(Math.random() * 100));
-    //   }
-    // })();
-  }, []);
+  const wsRef = useRef<WebSocket | undefined>(undefined);
 
   useEffect(() => {
     (async () => {
@@ -68,7 +57,7 @@ const TradingPage: FC = () => {
         const data = await rsp.json();
         if (!rsp.ok) throw new Error(data["error"]);
 
-        ordersRef.current = data as Record<string, any>[];
+        setOrders(data);
         setNum(num + 1);
       } catch (err) {
         UtilsManager.toastError((err as Error).message);
@@ -118,30 +107,34 @@ const TradingPage: FC = () => {
 
   function updateChartPrice(payload: PriceUpdate): void {
     if (!seriesRef.current) return;
+    const price = Number(payload.price);
     seriesDataRef.current!.push({
       time: payload.time,
-      open: payload.price,
-      high: payload.price,
-      low: payload.price,
-      close: payload.price,
+      open: price,
+      high: price,
+      low: price,
+      close: price,
     });
     seriesDataRef.current!.sort((a, b) => a.time - b.time);
     seriesRef.current.setData(seriesDataRef.current);
   }
 
   function handleOrderUpdate(payload: Record<string, string | number>) {
-    
-    let found: boolean = false;
-    ordersRef.current.forEach((order) => {
-      if (order["order_id"] != payload["order_id"]) return;
-      found = true;
-      order = {...order, payload};
-    })
+    setOrders((prev) => {
+      let Prev = [...(prev ?? [])];
 
-    if (!found!) {
-      ordersRef.current.push(payload);
-    }
+      let updated = Prev.map((order) =>
+        order["order_id"] === payload["order_id"]
+          ? { ...order, ...payload }
+          : order
+      );
 
+      if (!updated.some((order) => order["order_id"] === payload["order_id"])) {
+        updated.push(payload);
+      }
+
+      return updated;
+    });
     setNum(num + 1);
   }
 
@@ -264,8 +257,8 @@ const TradingPage: FC = () => {
           <div
             className="h-full"
             style={{
-              minWidth: "900px",
-              width: "900px",
+              minWidth: "1200px",
+              width: "1200px",
               minHeight: "75%",
             }}
           >
@@ -277,21 +270,12 @@ const TradingPage: FC = () => {
               seriesDataRef={seriesDataRef}
             />
           </div>
-
-          <div className="h-full" style={{ width: "300px", minWidth: "300px" }}>
-            <DOM
-              showBorder
-              price={price}
-              orderbook={UtilsManager.generateOrderbook()}
-            />
-          </div>
-
           <div className="h-full" style={{ width: "300px", minWidth: "300px" }}>
             <OrderCard balance={10000} />
           </div>
         </div>
 
-        <OrdersTable renderProp={num} orders={ordersRef.current} />
+        <OrdersTable renderProp={num} orders={orders} />
       </div>
     </>
   );

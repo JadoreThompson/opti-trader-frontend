@@ -45,20 +45,6 @@ const InstrumentCard: FC<{
   }, [price]);
 
   useEffect(() => {
-    // const generateOHLC = (): OHLC => {
-    //   const open = lastPriceRef.current[1];
-    //   const high = open + Math.random() * 10;
-    //   const low = open - Math.random() * 10;
-    //   const close = low + Math.random() * (high - low);
-    //   return { open, high, low, close, time: Date.now() };
-    // };
-    // setChartData((prev) => [...prev, generateOHLC()]);
-  }, []);
-
-  useEffect(() => {
-    // if (chartData.length < 1 || !chartContainerRef.current) {
-    //   return;
-    // }
     if (!chartContainerRef.current) return;
 
     const docObj: CSSStyleDeclaration = getComputedStyle(
@@ -136,11 +122,6 @@ const InstrumentCard: FC<{
       className={`w-full h-full ${
         showBorder ? "border-bg-secondary" : ""
       } border-radius-primary flex-col p-sm`}
-      style={
-        {
-          // backgroundColor: 'pink'
-        }
-      }
     >
       <div className="w-full" style={{ height: "2rem" }}>
         <div className="h-full flex align-center g-1">
@@ -173,7 +154,6 @@ const InstrumentCard: FC<{
         className="w-full flex"
         style={{
           height: "calc(100% - 2rem)",
-          // backgroundColor: "green",
         }}
       ></div>
     </div>
