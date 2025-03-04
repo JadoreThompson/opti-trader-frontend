@@ -1,9 +1,9 @@
 import { Value } from "@sinclair/typebox/value";
 import { FC, FormEvent, useState } from "react";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import UtilsManager from "../utils/classses/UtilsManager";
 
-import { OrderRequest } from "../utils/types";
+import { OrderRequest } from "../utils/ValidationTypes";
 import Coin from "./icons/Coin";
 
 enum OrderType {
@@ -20,6 +20,14 @@ const OrderCard: FC<{ balance: number }> = ({ balance }) => {
   async function placeTrade(e: FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
 
+    if (selectedOrderType === undefined) {
+      toast.error(
+        "Please select an order type",
+        UtilsManager.toastErrorOptions
+      );
+      return;
+    }
+
     let payload: Record<any, any> = {
       ...(Object.fromEntries(
         new FormData(e.target as HTMLFormElement).entries()
@@ -29,19 +37,23 @@ const OrderCard: FC<{ balance: number }> = ({ balance }) => {
         .value as "long" | "short",
     };
 
-    
-    ["amount", "limit_price", "stop_loss", "take_profit"].forEach((key) => {
-      if (typeof payload[key] == "string") {
-        payload[key] = Number(payload[key]);
+    ["amount", "limit_price", "stop_loss", "take_profit", "quantity"].forEach(
+      (key) => {
+        if (typeof payload[key] == "string") {
+          payload[key] = Number(payload[key]);
+        }
       }
-    });
-    
-    console.log(payload);
+    );
+
+    payload["side"] = payload["side"] === "long" ? "buy" : "sell";
+    payload["instrument"] = "BTCUSD";
+    payload["market_type"] = "futures";
+
     if (Value.Check(OrderRequest, payload)) {
       try {
         if (balance < payload.amount) throw new Error("Amount exceeds balance");
 
-        const rsp = await fetch(import.meta.env.VITE_BASE_URL + "/api/order", {
+        const rsp = await fetch(import.meta.env.VITE_BASE_URL + "/order", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -78,10 +90,20 @@ const OrderCard: FC<{ balance: number }> = ({ balance }) => {
                 className="bold span-md w-full"
                 min={1}
                 step={0.01}
-                onChange={() => {}}
                 required
               />
             </div>
+          </div>
+          <div className="w-full flex justify-start align-center border-radius-primary border-bg-secondary p-xs">
+            <input
+              type="number"
+              placeholder="Quantity"
+              name="quantity"
+              className="bold span-md w-full"
+              min={1}
+              step={1}
+              required
+            />
           </div>
           <div className="w-full h-full flex align-center border-bg-secondary border-radius-primary snackbar order-type overflow-hidden">
             {Object.values(OrderType).map((val, ind) => (
@@ -151,7 +173,7 @@ const OrderCard: FC<{ balance: number }> = ({ balance }) => {
           <div className="w-full flex g-1 justify-between align-center">
             <button
               type="submit"
-              className="btn btn-primary w-full h-full border-none hover-pointer long scale-down"
+              className="btn btn-primary green long w-full h-full border-none hover-pointer scale-down"
               name="side"
               value="long"
             >

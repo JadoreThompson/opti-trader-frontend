@@ -248,8 +248,11 @@ th {
 }
 
 .btn.long {
-  background-color: #43ba53;
   border-bottom: 4px solid #136a1f;
+}
+
+.btn.green {
+  background-color: #43ba53;
 }
 
 .btn.scale-down:active {
@@ -513,6 +516,16 @@ th {
 
 .overflow-visible {
   overflow: visible;
+}
+
+.overlay-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999;
+  background-color: rgba(0, 0, 0, 0.2);
 }
 
 .p {

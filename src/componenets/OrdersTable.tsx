@@ -7,8 +7,8 @@ import ChevronRight from "./icons/ChevronRight";
 const openOrdersTableHeaders: Record<string, string> = {
   amount: "AMOUNT",
   side: "SIDE",
-  entry_price: "ENTRY_PRICE",
-  upl: "P/L",
+  filled_price: "ENTRY_PRICE",
+  unrealised_pnl: "P/L",
   status: "STATUS",
   take_profit: "TAKE PROFIT",
   stop_loss: "STOP LOSS",
@@ -17,41 +17,43 @@ const openOrdersTableHeaders: Record<string, string> = {
 const closedOrdersTableHeaders: Record<string, string> = {
   amount: "AMOUNT",
   side: "SIDE",
-  entry_price: "ENTRY PRICE",
-  pl: "P/L",
+  filled_price: "ENTRY PRICE",
+  realised_pnl: "P/L",
+  status: "STATUS",
 };
 
+export type OrderFilter = "filled" | "closed";
+
 const OrdersTable: FC<{
-  orders?: Record<string, any>[];
-  filter?: "open" | "closed";
-}> = ({ orders, filter = "open" }) => {
-  const [tab, setTab] = useState<number>(filter === "open" ? 0 : 1);
+  renderProp?: any;
+  orders: Record<string, any>[];
+  filterChoice?: OrderFilter;
+}> = ({ renderProp, orders, filterChoice = "filled" }) => {
+  const [filter, setFilter] = useState<OrderFilter>(filterChoice);
+  const [tab, setTab] = useState<number>(filterChoice === "filled" ? 0 : 1);
   const [page, setPage] = useState<number>(1);
+  const [maxPages, setMaxPages] = useState<number>(0);
   const maxPageSize = 10;
-  const maxPages = Math.ceil(
-    orders!.filter((order) => order.status === filter)!.length / maxPageSize
-  );
 
   useEffect(() => {
+    if (page == 0 && maxPages > 0) {
+      setPage(1);
+      return;
+    }
     if (page > maxPages) {
       setPage(maxPages);
     }
   }, [page]);
 
   useEffect(() => {
-    // (async () => {
-    //   try {
-    //     const rsp = await fetch(
-    //       import.meta.env.VITE_BASE_URL + "/api/account/orders",
-    //       { method: "GET", credentials: "include" }
-    //     );
-    //     const data = await rsp.json();
-    //     if (!rsp.ok) throw new Error(data["error"]);
-    //   } catch (err) {
-    //     UtilsManager.toastError((err as Error).message);
-    //   }
-    // })();
-  }, []);
+    console.log("render prop value changed");
+    const maxPages = Math.ceil(
+      orders!.filter((order) => order.status === filter)!.length /
+        maxPageSize
+    );
+    setMaxPages(maxPages);
+    maxPages > 0 ? setPage(1) : null;
+  }, [renderProp]);
 
   const formatValues = (value?: string | number): string => {
     if (value === undefined) {
@@ -68,28 +70,34 @@ const OrdersTable: FC<{
   return (
     <>
       <ToastContainer />
-      <div
-        className="w-full h-full"
-      >
+      <div className={`w-full h-full ${renderProp}`}>
         <div className="w-full snackbar flex justify-start">
           <button
             type="button"
             className={`btn hover-pointer ${tab === 0 ? "active" : ""}`}
-            onClick={() => setTab(0)}
+            onClick={() => {
+              setTab(0);
+              setPage(1);
+              setFilter("filled");
+            }}
           >
             OPEN ORDERS
           </button>
           <button
             type="button"
             className={`btn hover-pointer ${tab === 1 ? "active" : ""}`}
-            onClick={() => setTab(1)}
+            onClick={() => {
+              setTab(1);
+              setPage(1);
+              setFilter("closed");
+            }}
           >
             CLOSED ORDERS
           </button>
         </div>
         <div className="w-full mt-3" style={{ overflowX: "scroll" }}>
           <table id="ordersTable" className="w-full h-full">
-            <thead style={{ height: '30px'}}>
+            <thead style={{ height: "30px" }}>
               <tr>
                 {Object.values(
                   tab === 0 ? openOrdersTableHeaders : closedOrdersTableHeaders
@@ -114,15 +122,15 @@ const OrdersTable: FC<{
                       <td
                         key={keyInd}
                         className={`${
-                          ["pl", "upl"].includes(key)
+                          ["realised_pnl", "unrealised_pnl"].includes(key)
                             ? Number(order[key]) < 0
                               ? "text-red decrease"
                               : "text-green increase"
                             : undefined
                         }`}
-                        style={{ whiteSpace: 'nowrap'}}
+                        style={{ whiteSpace: "nowrap" }}
                       >
-                        {formatValues(order[key])}
+                        {order[key] != null && order[key] !== undefined ? formatValues(order[key]): ""}
                       </td>
                     ))}
                   </tr>
@@ -136,7 +144,7 @@ const OrdersTable: FC<{
               type="button"
               className="btn bg-transparent border-none h-full flex justify-center align-center hover-pointer"
               onClick={() => {
-                if (page === 1) return;
+                if (page <= 1) return;
                 setPage(page - 1);
               }}
             >

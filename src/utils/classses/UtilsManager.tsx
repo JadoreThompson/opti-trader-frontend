@@ -49,7 +49,7 @@ export default class UtilsManager {
     return tag + "$" + dollarAmount;
   }
 
-  public static async sleep(ms: number): Promise<void> {
+  public static sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
@@ -148,7 +148,7 @@ export default class UtilsManager {
 
   public static async fetchProfile(): Promise<Profile> {
     try {
-      const rsp = await fetch(import.meta.env.VITE_BASE_URL + "/api/account/", {
+      const rsp = await fetch(import.meta.env.VITE_BASE_URL + "/account/", {
         method: "GET",
         credentials: "include",
       });

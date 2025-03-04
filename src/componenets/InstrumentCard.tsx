@@ -23,8 +23,9 @@ const InstrumentCard: FC<{
   price: number;
   chartRef: MutableRefObject<any>;
   seriesRef: MutableRefObject<any>;
+  seriesDataRef: MutableRefObject<OHLC[]>;
   showBorder?: boolean;
-}> = ({ price, chartRef, seriesRef, showBorder = false }) => {
+}> = ({ price, chartRef, seriesRef, seriesDataRef, showBorder = false }) => {
   const [lastPrice, setLastPrice] = useState<number>(0);
   const [chartData, setChartData] = useState<OHLC[]>([]);
   const lastPriceRef = useRef<number[]>([0, price]);
@@ -44,20 +45,21 @@ const InstrumentCard: FC<{
   }, [price]);
 
   useEffect(() => {
-    const generateOHLC = (): OHLC => {
-      const open = lastPriceRef.current[1];
-      const high = open + Math.random() * 10;
-      const low = open - Math.random() * 10;
-      const close = low + Math.random() * (high - low);
-      return { open, high, low, close, time: Number(Date.now().toString()) };
-    };
-    setChartData((prev) => [...prev, generateOHLC()]);
+    // const generateOHLC = (): OHLC => {
+    //   const open = lastPriceRef.current[1];
+    //   const high = open + Math.random() * 10;
+    //   const low = open - Math.random() * 10;
+    //   const close = low + Math.random() * (high - low);
+    //   return { open, high, low, close, time: Date.now() };
+    // };
+    // setChartData((prev) => [...prev, generateOHLC()]);
   }, []);
 
   useEffect(() => {
-    if (chartData.length < 1 || !chartContainerRef.current) {
-      return;
-    }
+    // if (chartData.length < 1 || !chartContainerRef.current) {
+    //   return;
+    // }
+    if (!chartContainerRef.current) return;
 
     const docObj: CSSStyleDeclaration = getComputedStyle(
       document.documentElement
@@ -114,7 +116,8 @@ const InstrumentCard: FC<{
         wickDownColor: "#ef5350",
       });
 
-      seriesRef.current.setData(chartData);
+      seriesDataRef.current = chartData;
+      seriesRef.current.setData(seriesDataRef.current);
       chartRef.current.timeScale().fitContent();
 
       window.addEventListener("resize", () =>
@@ -133,9 +136,11 @@ const InstrumentCard: FC<{
       className={`w-full h-full ${
         showBorder ? "border-bg-secondary" : ""
       } border-radius-primary flex-col p-sm`}
-      style={{
-        // backgroundColor: 'pink'
-      }}
+      style={
+        {
+          // backgroundColor: 'pink'
+        }
+      }
     >
       <div className="w-full" style={{ height: "2rem" }}>
         <div className="h-full flex align-center g-1">

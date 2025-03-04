@@ -1,7 +1,11 @@
-import { FC, FormEvent, useRef } from "react";
+import { FC, FormEvent, useContext, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
+import { IsLoggedInContext } from "../contexts/IsLoggedInContext";
 
 const LoginPage: FC = () => {
+  const navigate = useNavigate();
+  const { setIsLoggedIn } = useContext(IsLoggedInContext);
   const passwordRef = useRef<HTMLInputElement>(null);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
@@ -9,7 +13,7 @@ const LoginPage: FC = () => {
 
     try {
       const rsp = await fetch(
-        import.meta.env.VITE_BASE_URL + "/api/auth/login",
+        import.meta.env.VITE_BASE_URL + "/auth/login",
         {
           method: "POST",
           headers: {
@@ -24,10 +28,11 @@ const LoginPage: FC = () => {
         }
       );
 
-      const data = await rsp.json();
-      if (!rsp.ok) throw new Error(data["error"]);
+      if (!rsp.ok) throw new Error(rsp.statusText);
 
-      toast.success("Registered successfully");
+      toast.success("Logged in successfully");
+      setIsLoggedIn(true);
+      navigate("/");
     } catch (err) {
       toast.error((err as Error).message);
     }

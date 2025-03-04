@@ -1,7 +1,9 @@
 import { FC, FormEvent, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 
 const RegisterPage: FC = () => {
+  const navigate = useNavigate();
   const passwordRef = useRef<HTMLInputElement>(null);
   const confirmPasswordRef = useRef<HTMLInputElement>(null);
 
@@ -14,7 +16,7 @@ const RegisterPage: FC = () => {
     }
 
     try {
-      const rsp = await fetch(import.meta.env.VITE_BASE_URL + "/api/auth/register", {
+      const rsp = await fetch(import.meta.env.VITE_BASE_URL + "/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -27,9 +29,9 @@ const RegisterPage: FC = () => {
         ),
       });
 
-      const data = await rsp.json();
-      if (!rsp.ok) throw new Error(data["error"]);
-
+      
+      if (!rsp.ok) throw new Error(rsp.statusText);
+      navigate('/');
       toast.success("Registered successfully");
     } catch (err) {
       toast.error((err as Error).message);

@@ -1,4 +1,6 @@
-import { FC } from "react";
+import { FC, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { IsLoggedInContext } from "../contexts/IsLoggedInContext";
 import { Profile } from "../pages/AccountPage";
 import UtilsManager from "../utils/classses/UtilsManager";
 import Coin from "./icons/Coin";
@@ -7,16 +9,8 @@ import WalletIcon from "./icons/WalletIcon";
 const TradingHeader: FC<{
   profile?: Profile;
 }> = ({ profile }) => {
-  // if (!profile) {
-  //   profile = {
-  //     avatar:
-  //       "https://i.seadn.io/s/primary-drops/0xa06096e4640902c9713fcd91acf3d856ba4b0cc8/34399034:about:preview_media:b9117ca9-c56a-4c69-b3bf-5ec2d1ff3493.gif?auto=format&dpr=1&w=2048",
-  //     // email: "john@doe.com",
-  //     username: "john_doe",
-  //     balance: 1000,
-  //   };
-  // }
-
+  const navigate = useNavigate();
+  const { isLoggedIn } = useContext(IsLoggedInContext);
   return (
     <header
       style={{
@@ -42,6 +36,31 @@ const TradingHeader: FC<{
           </div>
         </div>
         <div className="h-full w-full flex justify-end">
+          {isLoggedIn ? (
+            <button
+              type="button"
+              className="btn btn-primary border-none hover-pointer"
+              onClick={async () => {
+                try {
+                  await fetch(
+                    import.meta.env.VITE_BASE_URL + "/auth/remove-token",
+                    { method: "GET", credentials: "include" }
+                  );
+                  window.location.reload();
+                } catch (err) {}
+              }}
+            >
+              Logout
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn green border-none hover-pointer"
+              onClick={() => navigate("/login")}
+            >
+              Login
+            </button>
+          )}
           <a
             href={`/user/${profile ? profile.username : ""}`}
             className="h-full flex align-center g-1 border-radius-primary p-xs hover-pointer"
