@@ -19,18 +19,68 @@ export interface OHLC {
   close: number;
 }
 
+export enum Timeframe {
+  M5 = "5m",
+  M15 = "15m",
+  H1 = "1h",
+}
+
+export function getSeconds(timeframe: Timeframe): number {
+  const unit = timeframe.slice(-1);
+  const amount = parseInt(timeframe.slice(0, -1), 10);
+
+  if (unit === "m") {
+    return amount * 60;
+  } else if (unit === "h") {
+    return amount * 3600;
+  } else {
+    throw new Error(`Unsupported timeframe unit: ${unit}`);
+  }
+}
+
 const InstrumentCard: FC<{
   price: number;
   chartRef: MutableRefObject<any>;
   seriesRef: MutableRefObject<any>;
   seriesDataRef: MutableRefObject<OHLC[]>;
+  selectedTimeframe: Timeframe;
+  setSelectedTimeframe: (arg: Timeframe) => void;
   showBorder?: boolean;
-}> = ({ price, chartRef, seriesRef, seriesDataRef, showBorder = false }) => {
+}> = ({
+  price,
+  chartRef,
+  seriesRef,
+  seriesDataRef,
+  selectedTimeframe,
+  setSelectedTimeframe,
+  showBorder = false,
+}) => {
   const [lastPrice, setLastPrice] = useState<number>(0);
   const [chartData, setChartData] = useState<OHLC[]>([]);
   const lastPriceRef = useRef<number[]>([0, price]);
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartPlacedRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const rsp = await fetch(
+          import.meta.env.VITE_BASE_URL +
+            `/instrument/?instrument=BTCUSD&timeframe=${selectedTimeframe}&ago=10800`,
+          { method: "GET" }
+        );
+
+        if (rsp.ok) {
+          const data = await rsp.json();
+          setChartData(data);
+        }
+      } catch (err) {
+        setChartData([]);
+      }
+    })();
+  }, [selectedTimeframe]);
+
+  useEffect(() => console.log(chartData), [chartData]);
 
   useEffect(() => {
     if (lastPriceRef.current[0]) {
@@ -102,16 +152,15 @@ const InstrumentCard: FC<{
         wickDownColor: "#ef5350",
       });
 
-      seriesDataRef.current = chartData;
+      seriesDataRef.current = chartData!;
       seriesRef.current.setData(seriesDataRef.current);
-      chartRef.current.timeScale().fitContent();
 
       window.addEventListener("resize", () =>
         chartRef.current!.resize(window.innerWidth, window.innerHeight)
       );
     };
 
-    if (!chartPlacedRef.current && chartContainerRef.current) {
+    if (chartContainerRef.current) {
       loadChart();
       chartPlacedRef.current = true;
     }
@@ -149,11 +198,32 @@ const InstrumentCard: FC<{
       </div>
 
       <div
+        className="w-full flex justify-end align-center g-1 mb-3"
+        style={{ height: "2rem" }}
+      >
+        {Object.values(Timeframe)
+          .reverse()
+          .map((tf, ind) => (
+            <button
+              key={ind}
+              className="btn bg-transparent hover-pointer hover-bg-background-secondary border-none h-full"
+              style={{
+                color:
+                  selectedTimeframe == tf ? "rgb(109, 200, 250)" : undefined,
+              }}
+              onClick={() => setSelectedTimeframe(tf)}
+            >
+              {tf}
+            </button>
+          ))}
+      </div>
+
+      <div
         ref={chartContainerRef}
         id="chartContainer"
         className="w-full flex"
         style={{
-          height: "calc(100% - 2rem)",
+          height: "calc(100% - 5rem)",
         }}
       ></div>
     </div>

@@ -1,7 +1,11 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { FaXmark } from "react-icons/fa6";
 import DOM from "../componenets/DOM";
-import InstrumentChart, { OHLC } from "../componenets/InstrumentCard";
+import InstrumentChart, {
+  OHLC,
+  Timeframe,
+  getSeconds,
+} from "../componenets/InstrumentCard";
 import OrderCard from "../componenets/OrderCard";
 import OrdersTable from "../componenets/OrdersTable";
 import TradingHeader from "../componenets/TradingHeader";
@@ -9,9 +13,10 @@ import UtilsManager from "../utils/classses/UtilsManager";
 import { Profile } from "./AccountPage";
 
 enum SocketPayloadCategory {
+  BALANCE = "balance",
   CONNECT = "connect",
-  PRICE = "price",
   ORDER = "order",
+  PRICE = "price",
 }
 
 interface SocketPayload {
@@ -24,25 +29,34 @@ interface PriceUpdate {
   time: number;
 }
 
+interface BalanceUpdate {
+  balance: string;
+}
+
 const TradingPage: FC = () => {
   const [price, setPrice] = useState<number>(100);
   const [tab, setTab] = useState<number>(0);
   const [showOrderCard, setShowOrderCard] = useState<boolean>(false);
-  const [profileData, setProfileData] = useState<Profile | undefined>(
-    undefined
-  );
   const [orders, setOrders] = useState<Record<string, any>[]>([]);
-  const [num, setNum] = useState<number>(0);
+  const [ordersTableRenderProp, setOrdersTableRenderProp] = useState<number>(0);
+  const [headerRenderProp, setHeaderRenderProp] = useState<number>(0);
+  const [orderWsRenderProp, setOrderWsRenderProp] = useState<number>(0);
+  const [selectedTimeframe, setSelectedTimeframe] = useState<Timeframe>(
+    Timeframe.M5
+  );
   const chartRef = useRef<any>(undefined);
+  const profileRef = useRef<Profile | undefined>(undefined);
   const seriesRef = useRef<any>(undefined);
   const seriesDataRef = useRef<OHLC[]>([]);
-
-  const wsRef = useRef<WebSocket | undefined>(undefined);
+  const ordersWsRef = useRef<WebSocket | undefined>(undefined);
+  const priceWsRef = useRef<WebSocket | undefined>(undefined);
 
   useEffect(() => {
     (async () => {
       try {
-        setProfileData(await UtilsManager.fetchProfile());
+        profileRef.current = await UtilsManager.fetchProfile();
+        setHeaderRenderProp(headerRenderProp + 1);
+        setOrderWsRenderProp(orderWsRenderProp + 1);
       } catch (err) {}
     })();
   }, []);
@@ -58,7 +72,7 @@ const TradingPage: FC = () => {
         if (!rsp.ok) throw new Error(data["error"]);
 
         setOrders(data);
-        setNum(num + 1);
+        setOrdersTableRenderProp(ordersTableRenderProp + 1);
       } catch (err) {
         UtilsManager.toastError((err as Error).message);
       }
@@ -66,60 +80,111 @@ const TradingPage: FC = () => {
   }, []);
 
   useEffect(() => {
-    if (wsRef.current) return;
-    if (Object.keys(profileData ?? {}).length == 0) return;
+    if (ordersWsRef.current) return;
+    if (Object.keys(profileRef.current ?? {}).length == 0) return;
 
-    wsRef.current = new WebSocket(
+    const handlers: Partial<Record<SocketPayloadCategory, (arg: any) => void>> =
+      {
+        [SocketPayloadCategory.BALANCE]: handleBalanceUpdate,
+        [SocketPayloadCategory.ORDER]: handleOrderUpdate,
+      };
+
+    ordersWsRef.current = new WebSocket(
       import.meta.env.VITE_BASE_URL.replace("http", "ws") + "/order/ws"
     );
 
-    wsRef.current.onopen = (e) => {
-      console.log("WebSocket connection opened:", e);
-      wsRef.current?.send(
-        JSON.stringify({
-          category: SocketPayloadCategory.CONNECT,
-          content: { instrument: "BTCUSD" },
-        } as SocketPayload)
-      );
+    ordersWsRef.current.onopen = (e) => {
+      console.log("orders websocket connection opened:", e);
     };
 
-    wsRef.current.onmessage = (e) => {
+    ordersWsRef.current.onmessage = (e) => {
       const message = JSON.parse(e.data) as SocketPayload;
-      if (message.category === SocketPayloadCategory.PRICE) {
-        setPrice(message.content.price);
-        updateChartPrice(message.content as PriceUpdate);
-      } else if (message.category === SocketPayloadCategory.ORDER) {
-        handleOrderUpdate(message.content);
+      const func = handlers[message.category];
+      if (func) {
+        func(message.content);
       }
-      console.log("Incoming Message: ", message);
     };
 
-    wsRef.current.onclose = (e) => {
-      console.log("WebSocket connection closed:", e);
+    ordersWsRef.current.onclose = (e) => {
+      console.log("Orders websocket connection closed:", e);
     };
 
     return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
+      if (ordersWsRef.current) {
+        ordersWsRef.current.close();
       }
     };
-  }, [profileData]);
+  }, [orderWsRenderProp]);
 
-  function updateChartPrice(payload: PriceUpdate): void {
+  useEffect(() => {
+    if (priceWsRef.current) return;
+
+    priceWsRef.current = new WebSocket(
+      import.meta.env.VITE_BASE_URL.replace("http", "ws") +
+        "/instrument/ws/?instrument=BTCUSD"
+    );
+
+    priceWsRef.current.onopen = (e) => {
+      console.log("Price websocket connection opened:", e);
+    };
+
+    priceWsRef.current.onmessage = (e) => {
+      const message = JSON.parse(e.data) as SocketPayload;
+      handlePriceUpdate(message.content as PriceUpdate);
+      console.log(message);
+    };
+
+    priceWsRef.current.onclose = (e) => {
+      console.log("Price websocket connection closed:", e);
+    };
+
+    priceWsRef.current.onerror = (e) => {
+      console.log("Price websocket error - ", e);
+    };
+
+    return () => {
+      if (priceWsRef.current) {
+        priceWsRef.current.close();
+      }
+    };
+  }, []);
+
+  function handlePriceUpdate(payload: PriceUpdate): void {
     if (!seriesRef.current) return;
     const price = Number(payload.price);
-    seriesDataRef.current!.push({
-      time: payload.time,
-      open: price,
-      high: price,
-      low: price,
-      close: price,
-    });
-    seriesDataRef.current!.sort((a, b) => a.time - b.time);
+    setPrice(payload.price);
+    updateChart(price, payload.time);
+  }
+
+  function updateChart(price: number, time: number): void {
+    const tfSeconds: number = getSeconds(selectedTimeframe);
+    const remainder: number =
+      time - seriesDataRef.current[seriesDataRef.current.length - 1].time;
+
+    if (remainder < tfSeconds) {
+      seriesDataRef.current[seriesDataRef.current.length - 1].high = Math.max(
+        seriesDataRef.current[seriesDataRef.current.length - 1].high,
+        price
+      );
+      seriesDataRef.current[seriesDataRef.current.length - 1].low = Math.min(
+        seriesDataRef.current[seriesDataRef.current.length - 1].low,
+        price
+      );
+      seriesDataRef.current[seriesDataRef.current.length - 1].close = price;
+    } else {
+      seriesDataRef.current.push({
+        time: time,
+        open: price,
+        high: price,
+        low: price,
+        close: price,
+      });
+    }
+
     seriesRef.current.setData(seriesDataRef.current);
   }
 
-  function handleOrderUpdate(payload: Record<string, string | number>) {
+  function handleOrderUpdate(payload: Record<string, string | number>): void {
     setOrders((prev) => {
       let Prev = [...(prev ?? [])];
 
@@ -135,12 +200,25 @@ const TradingPage: FC = () => {
 
       return updated;
     });
-    setNum(num + 1);
+    setOrdersTableRenderProp(ordersTableRenderProp + 1);
+  }
+
+  function handleBalanceUpdate(payload: BalanceUpdate): void {
+    profileRef.current = {
+      ...profileRef.current,
+      balance: payload.balance,
+    } as Profile;
+    setHeaderRenderProp(headerRenderProp + 1);
   }
 
   return (
     <>
-      <TradingHeader profile={profileData} />
+      <TradingHeader
+        renderProp={headerRenderProp}
+        avatar={(profileRef.current ?? {})["avatar"]}
+        balance={(profileRef.current ?? {})["balance"]}
+        username={(profileRef.current ?? {})["username"]}
+      />
       <div
         id="tradePage"
         className="w-full p-md"
@@ -239,6 +317,8 @@ const TradingPage: FC = () => {
               chartRef={chartRef}
               seriesRef={seriesRef}
               seriesDataRef={seriesDataRef}
+              selectedTimeframe={selectedTimeframe}
+              setSelectedTimeframe={setSelectedTimeframe}
             />
           )}
           {tab === 1 && (
@@ -268,6 +348,8 @@ const TradingPage: FC = () => {
               chartRef={chartRef}
               seriesRef={seriesRef}
               seriesDataRef={seriesDataRef}
+              selectedTimeframe={selectedTimeframe}
+              setSelectedTimeframe={setSelectedTimeframe}
             />
           </div>
           <div className="h-full" style={{ width: "300px", minWidth: "300px" }}>
@@ -275,7 +357,7 @@ const TradingPage: FC = () => {
           </div>
         </div>
 
-        <OrdersTable renderProp={num} orders={orders} />
+        <OrdersTable renderProp={ordersTableRenderProp} orders={orders} />
       </div>
     </>
   );

@@ -1,18 +1,21 @@
 import { FC, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { IsLoggedInContext } from "../contexts/IsLoggedInContext";
-import { Profile } from "../pages/AccountPage";
 import UtilsManager from "../utils/classses/UtilsManager";
 import Coin from "./icons/Coin";
 import WalletIcon from "./icons/WalletIcon";
 
 const TradingHeader: FC<{
-  profile?: Profile;
-}> = ({ profile }) => {
+  renderProp?: any;
+  avatar?: string;
+  balance?: string;
+  username?: string;
+}> = ({ renderProp, avatar, balance, username }) => {
   const navigate = useNavigate();
   const { isLoggedIn } = useContext(IsLoggedInContext);
   return (
     <header
+      className={`${renderProp}`}
       style={{
         height: "3rem",
         borderBottom: "1px solid var(--background-color-secondary)",
@@ -27,7 +30,7 @@ const TradingHeader: FC<{
             <div className="h-full w-auto flex g-1 align-center">
               <Coin size={"100%"} />
               <span className="span-lg bold">
-                {profile ? UtilsManager.formatPrice(profile.balance) : ""}
+                {balance ? UtilsManager.formatPrice(balance) : ""}
               </span>
             </div>
             <div className="h-full w-auto flex align-center">
@@ -62,7 +65,7 @@ const TradingHeader: FC<{
             </button>
           )}
           <a
-            href={`/user/${profile ? profile.username : ""}`}
+            href={username ? `/user/${username}` : "#"}
             className="h-full flex align-center g-1 border-radius-primary p-xs hover-pointer"
           >
             <div
@@ -70,14 +73,12 @@ const TradingHeader: FC<{
               style={{ width: "2rem" }}
             >
               <img
-                src={profile ? profile.avatar : ""}
+                src={avatar ? avatar : ""}
                 alt=""
                 className="h-full w-full cover"
               />
             </div>
-            <span className="bold span-lg">
-              {profile ? profile.username : ""}
-            </span>
+            <span className="bold span-lg">{username}</span>
           </a>
         </div>
       </div>

@@ -435,6 +435,10 @@ th {
   cursor: pointer;
 }
 
+.hover-bg-background-secondary:hover {
+  background-color: var(--background-color-secondary) !important;
+}
+
 .h-auto {
   height: auto;
 }

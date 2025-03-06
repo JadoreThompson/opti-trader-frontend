@@ -30,7 +30,9 @@ const OrdersTable: FC<{
   filterChoice?: OrderFilter[];
 }> = ({ renderProp, orders, filterChoice = ["filled", "pending"] }) => {
   const [filter, setFilter] = useState<OrderFilter[]>(filterChoice);
-  const [tab, setTab] = useState<number>(filterChoice.includes( "filled") ? 0 : 1);
+  const [tab, setTab] = useState<number>(
+    filterChoice.includes("filled") ? 0 : 1
+  );
   const [page, setPage] = useState<number>(1);
   const [maxPages, setMaxPages] = useState<number>(0);
   const maxPageSize = 10;
@@ -130,7 +132,9 @@ const OrdersTable: FC<{
                         }`}
                         style={{ whiteSpace: "nowrap" }}
                       >
-                        {order[key] != null && order[key] !== undefined ? formatValues(order[key]): ""}
+                        {order[key] != null && order[key] !== undefined
+                          ? formatValues(order[key])
+                          : ""}
                       </td>
                     ))}
                   </tr>
