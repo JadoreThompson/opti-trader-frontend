@@ -5,7 +5,7 @@ import LoadingScreen from "../pages/LoadingScreen";
 
 const ProtectedRoute: FC<{ element: JSX.Element }> = ({ element }) => {
   const navigate = useNavigate();
-  const { isLoggedIn, setIsLoggedIn } = useContext(IsLoggedInContext);
+  const { setIsLoggedIn } = useContext(IsLoggedInContext);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -23,7 +23,6 @@ const ProtectedRoute: FC<{ element: JSX.Element }> = ({ element }) => {
       } catch (err) {
         setIsLoggedIn(false);
         setIsLoading(false);
-        // navigate("/login");
       }
     })();
   }, [navigate, setIsLoggedIn]);
@@ -32,9 +31,6 @@ const ProtectedRoute: FC<{ element: JSX.Element }> = ({ element }) => {
     return <LoadingScreen stop={!isLoading} />;
   }
 
-  // if (isLoggedIn) {
-  //   return element;
-  // }
   return element;
 };
 

@@ -3,6 +3,8 @@ import {
   GridOptions,
   LayoutOptions,
   LineStyle,
+  PriceScaleMode,
+  PriceScaleOptions,
   TimeScaleOptions,
   createChart,
 } from "lightweight-charts";
@@ -73,9 +75,7 @@ const InstrumentCard: FC<{
           const data = await rsp.json();
           setChartData(data);
         }
-      } catch (err) {
-        setChartData([]);
-      }
+      } catch (err) {}
     };
 
     fetchData();
@@ -100,15 +100,27 @@ const InstrumentCard: FC<{
       document.documentElement
     );
 
-    const chartOptions: Partial<{
+    const chartOptions: {
       autoSize: boolean;
+      rightPriceScale: PriceScaleOptions;
       layout: LayoutOptions;
       grid: GridOptions;
       timeScale: TimeScaleOptions;
-    }> = {
+    } = {
       autoSize: true,
       rightPriceScale: {
         ticksVisible: true,
+        autoScale: true,
+        mode: PriceScaleMode.Normal,
+        invertScale: false,
+        alignLabels: true,
+        scaleMargins: { bottom: 0.1, top: 0.2 },
+        borderVisible: true,
+        borderColor: "#2B2B43",
+
+        entireTextOnly: false,
+        visible: true,
+        minimumWidth: 0,
       },
       layout: {
         background: {
@@ -135,6 +147,22 @@ const InstrumentCard: FC<{
       timeScale: {
         timeVisible: true,
         ticksVisible: true,
+        rightOffset: 0,
+        barSpacing: 6,
+        minBarSpacing: 0.5,
+        fixLeftEdge: false,
+        fixRightEdge: false,
+        lockVisibleTimeRangeOnResize: false,
+        rightBarStaysOnScroll: false,
+        borderVisible: true,
+        borderColor: "#2B2B43",
+        visible: true,
+        secondsVisible: true,
+        shiftVisibleRangeOnNewBar: true,
+        allowShiftVisibleRangeOnWhitespaceReplacement: false,
+        uniformDistribution: false,
+        minimumHeight: 0,
+        allowBoldLabels: true,
       },
     };
 
@@ -159,10 +187,6 @@ const InstrumentCard: FC<{
       );
     };
 
-    // if (!chartPlacedRef.current) {
-    //   loadChart();
-    //   chartPlacedRef.current = true;
-    // }
     loadChart();
     chartPlacedRef.current = true;
   }, [chartData]);
@@ -174,7 +198,7 @@ const InstrumentCard: FC<{
       } border-radius-primary flex-col p-sm`}
     >
       <div className="w-full" style={{ height: "2rem" }}>
-        <div className="h-full flex align-center g-1">
+        <div className="h-full flex justify-start align-center g-1">
           <img
             src="https://imgs.search.brave.com/Yprg3uQ9Q7XhUZv9-ahiQYGEQZNY64ATCx-0mwkCc6M/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/Y29pbnRyaWJ1bmUu/Y29tL2FwcC91cGxv/YWRzLzIwMjMvMDQv/TG9nby1CaXRjb2lu/LTEwMjR4MTAyNC5w/bmc"
             alt=""
@@ -186,9 +210,9 @@ const InstrumentCard: FC<{
               price > lastPrice ? "text-green increase" : "text-red decrease"
             }`}
           >
-            {UtilsManager.formatPrice(price)}
+            {price ?UtilsManager.formatPrice(price) : ""}
           </span>
-          <div className="w-auto h-full">
+          <div className="w-auto h-full flex justify-center align-center" style={{ width: '2rem'}}>
             {price > lastPrice ? (
               <ArrowUp className="fill-green" size="100%" />
             ) : (

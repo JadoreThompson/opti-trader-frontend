@@ -22,13 +22,13 @@ const closedOrdersTableHeaders: Record<string, string> = {
   status: "STATUS",
 };
 
-export type OrderFilter = "filled" | "pending" | "closed";
+export type OrderFilter = "filled" | "partially_filled" | "pending" | "closed";
 
 const OrdersTable: FC<{
   renderProp?: any;
   orders: Record<string, any>[];
   filterChoice?: OrderFilter[];
-}> = ({ renderProp, orders, filterChoice = ["filled", "pending"] }) => {
+}> = ({ renderProp, orders, filterChoice = ["filled", "partially_filled", "pending"] }) => {
   const [filter, setFilter] = useState<OrderFilter[]>(filterChoice);
   const [tab, setTab] = useState<number>(
     filterChoice.includes("filled") ? 0 : 1
@@ -60,8 +60,8 @@ const OrdersTable: FC<{
     if (value === undefined) {
       return "";
     }
-
-    if (isNaN(value)) {
+    
+    if (isNaN(value as number)) {
       return String(value);
     } else {
       return UtilsManager.formatPrice(value);
@@ -79,7 +79,7 @@ const OrdersTable: FC<{
             onClick={() => {
               setTab(0);
               setPage(1);
-              setFilter(["filled", "pending"]);
+              setFilter(["filled", "partially_filled", "pending"]);
             }}
           >
             OPEN ORDERS

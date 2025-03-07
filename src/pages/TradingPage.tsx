@@ -34,7 +34,7 @@ interface BalanceUpdate {
 }
 
 const TradingPage: FC = () => {
-  const [price, setPrice] = useState<number>(100);
+  const [price, setPrice] = useState<number | undefined>(undefined);
   const [tab, setTab] = useState<number>(0);
   const [showOrderCard, setShowOrderCard] = useState<boolean>(false);
   const [orders, setOrders] = useState<Record<string, any>[]>([]);
@@ -56,11 +56,20 @@ const TradingPage: FC = () => {
     (async () => {
       try {
         profileRef.current = await UtilsManager.fetchProfile();
+        console.log(profileRef.current);
         setHeaderRenderProp(headerRenderProp + 1);
         setOrderWsRenderProp(orderWsRenderProp + 1);
       } catch (err) {}
     })();
+
+    return () => {
+      if (profileRef.current) {
+        profileRef.current = undefined;
+      }
+    };
   }, []);
+
+  useEffect(() => console.log("Order WS render - ",orderWsRenderProp), [orderWsRenderProp]);
 
   useEffect(() => {
     (async () => {
@@ -81,10 +90,10 @@ const TradingPage: FC = () => {
 
   useEffect(() => {
     if (
-      ordersWsRef.current ||
       Object.keys(profileRef.current ?? {}).length == 0
     )
       return;
+
     const handlers: Partial<Record<SocketPayloadCategory, (arg: any) => void>> =
       {
         [SocketPayloadCategory.BALANCE]: handleBalanceUpdate,
@@ -116,24 +125,13 @@ const TradingPage: FC = () => {
   useEffect(() => console.log("*** re-render ***"), []);
 
   useEffect(() => {
-    if (priceWsRef.current != undefined) {
-      return;
-    }
+    if (seriesDataRef.current === undefined) return;
 
-    window.addEventListener("beforeunload", () => {
-      if (priceWsRef.current != undefined) {
-        priceWsRef.current.close();
-        priceWsRef.current = undefined;
-        console.log("took down the websocket");
-      }
-    })
-    
     priceWsRef.current = new WebSocket(
       import.meta.env.VITE_BASE_URL.replace("http", "ws") +
-      `/instrument/ws/?instrument=BTCUSDv=${Date.now()}`
-      );
-      
-      console.log(priceWsRef.current!.readyState);
+        `/instrument/ws/?instrument=BTCUSD`
+    );
+
     priceWsRef.current.onopen = (e) => {
       console.log("Price websocket connection opened:", e);
     };
@@ -156,7 +154,6 @@ const TradingPage: FC = () => {
       if (priceWsRef.current != undefined) {
         priceWsRef.current.close();
         priceWsRef.current = undefined;
-        console.log("took down the websocket");
       }
     };
   }, []);
@@ -361,15 +358,17 @@ const TradingPage: FC = () => {
               minHeight: "75%",
             }}
           >
-            <InstrumentCard
-              showBorder
-              price={price}
-              chartRef={chartRef}
-              seriesRef={seriesRef}
-              seriesDataRef={seriesDataRef}
-              selectedTimeframe={selectedTimeframe}
-              setSelectedTimeframe={setSelectedTimeframe}
-            />
+            {price !== undefined && (
+              <InstrumentCard
+                showBorder
+                price={price}
+                chartRef={chartRef}
+                seriesRef={seriesRef}
+                seriesDataRef={seriesDataRef}
+                selectedTimeframe={selectedTimeframe}
+                setSelectedTimeframe={setSelectedTimeframe}
+              />
+            )}
           </div>
           <div className="h-full" style={{ width: "300px", minWidth: "300px" }}>
             <OrderCard balance={10000} />

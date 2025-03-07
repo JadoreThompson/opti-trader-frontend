@@ -113,6 +113,15 @@ th {
 .a {
 }
 
+@media (max-width: 920px) {
+  .auth-img-container {
+    display: none;
+  }
+  .auth-form-container {
+    width: 100% !important;
+  }
+}
+
 .align-start {
   align-items: flex-start;
 }

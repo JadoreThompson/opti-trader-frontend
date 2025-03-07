@@ -7,5 +7,5 @@ interface isLoggedInProps {
 
 export const IsLoggedInContext = createContext<isLoggedInProps>({
     isLoggedIn: false,
-    setIsLoggedIn: (arg: boolean): void => {}
+    setIsLoggedIn: (): void => {}
 })
