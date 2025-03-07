@@ -68,16 +68,14 @@ const TradingHeader: FC<{
             href={username ? `/user/${username}` : "#"}
             className="h-full flex align-center g-1 border-radius-primary p-xs hover-pointer"
           >
-            <div
-              className="border-radius-primary h-full overflow-hidden"
-              style={{ width: "2rem" }}
-            >
-              <img
-                src={avatar ? avatar : ""}
-                alt=""
-                className="h-full w-full cover"
-              />
-            </div>
+            {avatar && (
+              <div
+                className="border-radius-primary h-full overflow-hidden"
+                style={{ width: "2rem" }}
+              >
+                <img src={avatar} alt="" className="h-full w-full cover" />
+              </div>
+            )}
             <span className="bold span-lg">{username}</span>
           </a>
         </div>

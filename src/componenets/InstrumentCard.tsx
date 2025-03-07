@@ -62,14 +62,13 @@ const InstrumentCard: FC<{
   const chartPlacedRef = useRef<boolean>(false);
 
   useEffect(() => {
-    (async () => {
+    const fetchData = async (): Promise<void> => {
       try {
         const rsp = await fetch(
           import.meta.env.VITE_BASE_URL +
             `/instrument/?instrument=BTCUSD&timeframe=${selectedTimeframe}&ago=10800`,
           { method: "GET" }
         );
-
         if (rsp.ok) {
           const data = await rsp.json();
           setChartData(data);
@@ -77,10 +76,10 @@ const InstrumentCard: FC<{
       } catch (err) {
         setChartData([]);
       }
-    })();
-  }, [selectedTimeframe]);
+    };
 
-  useEffect(() => console.log(chartData), [chartData]);
+    fetchData();
+  }, [selectedTimeframe]);
 
   useEffect(() => {
     if (lastPriceRef.current[0]) {
@@ -160,10 +159,12 @@ const InstrumentCard: FC<{
       );
     };
 
-    if (chartContainerRef.current) {
-      loadChart();
-      chartPlacedRef.current = true;
-    }
+    // if (!chartPlacedRef.current) {
+    //   loadChart();
+    //   chartPlacedRef.current = true;
+    // }
+    loadChart();
+    chartPlacedRef.current = true;
   }, [chartData]);
 
   return (

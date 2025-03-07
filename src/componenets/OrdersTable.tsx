@@ -48,7 +48,6 @@ const OrdersTable: FC<{
   }, [page]);
 
   useEffect(() => {
-    console.log("render prop value changed");
     const maxPages = Math.ceil(
       orders!.filter((order) => filter.includes(order.status))!.length /
         maxPageSize

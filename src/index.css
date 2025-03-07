@@ -491,6 +491,10 @@ th {
   margin-bottom: 1rem;
 }
 
+.mb-4 {
+  margin-bottom: 1.25rem;
+}
+
 .mt-1 {
   margin-top: 0.25rem;
 }
@@ -824,6 +828,10 @@ th {
   color: grey;
 }
 
+.text-primary {
+  color: var(--primary-color);
+}
+
 .text-red {
   color: #ff3030;
 }
@@ -834,6 +842,11 @@ th {
 
 .u {
 }
+
+.underline {
+  text-decoration: underline;
+}
+
 .v {
 }
 .w {
@@ -845,6 +858,10 @@ th {
 
 .w-full {
   width: 100%;
+}
+
+.w-half {
+  width: 50%;
 }
 
 .x {

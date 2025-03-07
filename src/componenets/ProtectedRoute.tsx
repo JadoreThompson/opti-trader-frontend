@@ -23,7 +23,7 @@ const ProtectedRoute: FC<{ element: JSX.Element }> = ({ element }) => {
       } catch (err) {
         setIsLoggedIn(false);
         setIsLoading(false);
-        navigate("/login");
+        // navigate("/login");
       }
     })();
   }, [navigate, setIsLoggedIn]);
@@ -32,9 +32,10 @@ const ProtectedRoute: FC<{ element: JSX.Element }> = ({ element }) => {
     return <LoadingScreen stop={!isLoading} />;
   }
 
-  if (isLoggedIn) {
-    return element;
-  }
+  // if (isLoggedIn) {
+  //   return element;
+  // }
+  return element;
 };
 
 export default ProtectedRoute;

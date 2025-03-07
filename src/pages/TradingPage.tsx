@@ -1,7 +1,7 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { FaXmark } from "react-icons/fa6";
 import DOM from "../componenets/DOM";
-import InstrumentChart, {
+import InstrumentCard, {
   OHLC,
   Timeframe,
   getSeconds,
@@ -44,6 +44,7 @@ const TradingPage: FC = () => {
   const [selectedTimeframe, setSelectedTimeframe] = useState<Timeframe>(
     Timeframe.M5
   );
+
   const chartRef = useRef<any>(undefined);
   const profileRef = useRef<Profile | undefined>(undefined);
   const seriesRef = useRef<any>(undefined);
@@ -70,7 +71,6 @@ const TradingPage: FC = () => {
         );
         const data = await rsp.json();
         if (!rsp.ok) throw new Error(data["error"]);
-
         setOrders(data);
         setOrdersTableRenderProp(ordersTableRenderProp + 1);
       } catch (err) {
@@ -80,23 +80,22 @@ const TradingPage: FC = () => {
   }, []);
 
   useEffect(() => {
-    if (ordersWsRef.current) return;
-    if (Object.keys(profileRef.current ?? {}).length == 0) return;
-
+    if (
+      ordersWsRef.current ||
+      Object.keys(profileRef.current ?? {}).length == 0
+    )
+      return;
     const handlers: Partial<Record<SocketPayloadCategory, (arg: any) => void>> =
       {
         [SocketPayloadCategory.BALANCE]: handleBalanceUpdate,
         [SocketPayloadCategory.ORDER]: handleOrderUpdate,
       };
-
     ordersWsRef.current = new WebSocket(
       import.meta.env.VITE_BASE_URL.replace("http", "ws") + "/order/ws"
     );
-
     ordersWsRef.current.onopen = (e) => {
       console.log("orders websocket connection opened:", e);
     };
-
     ordersWsRef.current.onmessage = (e) => {
       const message = JSON.parse(e.data) as SocketPayload;
       const func = handlers[message.category];
@@ -104,34 +103,45 @@ const TradingPage: FC = () => {
         func(message.content);
       }
     };
-
     ordersWsRef.current.onclose = (e) => {
       console.log("Orders websocket connection closed:", e);
     };
-
     return () => {
-      if (ordersWsRef.current) {
+      if (ordersWsRef.current != undefined) {
         ordersWsRef.current.close();
       }
     };
   }, [orderWsRenderProp]);
 
-  useEffect(() => {
-    if (priceWsRef.current) return;
+  useEffect(() => console.log("*** re-render ***"), []);
 
+  useEffect(() => {
+    if (priceWsRef.current != undefined) {
+      return;
+    }
+
+    window.addEventListener("beforeunload", () => {
+      if (priceWsRef.current != undefined) {
+        priceWsRef.current.close();
+        priceWsRef.current = undefined;
+        console.log("took down the websocket");
+      }
+    })
+    
     priceWsRef.current = new WebSocket(
       import.meta.env.VITE_BASE_URL.replace("http", "ws") +
-        "/instrument/ws/?instrument=BTCUSD"
-    );
-
+      `/instrument/ws/?instrument=BTCUSDv=${Date.now()}`
+      );
+      
+      console.log(priceWsRef.current!.readyState);
     priceWsRef.current.onopen = (e) => {
       console.log("Price websocket connection opened:", e);
     };
 
     priceWsRef.current.onmessage = (e) => {
       const message = JSON.parse(e.data) as SocketPayload;
+      console.log("Price received message - ", message);
       handlePriceUpdate(message.content as PriceUpdate);
-      console.log(message);
     };
 
     priceWsRef.current.onclose = (e) => {
@@ -143,8 +153,10 @@ const TradingPage: FC = () => {
     };
 
     return () => {
-      if (priceWsRef.current) {
+      if (priceWsRef.current != undefined) {
         priceWsRef.current.close();
+        priceWsRef.current = undefined;
+        console.log("took down the websocket");
       }
     };
   }, []);
@@ -158,19 +170,30 @@ const TradingPage: FC = () => {
 
   function updateChart(price: number, time: number): void {
     const tfSeconds: number = getSeconds(selectedTimeframe);
-    const remainder: number =
-      time - seriesDataRef.current[seriesDataRef.current.length - 1].time;
 
-    if (remainder < tfSeconds) {
-      seriesDataRef.current[seriesDataRef.current.length - 1].high = Math.max(
-        seriesDataRef.current[seriesDataRef.current.length - 1].high,
-        price
-      );
-      seriesDataRef.current[seriesDataRef.current.length - 1].low = Math.min(
-        seriesDataRef.current[seriesDataRef.current.length - 1].low,
-        price
-      );
-      seriesDataRef.current[seriesDataRef.current.length - 1].close = price;
+    if (seriesDataRef.current.length > 0) {
+      const remainder: number =
+        time - seriesDataRef.current[seriesDataRef.current.length - 1].time;
+
+      if (remainder < tfSeconds) {
+        seriesDataRef.current[seriesDataRef.current.length - 1].high = Math.max(
+          seriesDataRef.current[seriesDataRef.current.length - 1].high,
+          price
+        );
+        seriesDataRef.current[seriesDataRef.current.length - 1].low = Math.min(
+          seriesDataRef.current[seriesDataRef.current.length - 1].low,
+          price
+        );
+        seriesDataRef.current[seriesDataRef.current.length - 1].close = price;
+      } else {
+        seriesDataRef.current.push({
+          time: time,
+          open: price,
+          high: price,
+          low: price,
+          close: price,
+        });
+      }
     } else {
       seriesDataRef.current.push({
         time: time,
@@ -267,7 +290,6 @@ const TradingPage: FC = () => {
             </div>
           </div>
         )}
-
         {/* Mobile */}
         <div
           id="tradeButton"
@@ -286,7 +308,6 @@ const TradingPage: FC = () => {
             Trade
           </button>
         </div>
-
         {/* Mobile */}
         <div className="mobile w-full snackbar d-none justify-start mb-3">
           <button
@@ -304,7 +325,6 @@ const TradingPage: FC = () => {
             Order book
           </button>
         </div>
-
         {/* Mobile */}
         <div
           id="mobile"
@@ -312,7 +332,7 @@ const TradingPage: FC = () => {
           style={{ height: "20rem" }}
         >
           {tab === 0 && (
-            <InstrumentChart
+            <InstrumentCard
               price={price}
               chartRef={chartRef}
               seriesRef={seriesRef}
@@ -325,7 +345,6 @@ const TradingPage: FC = () => {
             <DOM price={price} orderbook={UtilsManager.generateOrderbook()} />
           )}
         </div>
-
         {/* Desktop */}
         <div
           id="desktop"
@@ -342,7 +361,7 @@ const TradingPage: FC = () => {
               minHeight: "75%",
             }}
           >
-            <InstrumentChart
+            <InstrumentCard
               showBorder
               price={price}
               chartRef={chartRef}
@@ -356,7 +375,6 @@ const TradingPage: FC = () => {
             <OrderCard balance={10000} />
           </div>
         </div>
-
         <OrdersTable renderProp={ordersTableRenderProp} orders={orders} />
       </div>
     </>
