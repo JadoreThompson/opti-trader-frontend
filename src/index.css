@@ -60,6 +60,14 @@ main {
   }
 }
 
+#sidebar {
+  margin-top: 3rem;
+}
+
+#sidebar + main {
+  margin-left: 4rem;
+}
+
 #tradePage #desktop {
   height: 31.5rem;
 }

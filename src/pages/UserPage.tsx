@@ -1,7 +1,9 @@
-import { FC, useState } from "react";
+import { FC, useContext, useState } from "react";
 import ReactDOM from "react-dom";
 import CustomHeader from "../componenets/CustomHeader";
+import DefaultLayout from "../componenets/DefaultLayout";
 import EditProfileCard from "../componenets/EditProfileCard";
+import { IsLoggedInContext } from "../contexts/IsLoggedInContext";
 
 export interface Profile {
   avatar: string;
@@ -10,6 +12,7 @@ export interface Profile {
 }
 
 const UserPage: FC<{ profile?: Profile }> = ({ profile }) => {
+  const { isLoggedIn } = useContext(IsLoggedInContext);
   const [showEditProfile, setShowEditProfile] = useState<boolean>(false);
 
   if (!profile) {
@@ -24,72 +27,77 @@ const UserPage: FC<{ profile?: Profile }> = ({ profile }) => {
   return (
     <>
       <CustomHeader />
-      <main>
-        {showEditProfile && (
-          <>
-            {ReactDOM.createPortal(
-              <div
-                className="w-full h-full fixed flex align-center justify-center"
-                style={{ top: "0", backdropFilter: "blur(1px)" }}
-              >
-                <div className="edit-profile-container" style={{}}>
-                  <EditProfileCard
-                    setShow={setShowEditProfile}
-                    imgSrc={profile.avatar}
-                  />
-                </div>
-              </div>,
-              document.body
-            )}
-          </>
-        )}
 
-        <div className="w-full h-full flex justify-center">
-          <div
-            className="flex-column justify-start p-md mt-3"
-            style={{ width: "75%" }}
-          >
-            <div
-              className="w-full flex justify-between align-center p-md"
-              style={{
-                height: "7rem",
-              }}
-            >
-              <div className="h-full flex g-3 align-center">
-                <div className="h-full border-radius-primary relative">
+      <DefaultLayout
+        element={
+          <>
+            {showEditProfile && (
+              <>
+                {ReactDOM.createPortal(
                   <div
-                    className="w-full h-full border-radius-primary overflow-hidden"
-                    style={{ width: "5.5rem" }}
+                    className="w-full h-full fixed flex align-center justify-center"
+                    style={{ top: "0", backdropFilter: "blur(1px)" }}
                   >
-                    <img
-                      src={profile!.avatar ?? undefined}
-                      alt=""
-                      className="h-full w-full cover"
-                    />
-                  </div>
-                </div>
-                <div className="h-full flex align-center justify-center">
-                  <div>
-                    <h2 className="bold w-full">{profile!.username}</h2>
-                    <span className="text-grey w-full">
-                      {(profile!["email"] as string) ?? "jack@email.com"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex align-start h-full">
-                <button
-                  className="btn btn-default bg-background-secondary border-none hover-pointer"
-                  style={{ height: "2rem" }}
-                  onClick={() => setShowEditProfile(true)}
+                    <div className="edit-profile-container" style={{}}>
+                      <EditProfileCard
+                        setShow={setShowEditProfile}
+                        imgSrc={profile.avatar}
+                      />
+                    </div>
+                  </div>,
+                  document.body
+                )}
+              </>
+            )}
+
+            <div className="w-full h-full flex justify-center">
+              <div
+                className="flex-column justify-start p-md mt-3"
+                style={{ width: "75%" }}
+              >
+                <div
+                  className="w-full flex justify-between align-center p-md"
+                  style={{
+                    height: "7rem",
+                  }}
                 >
-                  Edit Profile
-                </button>
+                  <div className="h-full flex g-3 align-center">
+                    <div className="h-full border-radius-primary relative">
+                      <div
+                        className="w-full h-full border-radius-primary overflow-hidden"
+                        style={{ width: "5.5rem" }}
+                      >
+                        <img
+                          src={profile!.avatar ?? undefined}
+                          alt=""
+                          className="h-full w-full cover"
+                        />
+                      </div>
+                    </div>
+                    <div className="h-full flex align-center justify-center">
+                      <div>
+                        <h2 className="bold w-full">{profile!.username}</h2>
+                        <span className="text-grey w-full">
+                          {(profile!["email"] as string) ?? "jack@email.com"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex align-start h-full">
+                    <button
+                      className="btn btn-default bg-background-secondary border-none hover-pointer"
+                      style={{ height: "2rem" }}
+                      onClick={() => setShowEditProfile(true)}
+                    >
+                      Edit Profile
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      </main>
+          </>
+        }
+      />
     </>
   );
 };
