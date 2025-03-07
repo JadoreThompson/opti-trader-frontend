@@ -1,8 +1,8 @@
 import { toast } from "react-toastify";
 import { Orderbook } from "../../componenets/DOM";
-import AlertIcon from "../../componenets/icons/Alert";
+import AlertIcon from "../../componenets/icons/AlertIcon";
 import DollarIcon from "../../componenets/icons/DollarIcon";
-import { Profile } from "../../pages/AccountPage";
+import { Profile } from "../../pages/UserPage";
 
 export default class UtilsManager {
   static toastOptions = {

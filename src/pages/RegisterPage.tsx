@@ -46,11 +46,11 @@ const RegisterPage: FC = () => {
     <AuthPageLayout
       imgSrc="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWRlYTB6bTF5c2d2dzFjZG90NHhmNmd1MmR1ajdoOHBtMXRiYml1MCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/PVaSEpyzGhjfJTss9b/giphy.gif"
       content={
-        <div className="flex-col" style={{ width: "30rem" }}>
+        <div className="flex-column" style={{ width: "30rem" }}>
           <div className="w-100 flex align-center justify-center">
             <h1>Register</h1>
           </div>
-          <form className="flex-col p-md" onSubmit={handleSubmit}>
+          <form className="flex-column p-md" onSubmit={handleSubmit}>
             <input
               style={{ fontSize: "1rem" }}
               type="text"

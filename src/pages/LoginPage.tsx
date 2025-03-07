@@ -37,11 +37,11 @@ const LoginPage: FC = () => {
     <AuthPageLayout
       imgSrc="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExb3NuamhyNzA3NzJmNDh3dHBhaXJ0NWl2YjRtb2QzaTAycG43M2wzaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/spZMbmQAIaL2bYp2uP/giphy.gif"
       content={
-        <div className="flex-col" style={{ width: "30rem" }}>
+        <div className="flex-column" style={{ width: "30rem" }}>
           <div className="w-100 flex align-center justify-center">
             <h1>Login</h1>
           </div>
-          <form className="flex-col p-md" onSubmit={handleSubmit}>
+          <form className="flex-column p-md" onSubmit={handleSubmit}>
             <input
               style={{ fontSize: "1rem" }}
               type="email"

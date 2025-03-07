@@ -2,10 +2,10 @@ import { FC, useState } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./componenets/ProtectedRoute";
 import { IsLoggedInContext } from "./contexts/IsLoggedInContext";
-import AccountPage from "./pages/AccountPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import TradingPage from "./pages/TradingPage";
+import UserPage from "./pages/UserPage";
 
 const App: FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
@@ -20,7 +20,7 @@ const App: FC = () => {
           />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/user/*" element={<AccountPage />} />
+          <Route path="/user/*" element={<UserPage />} />
         </Routes>
       </IsLoggedInContext.Provider>
     </BrowserRouter>

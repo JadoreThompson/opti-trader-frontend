@@ -28,6 +28,10 @@ body {
   width: 100%;
 }
 
+main {
+  margin-top: 4rem;
+}
+
 ::-webkit-scrollbar {
   width: 0.5rem;
 }
@@ -113,6 +117,10 @@ th {
 .a {
 }
 
+.absolute {
+  position: absolute;
+}
+
 @media (max-width: 920px) {
   .auth-img-container {
     display: none;
@@ -140,6 +148,22 @@ th {
 
 .align-baseline {
   align-items: baseline;
+}
+
+.align-self-end {
+  align-self: flex-end;
+}
+
+.align-self-start {
+  align-self: flex-start;
+}
+
+.align-self-baseline {
+  align-self: baseline;
+}
+
+.align-self-center {
+  align-self: center;
 }
 
 .b {
@@ -245,10 +269,35 @@ th {
   align-items: center;
   justify-content: center;
   font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn.btn-default {
+  background-color: #27272A;
+  color: white;
+}
+
+.btn.btn-default:hover {
+  background-color: #333336;
 }
 
 .btn.btn-primary {
   background-color: var(--primary-color);
+  color: white;
+}
+
+.btn.btn-secondary {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+.btn.btn-blue {
+  background-color: rgb(109, 200, 250);
+  color: white;
+}
+
+.btn.btn-blue:hover {
+  background-color: rgb(90, 176, 222);
   color: white;
 }
 
@@ -283,6 +332,24 @@ th {
 }
 
 .e {
+}
+
+@keyframes growCard {
+  from {
+    height: 0;
+    width: 0;
+  }
+
+  to {
+    width: 30rem;
+    height: 30rem;
+  }
+}
+
+.edit-profile-container {
+  width: 30rem;
+  height: 30rem;
+  /* animation: growCard 0.25s; */
 }
 
 .f {
@@ -434,6 +501,10 @@ th {
 }
 
 .h {
+}
+
+.hidden {
+  visibility: hidden;
 }
 
 .hide-scrollbar::-webkit-scrollbar {
@@ -741,6 +812,10 @@ th {
 .r {
 }
 
+.relative {
+  position: relative;
+}
+
 .s {
 }
 
@@ -825,6 +900,19 @@ th {
 .t {
 }
 
+.tooltip-container {
+  position: relative;
+}
+
+.tooltip-container:hover .tooltip-item {
+  display: flex;
+}
+
+.tooltip-item {
+  display: none;
+  position: absolute;
+}
+
 .text-green {
   color: #43ba53;
 }
@@ -858,6 +946,7 @@ th {
 
 .v {
 }
+
 .w {
 }
 

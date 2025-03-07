@@ -2,10 +2,10 @@ import { FC, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { IsLoggedInContext } from "../contexts/IsLoggedInContext";
 import UtilsManager from "../utils/classses/UtilsManager";
-import Coin from "./icons/Coin";
+import Coin from "./icons/CoinIcon";
 import WalletIcon from "./icons/WalletIcon";
 
-const TradingHeader: FC<{
+const CustomHeader: FC<{
   renderProp?: any;
   avatar?: string;
   balance?: string;
@@ -15,7 +15,7 @@ const TradingHeader: FC<{
   const { isLoggedIn } = useContext(IsLoggedInContext);
   return (
     <header
-      className={`${renderProp}`}
+      className={`${renderProp} fixed w-full bg-background-primary`}
       style={{
         height: "3rem",
         borderBottom: "1px solid var(--background-color-secondary)",
@@ -23,21 +23,24 @@ const TradingHeader: FC<{
     >
       <div className="w-full h-full j-between flex-row p-xs">
         <div className="h-full w-full">
-          <img src="src/assets/Logo.png" alt="" className="h-full" />
+          <img src="../src/assets/Logo.png" alt="" className="h-full cover" />
         </div>
-        <div className="h-full w-full flex-center">
-          <div className="h-full border-bg-secondary border-radius-primary p-xs flex-center g-2">
-            <div className="h-full w-auto flex g-1 align-center">
-              <Coin size={"100%"} />
-              <span className="span-lg bold">
-                {balance ? UtilsManager.formatPrice(balance) : ""}
-              </span>
-            </div>
-            <div className="h-full w-auto flex align-center">
-              <WalletIcon size="100%" />
+
+        {balance !== undefined && (
+          <div className="h-full w-full flex-center">
+            <div className="h-full border-bg-secondary border-radius-primary p-xs flex-center g-2">
+              <div className="h-full w-auto flex g-1 align-center">
+                <Coin size={"100%"} />
+                <span className="span-lg bold">
+                  {balance ? UtilsManager.formatPrice(balance) : ""}
+                </span>
+              </div>
+              <div className="h-full w-auto flex align-center">
+                <WalletIcon size="100%" />
+              </div>
             </div>
           </div>
-        </div>
+        )}
         <div className="h-full w-full flex justify-end">
           {isLoggedIn ? (
             <button
@@ -84,4 +87,4 @@ const TradingHeader: FC<{
   );
 };
 
-export default TradingHeader;
+export default CustomHeader;

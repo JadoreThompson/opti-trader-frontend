@@ -1,5 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { FaXmark } from "react-icons/fa6";
+import CustomHeader from "../componenets/CustomHeader";
 import DOM from "../componenets/DOM";
 import InstrumentCard, {
   OHLC,
@@ -8,9 +9,8 @@ import InstrumentCard, {
 } from "../componenets/InstrumentCard";
 import OrderCard from "../componenets/OrderCard";
 import OrdersTable from "../componenets/OrdersTable";
-import TradingHeader from "../componenets/TradingHeader";
 import UtilsManager from "../utils/classses/UtilsManager";
-import { Profile } from "./AccountPage";
+import { Profile } from "./UserPage";
 
 enum SocketPayloadCategory {
   BALANCE = "balance",
@@ -69,7 +69,10 @@ const TradingPage: FC = () => {
     };
   }, []);
 
-  useEffect(() => console.log("Order WS render - ",orderWsRenderProp), [orderWsRenderProp]);
+  useEffect(
+    () => console.log("Order WS render - ", orderWsRenderProp),
+    [orderWsRenderProp]
+  );
 
   useEffect(() => {
     (async () => {
@@ -89,10 +92,7 @@ const TradingPage: FC = () => {
   }, []);
 
   useEffect(() => {
-    if (
-      Object.keys(profileRef.current ?? {}).length == 0
-    )
-      return;
+    if (Object.keys(profileRef.current ?? {}).length == 0) return;
 
     const handlers: Partial<Record<SocketPayloadCategory, (arg: any) => void>> =
       {
@@ -233,134 +233,104 @@ const TradingPage: FC = () => {
 
   return (
     <>
-      <TradingHeader
+      <CustomHeader
         renderProp={headerRenderProp}
         avatar={(profileRef.current ?? {})["avatar"]}
         balance={(profileRef.current ?? {})["balance"]}
         username={(profileRef.current ?? {})["username"]}
       />
-      <div
-        id="tradePage"
-        className="w-full p-md"
-        style={{ marginBottom: "5rem" }}
-      >
-        {/* Mobile */}
-        {showOrderCard && (
-          <div
-            className="fixed w-full grid"
-            style={{
-              top: 0,
-              left: 0,
-              height: "100vh",
-              zIndex: "999",
-            }}
-          >
+      <main>
+        <div
+          id="tradePage"
+          className="w-full p-md"
+          style={{ marginBottom: "5rem" }}
+        >
+          {/* Mobile */}
+          {showOrderCard && (
             <div
-              className="grid-col-1 grid-row-1 w-full h-full bg-background-primary"
+              className="fixed w-full grid"
               style={{
-                opacity: 0.6,
-              }}
-            ></div>
-            <div
-              className="grid-col-1 grid-row-1 w-full p-md bg-background-primary border-default hide-scrollbar"
-              style={{
-                borderRadius: "1.5rem 1.5rem 0 0",
-                height: "20rem",
-                bottom: 0,
+                top: 0,
                 left: 0,
-                alignSelf: "flex-end",
-                overflowY: "scroll",
+                height: "100vh",
                 zIndex: "999",
               }}
             >
               <div
-                className="w-full flex justify-end"
-                style={{ height: "2rem" }}
+                className="grid-col-1 grid-row-1 w-full h-full bg-background-primary"
+                style={{
+                  opacity: 0.6,
+                }}
+              ></div>
+              <div
+                className="grid-col-1 grid-row-1 w-full p-md bg-background-primary border-default hide-scrollbar"
+                style={{
+                  borderRadius: "1.5rem 1.5rem 0 0",
+                  height: "20rem",
+                  bottom: 0,
+                  left: 0,
+                  alignSelf: "flex-end",
+                  overflowY: "scroll",
+                  zIndex: "999",
+                }}
               >
-                <FaXmark
-                  className="hover-pointer"
-                  size={20}
-                  onClick={() => setShowOrderCard(false)}
-                />
+                <div
+                  className="w-full flex justify-end"
+                  style={{ height: "2rem" }}
+                >
+                  <FaXmark
+                    className="hover-pointer"
+                    size={20}
+                    onClick={() => setShowOrderCard(false)}
+                  />
+                </div>
+                <OrderCard balance={10000} />
               </div>
-              <OrderCard balance={10000} />
             </div>
-          </div>
-        )}
-        {/* Mobile */}
-        <div
-          id="tradeButton"
-          className="w-full p-xs mt-2 mb-2 d-none"
-          style={{ height: "2.5rem" }}
-        >
-          <button
-            className="btn btn-primary w-full h-full flex align-center justify-center hover-pointer border-none"
-            style={{
-              backgroundColor: "rgba(255, 255, 255, 0.9)",
-              borderRadius: "var(--border-radius-secondary)",
-              color: "black",
-            }}
-            onClick={() => setShowOrderCard(true)}
-          >
-            Trade
-          </button>
-        </div>
-        {/* Mobile */}
-        <div className="mobile w-full snackbar d-none justify-start mb-3">
-          <button
-            type="button"
-            className={`btn hover-pointer ${tab === 0 ? "active" : ""}`}
-            onClick={() => setTab(0)}
-          >
-            Chart
-          </button>
-          <button
-            type="button"
-            className={`btn hover-pointer ${tab === 1 ? "active" : ""}`}
-            onClick={() => setTab(1)}
-          >
-            Order book
-          </button>
-        </div>
-        {/* Mobile */}
-        <div
-          id="mobile"
-          className="w-full d-none mb-3"
-          style={{ height: "20rem" }}
-        >
-          {tab === 0 && (
-            <InstrumentCard
-              price={price}
-              chartRef={chartRef}
-              seriesRef={seriesRef}
-              seriesDataRef={seriesDataRef}
-              selectedTimeframe={selectedTimeframe}
-              setSelectedTimeframe={setSelectedTimeframe}
-            />
           )}
-          {tab === 1 && (
-            <DOM price={price} orderbook={UtilsManager.generateOrderbook()} />
-          )}
-        </div>
-        {/* Desktop */}
-        <div
-          id="desktop"
-          className="w-full flex g-3"
-          style={{
-            overflowX: "auto",
-          }}
-        >
+          {/* Mobile */}
           <div
-            className="h-full"
-            style={{
-              minWidth: "1200px",
-              width: "1200px",
-              minHeight: "75%",
-            }}
+            id="tradeButton"
+            className="w-full p-xs mt-2 mb-2 d-none"
+            style={{ height: "2.5rem" }}
           >
-            {price !== undefined && (
+            <button
+              className="btn btn-primary w-full h-full flex align-center justify-center hover-pointer border-none"
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.9)",
+                borderRadius: "var(--border-radius-secondary)",
+                color: "black",
+              }}
+              onClick={() => setShowOrderCard(true)}
+            >
+              Trade
+            </button>
+          </div>
+          {/* Mobile */}
+          <div className="mobile w-full snackbar d-none justify-start mb-3">
+            <button
+              type="button"
+              className={`btn hover-pointer ${tab === 0 ? "active" : ""}`}
+              onClick={() => setTab(0)}
+            >
+              Chart
+            </button>
+            <button
+              type="button"
+              className={`btn hover-pointer ${tab === 1 ? "active" : ""}`}
+              onClick={() => setTab(1)}
+            >
+              Order book
+            </button>
+          </div>
+          {/* Mobile */}
+          <div
+            id="mobile"
+            className="w-full d-none mb-3"
+            style={{ height: "20rem" }}
+          >
+            {tab === 0 && (
               <InstrumentCard
-                showBorder
                 price={price}
                 chartRef={chartRef}
                 seriesRef={seriesRef}
@@ -369,13 +339,48 @@ const TradingPage: FC = () => {
                 setSelectedTimeframe={setSelectedTimeframe}
               />
             )}
+            {tab === 1 && (
+              <DOM price={price} orderbook={UtilsManager.generateOrderbook()} />
+            )}
           </div>
-          <div className="h-full" style={{ width: "300px", minWidth: "300px" }}>
-            <OrderCard balance={10000} />
+          {/* Desktop */}
+          <div
+            id="desktop"
+            className="w-full flex g-3"
+            style={{
+              overflowX: "auto",
+            }}
+          >
+            <div
+              className="h-full"
+              style={{
+                minWidth: "1200px",
+                width: "1200px",
+                minHeight: "75%",
+              }}
+            >
+              {/* {price !== undefined && ( */}
+                <InstrumentCard
+                  showBorder
+                  price={price}
+                  chartRef={chartRef}
+                  seriesRef={seriesRef}
+                  seriesDataRef={seriesDataRef}
+                  selectedTimeframe={selectedTimeframe}
+                  setSelectedTimeframe={setSelectedTimeframe}
+                />
+              {/* )} */}
+            </div>
+            <div
+              className="h-full"
+              style={{ width: "300px", minWidth: "300px" }}
+            >
+              <OrderCard balance={10000} />
+            </div>
           </div>
+          <OrdersTable renderProp={ordersTableRenderProp} orders={orders} />
         </div>
-        <OrdersTable renderProp={ordersTableRenderProp} orders={orders} />
-      </div>
+      </main>
     </>
   );
 };

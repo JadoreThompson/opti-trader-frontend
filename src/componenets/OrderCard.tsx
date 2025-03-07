@@ -4,7 +4,7 @@ import { ToastContainer, toast } from "react-toastify";
 import UtilsManager from "../utils/classses/UtilsManager";
 
 import { OrderRequest } from "../utils/ValidationTypes";
-import Coin from "./icons/Coin";
+import Coin from "./icons/CoinIcon";
 
 enum OrderType {
   MARKET = "market",
@@ -123,7 +123,7 @@ const OrderCard: FC<{ balance: number }> = ({ balance }) => {
           </div>
           {selectedOrderType === OrderType.LIMIT && (
             <div
-              className="w-full h-full flex-col align-center"
+              className="w-full h-full align-center"
               style={{ height: "3rem" }}
             >
               <span className="span-md">LIMIT PRICE</span>
@@ -145,7 +145,7 @@ const OrderCard: FC<{ balance: number }> = ({ balance }) => {
           {showTPSL && (
             <div className="w-full h-full flex-center g-1">
               <div
-                className="w-full h-full flex-col align-center"
+                className="w-full h-full align-center"
                 style={{ height: "3.5rem" }}
               >
                 <label htmlFor="">TAKE PROFIT</label>
@@ -157,7 +157,7 @@ const OrderCard: FC<{ balance: number }> = ({ balance }) => {
                 />
               </div>
               <div
-                className="w-full h-full flex-col align-center"
+                className="w-full h-full align-center"
                 style={{ height: "3.5rem" }}
               >
                 <label htmlFor="">STOP LOSS</label>

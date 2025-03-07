@@ -31,7 +31,7 @@ const DOM: FC<{
 
   return (
     <div
-      className={`h-full w-full flex-col justify-start overflow-hidden ${
+      className={`h-full w-full justify-start overflow-hidden ${
         showBorder ? "border-bg-secondary" : ""
       } border-radius-primary p-sm`}
     >

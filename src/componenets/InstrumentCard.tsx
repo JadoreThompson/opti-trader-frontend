@@ -195,7 +195,7 @@ const InstrumentCard: FC<{
     <div
       className={`w-full h-full ${
         showBorder ? "border-bg-secondary" : ""
-      } border-radius-primary flex-col p-sm`}
+      } border-radius-primary flex-column p-sm`}
     >
       <div className="w-full" style={{ height: "2rem" }}>
         <div className="h-full flex justify-start align-center g-1">
