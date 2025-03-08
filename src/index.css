@@ -116,6 +116,10 @@ li {
   list-style: none;
 }
 
+table {
+  border-collapse: collapse;
+}
+
 th {
   text-align: left;
   white-space: nowrap;
@@ -342,6 +346,10 @@ th {
 .e {
 }
 
+.error {
+  color: red;
+}
+
 @keyframes growCard {
   from {
     height: 0;
@@ -537,6 +545,29 @@ th {
 
 .i {
 }
+
+@keyframes incorrectShake {
+  0% {
+    transform: translateX(0%);
+  }
+
+  50% {
+    transform: translateX(10%);
+  }
+
+  90% {
+    transform: translateX(-10%);
+  }
+
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+.modify-order-card.shake {
+  animation: 0.1s incorrectShake ease;
+}
+
 .j {
 }
 

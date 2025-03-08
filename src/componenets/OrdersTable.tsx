@@ -1,11 +1,14 @@
 import { FC, useEffect, useState } from "react";
+import ReactDOM from "react-dom";
 import { ToastContainer } from "react-toastify";
 import UtilsManager from "../utils/classses/UtilsManager";
+import ModifyOrderCard from "./ModifyOrderCard";
 import ChevronLeft from "./icons/ChevronLeft";
 import ChevronRight from "./icons/ChevronRight";
 
 const openOrdersTableHeaders: Record<string, string> = {
   amount: "AMOUNT",
+  order_type: "ORDER_TYPE",
   side: "SIDE",
   filled_price: "ENTRY_PRICE",
   unrealised_pnl: "P/L",
@@ -16,6 +19,7 @@ const openOrdersTableHeaders: Record<string, string> = {
 
 const closedOrdersTableHeaders: Record<string, string> = {
   amount: "AMOUNT",
+  order_type: "ORDER_TYPE",
   side: "SIDE",
   filled_price: "ENTRY PRICE",
   realised_pnl: "P/L",
@@ -28,13 +32,21 @@ const OrdersTable: FC<{
   renderProp?: any;
   orders: Record<string, any>[];
   filterChoice?: OrderFilter[];
-}> = ({ renderProp, orders, filterChoice = ["filled", "partially_filled", "pending"] }) => {
+}> = ({
+  renderProp,
+  orders,
+  filterChoice = ["filled", "partially_filled", "pending"],
+}) => {
   const [filter, setFilter] = useState<OrderFilter[]>(filterChoice);
   const [tab, setTab] = useState<number>(
     filterChoice.includes("filled") ? 0 : 1
   );
   const [page, setPage] = useState<number>(1);
   const [maxPages, setMaxPages] = useState<number>(0);
+  const [showModifyOrder, setShowModifyOrder] = useState<boolean>(false);
+  const [selectedOrder, setSelectedOrder] = useState<
+    Record<string, any> | undefined
+  >(undefined);
   const maxPageSize = 10;
 
   useEffect(() => {
@@ -56,11 +68,13 @@ const OrdersTable: FC<{
     maxPages > 0 ? setPage(1) : null;
   }, [renderProp]);
 
+  useEffect(() => console.log(selectedOrder), [selectedOrder]);
+
   const formatValues = (value?: string | number): string => {
     if (value === undefined) {
       return "";
     }
-    
+
     if (isNaN(value as number)) {
       return String(value);
     } else {
@@ -71,6 +85,30 @@ const OrdersTable: FC<{
   return (
     <>
       <ToastContainer />
+      {showModifyOrder && selectedOrder && (
+        <>
+          {ReactDOM.createPortal(
+            <div
+              className="overlay-container flex align-center justify-center"
+              style={{ backdropFilter: "blur(1px)" }}
+            >
+              <div className="modify-order-card-container">
+                <ModifyOrderCard
+                  data={{
+                    order_id: selectedOrder.order_id,
+                    limit_price: selectedOrder.limit_price ? selectedOrder.limit_price.replace("$", "") : undefined,
+                    take_profit: selectedOrder.take_profit ? selectedOrder.take_profit.replace("$", "") : undefined,
+                    stop_loss: selectedOrder.stop_loss ? selectedOrder.stop_loss.replace("$", "") : undefined,
+                  }}
+                  order_type={selectedOrder.order_type}
+                  setShow={setShowModifyOrder}
+                />
+              </div>
+            </div>,
+            document.body
+          )}
+        </>
+      )}
       <div className={`w-full h-full ${renderProp}`}>
         <div className="w-full snackbar flex justify-start">
           <button
@@ -114,7 +152,14 @@ const OrdersTable: FC<{
                 .filter((order) => filter.includes(order.status))
                 .slice((page - 1) * maxPageSize, page * maxPageSize)
                 ?.map((order, orderInd) => (
-                  <tr key={orderInd}>
+                  <tr
+                    key={orderInd}
+                    className="hover-bg-background-secondary"
+                    onClick={() => {
+                      setSelectedOrder(order);
+                      setShowModifyOrder(true);
+                    }}
+                  >
                     {Object.keys(
                       tab === 0
                         ? openOrdersTableHeaders

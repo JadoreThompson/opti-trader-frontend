@@ -49,7 +49,7 @@ const TradingPage: FC = () => {
   const chartRef = useRef<any>(undefined);
   const profileRef = useRef<Profile | undefined>(undefined);
   const seriesRef = useRef<any>(undefined);
-  const seriesDataRef = useRef<OHLC[]>([]);
+  const seriesDataRef = useRef<OHLC[] | undefined>(undefined);
   const ordersWsRef = useRef<WebSocket | undefined>(undefined);
   const priceWsRef = useRef<WebSocket | undefined>(undefined);
 
@@ -100,12 +100,15 @@ const TradingPage: FC = () => {
         [SocketPayloadCategory.BALANCE]: handleBalanceUpdate,
         [SocketPayloadCategory.ORDER]: handleOrderUpdate,
       };
+
     ordersWsRef.current = new WebSocket(
       import.meta.env.VITE_BASE_URL.replace("http", "ws") + "/order/ws"
     );
+
     ordersWsRef.current.onopen = (e) => {
       console.log("orders websocket connection opened:", e);
     };
+
     ordersWsRef.current.onmessage = (e) => {
       const message = JSON.parse(e.data) as SocketPayload;
       const func = handlers[message.category];
@@ -113,6 +116,7 @@ const TradingPage: FC = () => {
         func(message.content);
       }
     };
+
     ordersWsRef.current.onclose = (e) => {
       console.log("Orders websocket connection closed:", e);
     };
@@ -126,8 +130,6 @@ const TradingPage: FC = () => {
   useEffect(() => console.log("*** re-render ***"), []);
 
   useEffect(() => {
-    if (seriesDataRef.current === undefined) return;
-
     priceWsRef.current = new WebSocket(
       import.meta.env.VITE_BASE_URL.replace("http", "ws") +
         `/instrument/ws/?instrument=BTCUSD`
@@ -139,7 +141,6 @@ const TradingPage: FC = () => {
 
     priceWsRef.current.onmessage = (e) => {
       const message = JSON.parse(e.data) as SocketPayload;
-      console.log("Price received message - ", message);
       handlePriceUpdate(message.content as PriceUpdate);
     };
 
@@ -150,59 +151,47 @@ const TradingPage: FC = () => {
     priceWsRef.current.onerror = (e) => {
       console.log("Price websocket error - ", e);
     };
-
-    return () => {
-      if (priceWsRef.current != undefined) {
-        priceWsRef.current.close();
-        priceWsRef.current = undefined;
-      }
-    };
   }, []);
+
+  useEffect(() => console.log(price), [price]);
 
   function handlePriceUpdate(payload: PriceUpdate): void {
     if (!seriesRef.current) return;
-    const price = Number(payload.price);
+    const convertedPrice = Number(payload.price);
     setPrice(payload.price);
-    updateChart(price, payload.time);
+    updateChart(convertedPrice, payload.time);
   }
 
   function updateChart(price: number, time: number): void {
     const tfSeconds: number = getSeconds(selectedTimeframe);
+    const newCandle: OHLC = {
+      time: time,
+      open: price,
+      high: price,
+      low: price,
+      close: price,
+    };
 
-    if (seriesDataRef.current.length > 0) {
-      const remainder: number =
-        time - seriesDataRef.current[seriesDataRef.current.length - 1].time;
-
-      if (remainder < tfSeconds) {
-        seriesDataRef.current[seriesDataRef.current.length - 1].high = Math.max(
-          seriesDataRef.current[seriesDataRef.current.length - 1].high,
-          price
-        );
-        seriesDataRef.current[seriesDataRef.current.length - 1].low = Math.min(
-          seriesDataRef.current[seriesDataRef.current.length - 1].low,
-          price
-        );
-        seriesDataRef.current[seriesDataRef.current.length - 1].close = price;
-      } else {
-        seriesDataRef.current.push({
-          time: time,
-          open: price,
-          high: price,
-          low: price,
-          close: price,
-        });
-      }
+    if (seriesDataRef.current === undefined) {
+      seriesDataRef.current = [newCandle];
+    } else if (seriesDataRef.current.length === 0) {
+      seriesDataRef.current = [newCandle];
     } else {
-      seriesDataRef.current.push({
-        time: time,
-        open: price,
-        high: price,
-        low: price,
-        close: price,
-      });
+      const lastCandle =
+        seriesDataRef.current[seriesDataRef.current.length - 1];
+
+      if (time - lastCandle.time < tfSeconds) {
+        lastCandle.high = Math.max(lastCandle.high, price);
+        lastCandle.low = Math.min(lastCandle.low, price);
+        lastCandle.close = price;
+      } else {
+        seriesDataRef.current.push(newCandle);
+      }
     }
 
-    seriesRef.current.setData(seriesDataRef.current);
+    seriesRef.current.update(
+      seriesDataRef.current[seriesDataRef.current.length - 1]
+    );
   }
 
   function handleOrderUpdate(payload: Record<string, string | number>): void {
@@ -319,13 +308,6 @@ const TradingPage: FC = () => {
                 >
                   Chart
                 </button>
-                <button
-                  type="button"
-                  className={`btn hover-pointer ${tab === 1 ? "active" : ""}`}
-                  onClick={() => setTab(1)}
-                >
-                  Order book
-                </button>
               </div>
               {/* Mobile */}
               <div
@@ -374,17 +356,15 @@ const TradingPage: FC = () => {
                     minHeight: "75%",
                   }}
                 >
-                  {price !== undefined && (
-                    <InstrumentCard
-                      showBorder
-                      price={price}
-                      chartRef={chartRef}
-                      seriesRef={seriesRef}
-                      seriesDataRef={seriesDataRef}
-                      selectedTimeframe={selectedTimeframe}
-                      setSelectedTimeframe={setSelectedTimeframe}
-                    />
-                  )}
+                  <InstrumentCard
+                    showBorder
+                    price={price}
+                    chartRef={chartRef}
+                    seriesRef={seriesRef}
+                    seriesDataRef={seriesDataRef}
+                    selectedTimeframe={selectedTimeframe}
+                    setSelectedTimeframe={setSelectedTimeframe}
+                  />
                 </div>
                 <div
                   className="h-full"

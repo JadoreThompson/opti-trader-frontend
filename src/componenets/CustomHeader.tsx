@@ -23,7 +23,7 @@ const CustomHeader: FC<{
     >
       <div className="w-full h-full j-between flex-row p-xs">
         <div className="h-full w-full">
-          <img src="../src/assets/Logo.png" alt="" className="h-full cover" />
+          <img src="../src/assets/images/Logo.png" alt="" className="h-full cover" />
         </div>
 
         {balance !== undefined && (

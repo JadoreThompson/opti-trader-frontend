@@ -41,10 +41,10 @@ export function getSeconds(timeframe: Timeframe): number {
 }
 
 const InstrumentCard: FC<{
-  price: number;
+  price?: number;
   chartRef: MutableRefObject<any>;
   seriesRef: MutableRefObject<any>;
-  seriesDataRef: MutableRefObject<OHLC[]>;
+  seriesDataRef: MutableRefObject<OHLC[] | undefined>;
   selectedTimeframe: Timeframe;
   setSelectedTimeframe: (arg: Timeframe) => void;
   showBorder?: boolean;
@@ -59,7 +59,7 @@ const InstrumentCard: FC<{
 }) => {
   const [lastPrice, setLastPrice] = useState<number>(0);
   const [chartData, setChartData] = useState<OHLC[]>([]);
-  const lastPriceRef = useRef<number[]>([0, price]);
+  const lastPriceRef = useRef<number[]>([0, price!]);
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartPlacedRef = useRef<boolean>(false);
 
@@ -77,7 +77,6 @@ const InstrumentCard: FC<{
         }
       } catch (err) {}
     };
-
     fetchData();
   }, [selectedTimeframe]);
 
@@ -86,11 +85,11 @@ const InstrumentCard: FC<{
       lastPriceRef.current[0] = lastPriceRef.current[1];
       setLastPrice(lastPriceRef.current[1]);
     } else {
-      lastPriceRef.current[0] = price;
-      setLastPrice(price);
+      lastPriceRef.current[0] = price!;
+      setLastPrice(price!);
     }
 
-    lastPriceRef.current[1] = price;
+    lastPriceRef.current[1] = price!;
   }, [price]);
 
   useEffect(() => {
@@ -179,14 +178,16 @@ const InstrumentCard: FC<{
         wickDownColor: "#ef5350",
       });
 
-      seriesDataRef.current = chartData!;
+      seriesDataRef.current = chartData;
       seriesRef.current.setData(seriesDataRef.current);
+      chartRef.current.timeScale().fitContent();
 
       window.addEventListener("resize", () =>
         chartRef.current!.resize(window.innerWidth, window.innerHeight)
       );
     };
 
+    
     loadChart();
     chartPlacedRef.current = true;
   }, [chartData]);
@@ -205,20 +206,27 @@ const InstrumentCard: FC<{
             className="h-full"
           />
 
-          <span
-            className={`span-lg bold ${
-              price > lastPrice ? "text-green increase" : "text-red decrease"
-            }`}
-          >
-            {price ?UtilsManager.formatPrice(price) : ""}
-          </span>
-          <div className="w-auto h-full flex justify-center align-center" style={{ width: '2rem'}}>
-            {price > lastPrice ? (
-              <ArrowUp className="fill-green" size="100%" />
-            ) : (
-              <ArrowDown className="fill-red" size="100%" />
-            )}
-          </div>
+          {price !== null && price !== undefined && (
+            <span
+              className={`span-lg bold ${
+                price > lastPrice ? "text-green increase" : "text-red decrease"
+              }`}
+            >
+              {price ? UtilsManager.formatPrice(price) : ""}
+            </span>
+          )}
+          {price !== null && price !== undefined && (
+            <div
+              className="w-auto h-full flex justify-center align-center"
+              style={{ width: "2rem" }}
+            >
+              {price > lastPrice ? (
+                <ArrowUp className="fill-green" size="100%" />
+              ) : (
+                <ArrowDown className="fill-red" size="100%" />
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -249,6 +257,7 @@ const InstrumentCard: FC<{
         className="w-full flex"
         style={{
           height: "calc(100% - 5rem)",
+          zIndex: 1,
         }}
       ></div>
     </div>
