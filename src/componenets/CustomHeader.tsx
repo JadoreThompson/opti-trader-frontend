@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { IsLoggedInContext } from "../contexts/IsLoggedInContext";
 import UtilsManager from "../utils/classses/UtilsManager";
 import Coin from "./icons/CoinIcon";
+import ViewListIcon from "./icons/ViewListIcon";
 import WalletIcon from "./icons/WalletIcon";
 
 const CustomHeader: FC<{
@@ -13,6 +14,7 @@ const CustomHeader: FC<{
 }> = ({ renderProp, avatar, balance, username }) => {
   const navigate = useNavigate();
   const { isLoggedIn } = useContext(IsLoggedInContext);
+
   return (
     <header
       className={`${renderProp} fixed w-full bg-background-primary`}
@@ -23,7 +25,11 @@ const CustomHeader: FC<{
     >
       <div className="w-full h-full j-between flex-row p-xs">
         <div className="h-full w-full">
-          <img src="../src/assets/images/Logo.png" alt="" className="h-full cover" />
+          <img
+            src="../src/assets/images/Logo.png"
+            alt=""
+            className="h-full cover"
+          />
         </div>
 
         {balance !== undefined && (
@@ -67,6 +73,26 @@ const CustomHeader: FC<{
               Login
             </button>
           )}
+          <button
+            id="sidebarToggle"
+            className="btn h-full bg-transparent border-none hover-pointer"
+            type="button"
+            style={{ backgroundColor: "red", width: "4rem" }}
+            onClick={() => {
+              const element = document.getElementById(
+                "sidebar"
+              ) as HTMLDivElement;
+              if (element) {
+                if (element.classList.contains("mobile")) {
+                  element.classList.remove("mobile");
+                } else {
+                  element.classList.add("mobile");
+                }
+              }
+            }}
+          >
+            <ViewListIcon size="3rem" fill="grey" />
+          </button>
           <a
             href={username ? `/user/${username}` : "#"}
             className="h-full flex align-center g-1 border-radius-primary p-xs hover-pointer"

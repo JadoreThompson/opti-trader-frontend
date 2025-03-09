@@ -1,6 +1,11 @@
+@font-face {
+  font-family: "bit";
+  src: url("/src/assets/fonts/Pixeboy-z8XGD.ttf");
+}
+
 :root {
   /* Variables */
-  --font-family: "Switzer", sans-serif;
+  --font-family: "bit";
   --border-radius-primary: 0.3rem;
   --border-radius-secondary: 5rem;
   --primary-color: #ff3030;
@@ -66,6 +71,30 @@ main {
 
 #sidebar + main {
   margin-left: 4rem;
+}
+
+#sidebarToggle {
+  display: none;
+}
+
+@media (max-width: 1050px) {
+  #sidebar {
+    display: none;
+  }
+
+  #sidebar.mobile {
+    display: flex !important;
+    width: 20% !important;
+  }
+
+  #sidebar + main {
+    margin-left: 0;
+  }
+  
+
+  #sidebarToggle {
+    display: flex;
+  }
 }
 
 #tradePage #desktop {

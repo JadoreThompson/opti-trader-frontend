@@ -15,21 +15,33 @@ const DefaultLayout: FC<{ element: JSX.Element }> = ({ element }) => {
       >
         <a
           href="/"
-          className="w-full btn btn-default border-none hover-pointer"
+          className="w-full btn btn-default border-none hover-pointer tooltip-container"
           style={{ height: "2rem" }}
         >
           <div className="w-full h-full flex align-center justify-center">
             <ChartIcon size="2rem" />
           </div>
+          <div
+            className="tooltip-item h-full bg-background-secondary flex align-center justify-center border-radius-primary p-sm"
+            style={{ right: "-120%", zIndex: 999 }}
+          >
+            Trade
+          </div>
         </a>
         {isLoggedIn && (
           <a
             href={`/user/${1}`}
-            className="w-full btn btn-default border-none hover-pointer"
+            className="w-full btn btn-default border-none hover-pointer tooltip-container"
             style={{ height: "2rem" }}
           >
             <div className="w-full h-full flex align-center justify-center">
               <UserIcon size="2rem" />
+            </div>
+            <div
+              className="tooltip-item h-full bg-background-secondary flex align-center justify-center border-radius-primary p-sm"
+              style={{ right: "-120%", zIndex: 999 }}
+            >
+              Profile
             </div>
           </a>
         )}

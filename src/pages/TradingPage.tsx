@@ -102,7 +102,7 @@ const TradingPage: FC = () => {
       };
 
     ordersWsRef.current = new WebSocket(
-      import.meta.env.VITE_BASE_URL.replace("http", "ws") + "/order/ws",
+      import.meta.env.VITE_BASE_URL.replace("http", "ws") + "/order/ws"
     );
 
     ordersWsRef.current.onopen = (e) => {
@@ -142,6 +142,7 @@ const TradingPage: FC = () => {
     priceWsRef.current.onmessage = (e) => {
       const message = JSON.parse(e.data) as SocketPayload;
       handlePriceUpdate(message.content as PriceUpdate);
+      console.log(message);
     };
 
     priceWsRef.current.onclose = (e) => {
@@ -151,9 +152,14 @@ const TradingPage: FC = () => {
     priceWsRef.current.onerror = (e) => {
       console.log("Price websocket error - ", e);
     };
-  }, []);
 
-  useEffect(() => console.log(price), [price]);
+    return () => {
+      if (priceWsRef.current != undefined) {
+        priceWsRef.current.close();
+        priceWsRef.current = undefined;
+      }
+    };
+  }, []);
 
   function handlePriceUpdate(payload: PriceUpdate): void {
     if (!seriesRef.current) return;
