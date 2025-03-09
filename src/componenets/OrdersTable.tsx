@@ -2,9 +2,12 @@ import { FC, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { ToastContainer } from "react-toastify";
 import UtilsManager from "../utils/classses/UtilsManager";
+import { OrderStatus } from "../utils/types";
 import ModifyOrderCard from "./ModifyOrderCard";
 import ChevronLeft from "./icons/ChevronLeft";
 import ChevronRight from "./icons/ChevronRight";
+import TrashIcon from "./icons/TrashIcon";
+import ViewListIcon from "./icons/ViewListIcon";
 
 const openOrdersTableHeaders: Record<string, string> = {
   amount: "AMOUNT",
@@ -26,20 +29,22 @@ const closedOrdersTableHeaders: Record<string, string> = {
   status: "STATUS",
 };
 
-export type OrderFilter = "filled" | "partially_filled" | "pending" | "closed";
-
 const OrdersTable: FC<{
   renderProp?: any;
   orders: Record<string, any>[];
-  filterChoice?: OrderFilter[];
+  filterChoice?: OrderStatus[];
 }> = ({
   renderProp,
   orders,
-  filterChoice = ["filled", "partially_filled", "pending"],
+  filterChoice = [
+    OrderStatus.FILLED,
+    OrderStatus.PARTIALLY_FILLED,
+    OrderStatus.PENDING,
+  ],
 }) => {
-  const [filter, setFilter] = useState<OrderFilter[]>(filterChoice);
+  const [filter, setFilter] = useState<OrderStatus[]>(filterChoice);
   const [tab, setTab] = useState<number>(
-    filterChoice.includes("filled") ? 0 : 1
+    filterChoice.includes(OrderStatus.FILLED) ? 0 : 1
   );
   const [page, setPage] = useState<number>(1);
   const [maxPages, setMaxPages] = useState<number>(0);
@@ -96,9 +101,15 @@ const OrdersTable: FC<{
                 <ModifyOrderCard
                   data={{
                     order_id: selectedOrder.order_id,
-                    limit_price: selectedOrder.limit_price ? selectedOrder.limit_price.replace("$", "") : undefined,
-                    take_profit: selectedOrder.take_profit ? selectedOrder.take_profit.replace("$", "") : undefined,
-                    stop_loss: selectedOrder.stop_loss ? selectedOrder.stop_loss.replace("$", "") : undefined,
+                    limit_price: selectedOrder.limit_price
+                      ? selectedOrder.limit_price.replace("$", "")
+                      : undefined,
+                    take_profit: selectedOrder.take_profit
+                      ? selectedOrder.take_profit.replace("$", "")
+                      : undefined,
+                    stop_loss: selectedOrder.stop_loss
+                      ? selectedOrder.stop_loss.replace("$", "")
+                      : undefined,
                   }}
                   order_type={selectedOrder.order_type}
                   setShow={setShowModifyOrder}
@@ -117,7 +128,11 @@ const OrdersTable: FC<{
             onClick={() => {
               setTab(0);
               setPage(1);
-              setFilter(["filled", "partially_filled", "pending"]);
+              setFilter([
+                OrderStatus.FILLED,
+                OrderStatus.PARTIALLY_FILLED,
+                OrderStatus.PENDING,
+              ]);
             }}
           >
             OPEN ORDERS
@@ -128,14 +143,17 @@ const OrdersTable: FC<{
             onClick={() => {
               setTab(1);
               setPage(1);
-              setFilter(["closed"]);
+              setFilter([OrderStatus.CLOSED]);
             }}
           >
             CLOSED ORDERS
           </button>
         </div>
         <div className="w-full mt-3" style={{ overflowX: "scroll" }}>
-          <table id="ordersTable" className="w-full h-full">
+          <table
+            id="ordersTable"
+            className="w-full h-full grid-col-1 grid-row-1"
+          >
             <thead style={{ height: "30px" }}>
               <tr>
                 {Object.values(

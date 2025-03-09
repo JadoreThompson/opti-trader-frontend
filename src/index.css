@@ -217,6 +217,10 @@ th {
   border: 1px solid var(--border-color);
 }
 
+.border-white {
+  border: 1px solid white;
+}
+
 .border-thin {
   border-width: 1px;
 }
@@ -313,6 +317,11 @@ th {
   color: white;
 }
 
+.btn-white {
+  background-color: white;
+  color: black;
+}
+
 .btn.short {
   border-bottom: 4px solid #840e0a;
 }
@@ -365,7 +374,6 @@ th {
 .edit-profile-container {
   width: 30rem;
   height: 30rem;
-  /* animation: growCard 0.25s; */
 }
 
 .f {

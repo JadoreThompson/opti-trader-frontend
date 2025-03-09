@@ -102,7 +102,7 @@ const TradingPage: FC = () => {
       };
 
     ordersWsRef.current = new WebSocket(
-      import.meta.env.VITE_BASE_URL.replace("http", "ws") + "/order/ws"
+      import.meta.env.VITE_BASE_URL.replace("http", "ws") + "/order/ws",
     );
 
     ordersWsRef.current.onopen = (e) => {
