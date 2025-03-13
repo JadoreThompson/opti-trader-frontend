@@ -1,12 +1,15 @@
 import { FC } from "react";
+import { IconProps } from "../../utils/utils";
 
-const CloseIcon: FC<{
-  className?: string;
-  fill?: string;
-  size?: string;
-}> = ({ className = "", fill = "white", size = "100px" }) => {
+const CloseIcon: FC<IconProps> = ({
+  className = "",
+  fill = "white",
+  size = "100px",
+  onClick,
+}) => {
   return (
     <svg
+      onClick={onClick}
       fill={fill}
       className={className}
       height={size}

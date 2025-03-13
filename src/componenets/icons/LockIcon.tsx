@@ -1,9 +1,9 @@
 import { FC } from "react";
 import { IconProps } from "../../utils/utils";
 
-const BatteryFull: FC<IconProps> = ({
+const LockIcon: FC<IconProps> = ({
   className = "",
-  fill = "white",
+  fill = "gold",
   size = "100px",
 }) => {
   return (
@@ -15,12 +15,13 @@ const BatteryFull: FC<IconProps> = ({
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
     >
+      {" "}
       <path
-        d="M18 5H2v14h18v-4h2V9h-2V5h-2zm0 2v10H4V7h14zM8 9H6v6h2V9zm2 0h2v6h-2V9zm6 0h-2v6h2V9z"
+        d="M15 2H9v2H7v4H4v14h16V8h-3V4h-2V2zm0 2v4H9V4h6zm-6 6h9v10H6V10h3zm4 3h-2v4h2v-4z"
         fill={fill}
-      />
+      />{" "}
     </svg>
   );
 };
 
-export default BatteryFull;
+export default LockIcon;

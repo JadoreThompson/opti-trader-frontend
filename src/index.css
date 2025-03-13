@@ -3,9 +3,17 @@
   src: url("/src/assets/fonts/Pixeboy-z8XGD.ttf");
 }
 
+@font-face {
+  font-family: "albra";
+  src: url("/src/assets/fonts/Albra-Trial-Grotesk-Light-Italic.otf");
+}
+
 :root {
   /* Variables */
-  --font-family: "bit";
+  /* --font-family: "bit"; */
+  /* --font-family: "Noto Sans", sans-serif; */
+  /* --font-family: "DM Sans", sans-serif; */
+  --font-family: "Geist", sans-serif;
   --border-radius-primary: 0.3rem;
   --border-radius-secondary: 5rem;
   --primary-color: #ff3030;
@@ -25,7 +33,7 @@
   box-sizing: border-box;
   color: var(--color);
   font-family: var(--font-family);
-  letter-spacing: 0.105rem;
+  
 }
 
 body {
@@ -39,6 +47,10 @@ main {
 
 ::-webkit-scrollbar {
   width: 0.5rem;
+}
+
+.scroll-hidden::-webkit-scrollbar {
+  width: 0rem;
 }
 
 ::-webkit-scrollbar-track {
@@ -70,7 +82,7 @@ main {
 }
 
 #sidebar + main {
-  margin-left: 4rem;
+  margin-left: 4.5rem;
 }
 
 #sidebarToggle {
@@ -90,7 +102,6 @@ main {
   #sidebar + main {
     margin-left: 0;
   }
-  
 
   #sidebarToggle {
     display: flex;
@@ -135,6 +146,7 @@ img.container {
 input {
   background-color: transparent;
   border: none;
+  font-size: 1.25em;
 }
 
 input:focus {
@@ -218,6 +230,10 @@ th {
   background-color: var(--background-color-secondary);
 }
 
+.bg-secondary {
+  background-color: var(--secondary-color);
+}
+
 .bg-transparent {
   background-color: transparent !important;
 }
@@ -295,15 +311,15 @@ th {
 }
 
 .border-bg-primary {
-  border: 2px solid var(--background-color-primary);
+  border: 1px solid var(--background-color-primary);
 }
 
 .border-bg-secondary {
-  border: 2px solid var(--background-color-secondary);
+  border: 1px solid var(--background-color-secondary);
 }
 
 .border-bg-color {
-  border: 2px solid var(--color);
+  border: 1px solid var(--color);
 }
 
 .btn {
@@ -318,7 +334,7 @@ th {
 }
 
 .btn.btn-default {
-  background-color: #27272A;
+  background-color: #27272a;
   color: white;
 }
 
@@ -359,8 +375,11 @@ th {
   border-bottom: 4px solid #136a1f;
 }
 
-.btn.green {
+.btn.btn-green {
   background-color: #43ba53;
+}
+.btn.btn-green:hover {
+  background-color: #39a548;
 }
 
 .btn.scale-down:active {
@@ -401,8 +420,8 @@ th {
 }
 
 .edit-profile-container {
-  width: 30rem;
-  height: 30rem;
+  width: 20rem;
+  height: 20rem;
 }
 
 .f {
@@ -580,7 +599,15 @@ th {
   height: 100%;
 }
 
+.h-full-view {
+  height: 100vh;
+}
+
 .i {
+}
+
+.instrument-record:hover {
+  border-radius: var(--border-radius-primary);
 }
 
 @keyframes incorrectShake {
@@ -682,6 +709,10 @@ th {
   overflow: visible;
 }
 
+.overflow-y-scroll {
+  overflow-y: scroll;
+}
+
 .overlay-container {
   position: fixed;
   top: 0;
@@ -693,6 +724,10 @@ th {
 }
 
 .p {
+}
+
+.pointer-events-none {
+  pointer-events: none;
 }
 
 .p-0 {
@@ -895,6 +930,10 @@ th {
 .s {
 }
 
+.sticky {
+  position: sticky;
+}
+
 .snackbar > .btn {
   border: none;
   background-color: transparent;
@@ -973,6 +1012,92 @@ th {
   font-size: 3.5;
 }
 
+/* @keyframes spinLoader {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(360deg);
+  }
+
+  40% {
+    transform: translateY(-30%);
+  }
+
+  50% {
+    transform: translateY(0%);
+  }
+
+  52.5% {
+    transform: translateY(-20%) ease-in-out;
+  }
+
+  60% {
+    transform: translateY(0%);
+  }
+
+  62.5% {
+    transform: translateY(-10%);
+  }
+
+  65% {
+    transform: translateY(0%);
+  }
+
+  100% {
+    
+  }
+} */
+
+@keyframes spinLoader {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(360deg);
+  }
+
+  40% {
+    transform: translateY(-25%); /* Reduced vertical movement */
+    animation-timing-function: ease-in-out; /* Smoother easing */
+  }
+
+  50% {
+    transform: translateY(0%);
+    animation-timing-function: ease-in-out;
+  }
+
+  52.5% {
+    transform: translateY(-15%); /* Reduced vertical movement */
+    animation-timing-function: ease-in-out;
+  }
+
+  60% {
+    transform: translateY(0%);
+    animation-timing-function: ease-in-out;
+  }
+
+  62.5% {
+    transform: translateY(-5%); /* Reduced vertical movement */
+    animation-timing-function: ease-in-out;
+  }
+
+  65% {
+    transform: translateY(0%);
+    animation-timing-function: ease-in-out;
+  }
+
+  100% {
+    transform: rotate(360deg); /* Complete the rotation */
+  }
+}
+
+.spin-load {
+  animation: 3.75s spinLoader ease infinite;
+}
+
 .t {
 }
 
@@ -999,6 +1124,10 @@ th {
 
 .text-grey {
   color: grey;
+}
+
+.text-white {
+  color: white;
 }
 
 .text-primary {

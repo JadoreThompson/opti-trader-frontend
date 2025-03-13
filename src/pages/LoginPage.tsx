@@ -1,12 +1,27 @@
-import { FC, FormEvent, useContext } from "react";
+import { FC, FormEvent, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import AuthPageLayout from "../componenets/AuthPageLayout";
-import { IsLoggedInContext } from "../contexts/IsLoggedInContext";
+import { useIsLoggedIn } from "../contexts/useIsLoggedIn";
+import { Profile, useProfile } from "../contexts/useProfile";
+import UtilsManager from "../utils/classses/UtilsManager";
 
 const LoginPage: FC = () => {
   const navigate = useNavigate();
-  const { setIsLoggedIn } = useContext(IsLoggedInContext);
+  const { isLoggedIn, setIsLoggedIn } = useIsLoggedIn();
+  const { setProfile } = useProfile();
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      (async () => {
+        try {
+          const data: Profile = await UtilsManager.fetchProfile();
+          setProfile(data);
+          navigate(`/user/${data.username}`);
+        } catch (err) {}
+      })();
+    }
+  }, [isLoggedIn]);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
@@ -29,7 +44,6 @@ const LoginPage: FC = () => {
 
       toast.success("Logged in successfully");
       setIsLoggedIn(true);
-      navigate("/");
     } catch (err) {}
   }
 

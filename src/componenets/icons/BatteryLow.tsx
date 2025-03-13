@@ -1,6 +1,8 @@
 import { FC } from "react";
+import { IconProps } from "../../utils/utils";
 
-const BatteryLow: FC<{ className?: string; fill?: string; size?: string }> = ({
+
+const BatteryLow: FC<IconProps> = ({
   className = "",
   fill = "white",
   size = "100px",

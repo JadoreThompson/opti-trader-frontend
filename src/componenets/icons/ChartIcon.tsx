@@ -1,10 +1,11 @@
 import { FC } from "react";
+import { IconProps } from "../../utils/utils";
 
-const ChartIcon: FC<{
-  className?: string;
-  fill?: string;
-  size?: string;
-}> = ({ className = "", fill = "white", size = "100px" }) => {
+const ChartIcon: FC<IconProps> = ({
+  className = "",
+  fill = "white",
+  size = "100px",
+}) => {
   return (
     <svg
       fill={fill}

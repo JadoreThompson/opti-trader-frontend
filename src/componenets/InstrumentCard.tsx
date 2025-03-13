@@ -9,9 +9,8 @@ import {
   createChart,
 } from "lightweight-charts";
 import { FC, MutableRefObject, useEffect, useRef, useState } from "react";
+import { FaArrowDown, FaArrowUp } from "react-icons/fa6";
 import UtilsManager from "../utils/classses/UtilsManager";
-import ArrowDown from "./icons/ArrowDown";
-import ArrowUp from "./icons/ArrowUp";
 
 export interface OHLC {
   time: number;
@@ -42,6 +41,7 @@ export function getSeconds(timeframe: Timeframe): number {
 
 const InstrumentCard: FC<{
   price?: number;
+  instrument: string;
   chartRef: MutableRefObject<any>;
   seriesRef: MutableRefObject<any>;
   seriesDataRef: MutableRefObject<OHLC[] | undefined>;
@@ -50,6 +50,7 @@ const InstrumentCard: FC<{
   showBorder?: boolean;
 }> = ({
   price,
+  instrument,
   chartRef,
   seriesRef,
   seriesDataRef,
@@ -64,16 +65,32 @@ const InstrumentCard: FC<{
   const chartPlacedRef = useRef<boolean>(false);
 
   useEffect(() => {
+    const loadBuffer = async (body: ReadableStream) => {
+      const reader = body.getReader();
+      const decoder = new TextDecoder();
+      let buffer: string[] = [];
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        let splitBuffer: string[] = decoder.decode(value).split("\n");
+        splitBuffer = splitBuffer.filter((value) => value.trim());
+        buffer.push(...splitBuffer);
+      }
+
+      return JSON.parse(`[${buffer.join(",")}]`);
+    };
+
     const fetchData = async (): Promise<void> => {
       try {
         const rsp = await fetch(
           import.meta.env.VITE_BASE_URL +
-            `/instrument/?instrument=BTCUSD&timeframe=${selectedTimeframe}&ago=10800`,
+            `/instrument/?instrument=${instrument}&timeframe=${selectedTimeframe}&ago=10800`,
           { method: "GET" }
         );
         if (rsp.ok) {
-          const data = await rsp.json();
-          setChartData(data);
+          setChartData(await rsp.json());
         }
       } catch (err) {}
     };
@@ -187,7 +204,6 @@ const InstrumentCard: FC<{
       );
     };
 
-    
     loadChart();
     chartPlacedRef.current = true;
   }, [chartData]);
@@ -205,6 +221,7 @@ const InstrumentCard: FC<{
             alt=""
             className="h-full"
           />
+          <span className="span-lg">{instrument}</span>
 
           {price !== null && price !== undefined && (
             <span
@@ -221,9 +238,9 @@ const InstrumentCard: FC<{
               style={{ width: "2rem" }}
             >
               {price > lastPrice ? (
-                <ArrowUp className="fill-green" size="100%" />
+                <FaArrowUp className="fill-green" size="1.5rem" />
               ) : (
-                <ArrowDown className="fill-red" size="100%" />
+                <FaArrowDown className="fill-red" size="1.5rem" />
               )}
             </div>
           )}

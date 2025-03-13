@@ -1,5 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { FaXmark } from "react-icons/fa6";
+import { useNavigate, useParams } from "react-router-dom";
 import CustomHeader from "../componenets/CustomHeader";
 import DOM from "../componenets/DOM";
 import DefaultLayout from "../componenets/DefaultLayout";
@@ -10,8 +11,11 @@ import InstrumentCard, {
 } from "../componenets/InstrumentCard";
 import OrderCard from "../componenets/OrderCard";
 import OrdersTable from "../componenets/OrdersTable";
+import { useIsLoggedIn } from "../contexts/useIsLoggedIn";
+import { Profile, useProfile } from "../contexts/useProfile";
+import { useUserOrders } from "../contexts/useUserOrders";
 import UtilsManager from "../utils/classses/UtilsManager";
-import { Profile } from "./UserPage";
+import { MarketType, OrderStatus } from "../utils/types";
 
 enum SocketPayloadCategory {
   BALANCE = "balance",
@@ -34,100 +38,132 @@ interface BalanceUpdate {
   balance: string;
 }
 
+interface PaginatedOrders {
+  orders: Record<string, any>[];
+  has_next_page: boolean;
+}
+
+type AuthToken = Record<"token", string>;
+
 const TradingPage: FC = () => {
+  const navigate = useNavigate();
+  const { marketType, instrument } = useParams();
+  const { isLoggedIn } = useIsLoggedIn();
+  const { profile, setProfile } = useProfile();
+  const { orders, setOrders } = useUserOrders();
+
   const [price, setPrice] = useState<number | undefined>(undefined);
   const [tab, setTab] = useState<number>(0);
   const [showOrderCard, setShowOrderCard] = useState<boolean>(false);
-  const [orders, setOrders] = useState<Record<string, any>[]>([]);
+  const [tablePage, setTablePage] = useState<number>(1);
   const [ordersTableRenderProp, setOrdersTableRenderProp] = useState<number>(0);
+  const [hasNextPage, setHasNextPage] = useState<boolean>(false);
+  const [ordersFilter, setOrdersFilter] = useState<OrderStatus[]>([
+    OrderStatus.FILLED,
+    OrderStatus.PARTIALLY_FILLED,
+    OrderStatus.PENDING,
+  ]);
   const [headerRenderProp, setHeaderRenderProp] = useState<number>(0);
-  const [orderWsRenderProp, setOrderWsRenderProp] = useState<number>(0);
   const [selectedTimeframe, setSelectedTimeframe] = useState<Timeframe>(
     Timeframe.M5
   );
 
   const chartRef = useRef<any>(undefined);
-  const profileRef = useRef<Profile | undefined>(undefined);
   const seriesRef = useRef<any>(undefined);
   const seriesDataRef = useRef<OHLC[] | undefined>(undefined);
   const ordersWsRef = useRef<WebSocket | undefined>(undefined);
   const priceWsRef = useRef<WebSocket | undefined>(undefined);
 
   useEffect(() => {
-    (async () => {
-      try {
-        profileRef.current = await UtilsManager.fetchProfile();
-        console.log(profileRef.current);
-        setHeaderRenderProp(headerRenderProp + 1);
-        setOrderWsRenderProp(orderWsRenderProp + 1);
-      } catch (err) {}
-    })();
-
-    return () => {
-      if (profileRef.current) {
-        profileRef.current = undefined;
-      }
-    };
-  }, []);
-
-  useEffect(
-    () => console.log("Order WS render - ", orderWsRenderProp),
-    [orderWsRenderProp]
-  );
+    if (!Object.values(MarketType).includes(marketType as MarketType)) {
+      navigate("/login");
+    }
+  }, [marketType]);
 
   useEffect(() => {
     (async () => {
       try {
+        console.log("Performing fetch request");
         const rsp = await fetch(
-          import.meta.env.VITE_BASE_URL + "/account/orders",
+          import.meta.env.VITE_BASE_URL +
+            `/account/orders?instrument=${instrument}&market_type=${marketType}${ordersFilter
+              .map((status) => `&status=${status}`)
+              .join("")}&page=${Math.max(0, tablePage - 1)}`,
           { method: "GET", credentials: "include" }
         );
+
         const data = await rsp.json();
         if (!rsp.ok) throw new Error(data["error"]);
-        setOrders(data);
+        console.log(data);
+        setOrders((prev?: Record<string, any>[]) => {
+          const existingOrders = new Map(
+            (prev ?? []).map((order) => [order.order_id, order])
+          );
+
+          (data as PaginatedOrders).orders.forEach((order) =>
+            existingOrders.set(order.order_id, order)
+          );
+
+          return Array.from(existingOrders.values());
+        });
+
+        setHasNextPage((data as PaginatedOrders).has_next_page);
+
         setOrdersTableRenderProp(ordersTableRenderProp + 1);
       } catch (err) {
         UtilsManager.toastError((err as Error).message);
       }
     })();
-  }, []);
+  }, [tablePage]);
 
   useEffect(() => {
-    if (Object.keys(profileRef.current ?? {}).length == 0) return;
+    if (Object.keys(profile ?? {}).length == 0 || !isLoggedIn) return;
+    (async () => {
+      console.log("im in");
+      const authToken: AuthToken | null = await getOrderWsToken();
+      console.log("order token: ", authToken);
+      if (!authToken) {
+        console.log("[order ws] connection failed");
+        return;
+      }
 
-    const handlers: Partial<Record<SocketPayloadCategory, (arg: any) => void>> =
-      {
+      const handlers: Partial<
+        Record<SocketPayloadCategory, (arg: any) => void>
+      > = {
         [SocketPayloadCategory.BALANCE]: handleBalanceUpdate,
         [SocketPayloadCategory.ORDER]: handleOrderUpdate,
       };
 
-    ordersWsRef.current = new WebSocket(
-      import.meta.env.VITE_BASE_URL.replace("http", "ws") + "/order/ws"
-    );
+      ordersWsRef.current = new WebSocket(
+        import.meta.env.VITE_BASE_URL.replace("http", "ws") + "/order/ws"
+      );
 
-    ordersWsRef.current.onopen = (e) => {
-      console.log("orders websocket connection opened:", e);
-    };
+      ordersWsRef.current.onopen = (e) => {
+        console.log("orders websocket connection opened:", e);
+        ordersWsRef.current?.send(JSON.stringify(authToken));
+      };
 
-    ordersWsRef.current.onmessage = (e) => {
-      const message = JSON.parse(e.data) as SocketPayload;
-      const func = handlers[message.category];
-      if (func) {
-        func(message.content);
-      }
-    };
+      ordersWsRef.current.onmessage = (e) => {
+        const message = JSON.parse(e.data) as SocketPayload;
+        const func = handlers[message.category];
+        if (func) {
+          func(message.content);
+        }
+        // console.log("Order WS:", message);
+      };
 
-    ordersWsRef.current.onclose = (e) => {
-      console.log("Orders websocket connection closed:", e);
-    };
+      ordersWsRef.current.onclose = (e) => {
+        console.log("Orders websocket connection closed:", e);
+      };
+    })();
+
     return () => {
       if (ordersWsRef.current != undefined) {
         ordersWsRef.current.close();
+        ordersWsRef.current = undefined;
       }
     };
-  }, [orderWsRenderProp]);
-
-  useEffect(() => console.log("*** re-render ***"), []);
+  }, []);
 
   useEffect(() => {
     priceWsRef.current = new WebSocket(
@@ -142,7 +178,7 @@ const TradingPage: FC = () => {
     priceWsRef.current.onmessage = (e) => {
       const message = JSON.parse(e.data) as SocketPayload;
       handlePriceUpdate(message.content as PriceUpdate);
-      console.log(message);
+      // console.log(message);
     };
 
     priceWsRef.current.onclose = (e) => {
@@ -201,7 +237,7 @@ const TradingPage: FC = () => {
   }
 
   function handleOrderUpdate(payload: Record<string, string | number>): void {
-    setOrders((prev) => {
+    setOrders((prev?: Record<string, any>[]) => {
       let Prev = [...(prev ?? [])];
 
       let updated = Prev.map((order) =>
@@ -213,35 +249,43 @@ const TradingPage: FC = () => {
       if (!updated.some((order) => order["order_id"] === payload["order_id"])) {
         updated.push(payload);
       }
-
+      console.log("The updated orders are: ", updated);
       return updated;
     });
     setOrdersTableRenderProp(ordersTableRenderProp + 1);
   }
 
   function handleBalanceUpdate(payload: BalanceUpdate): void {
-    profileRef.current = {
-      ...profileRef.current,
-      balance: payload.balance,
-    } as Profile;
+    setProfile((state) => ({ ...state, balance: payload.balance } as Profile));
     setHeaderRenderProp(headerRenderProp + 1);
+  }
+
+  async function getOrderWsToken(): Promise<AuthToken | null> {
+    try {
+      const rsp = await fetch(
+        import.meta.env.VITE_BASE_URL + "/order/ws/get-token",
+        { method: "GET", credentials: "include" }
+      );
+
+      const data = await rsp.json();
+      if (!rsp.ok) throw new Error(data["detail"]);
+
+      return data as AuthToken;
+    } catch (err) {
+      return null;
+    }
   }
 
   return (
     <>
-      <CustomHeader
-        renderProp={headerRenderProp}
-        avatar={(profileRef.current ?? {})["avatar"]}
-        balance={(profileRef.current ?? {})["balance"]}
-        username={(profileRef.current ?? {})["username"]}
-      />
+      <CustomHeader renderProp={headerRenderProp} />
 
       <DefaultLayout
         element={
           <>
             <div
               id="tradePage"
-              className="w-full p-md"
+              className="w-full"
               style={{ marginBottom: "5rem" }}
             >
               {/* Mobile */}
@@ -283,7 +327,10 @@ const TradingPage: FC = () => {
                         onClick={() => setShowOrderCard(false)}
                       />
                     </div>
-                    <OrderCard balance={10000} />
+                    <OrderCard
+                      marketType={marketType as MarketType}
+                      instrument={instrument!}
+                    />
                   </div>
                 </div>
               )}
@@ -326,6 +373,7 @@ const TradingPage: FC = () => {
                     {price !== undefined && (
                       <InstrumentCard
                         price={price}
+                        instrument={instrument!}
                         chartRef={chartRef}
                         seriesRef={seriesRef}
                         seriesDataRef={seriesDataRef}
@@ -352,6 +400,7 @@ const TradingPage: FC = () => {
                 className="w-full flex g-3"
                 style={{
                   overflowX: "auto",
+                  overflowY: "hidden",
                 }}
               >
                 <div
@@ -365,6 +414,7 @@ const TradingPage: FC = () => {
                   <InstrumentCard
                     showBorder
                     price={price}
+                    instrument={instrument!}
                     chartRef={chartRef}
                     seriesRef={seriesRef}
                     seriesDataRef={seriesDataRef}
@@ -376,10 +426,22 @@ const TradingPage: FC = () => {
                   className="h-full"
                   style={{ width: "300px", minWidth: "300px" }}
                 >
-                  <OrderCard balance={10000} />
+                  <OrderCard
+                    marketType={marketType as MarketType}
+                    instrument={instrument!}
+                  />
                 </div>
               </div>
-              <OrdersTable renderProp={ordersTableRenderProp} orders={orders} />
+              <OrdersTable
+                renderProp={ordersTableRenderProp}
+                orders={orders}
+                filter={ordersFilter}
+                setFilter={setOrdersFilter}
+                page={tablePage}
+                setPage={setTablePage}
+                allowClose={marketType === MarketType.FUTURES}
+                hasNextPage={hasNextPage}
+              />
             </div>
           </>
         }

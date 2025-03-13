@@ -1,20 +1,29 @@
 import { Value } from "@sinclair/typebox/value";
 import { FC, useRef, useState } from "react";
-import ReactDOM from "react-dom";
+import { FaXmark } from "react-icons/fa6";
 import { ModifyOrderRequest } from "../utils/ValidationTypes";
-import { OrderType } from "../utils/types";
-import CloseIcon from "./icons/CloseIcon";
+import { MarketType, OrderType } from "../utils/types";
 
 const ModifyOrderCard: FC<{
-  data: ModifyOrderRequest;
+  data: Record<string, string | null | number>;
   order_type: OrderType;
+  marketType: MarketType;
   setShow: (arg: boolean) => void;
-}> = ({ data, order_type, setShow }) => {
+  allowClose?: boolean;
+}> = ({ data, order_type, marketType, setShow, allowClose = true }) => {
   const [errorMsg, setErrorMsg] = useState<string | undefined>(undefined);
   const [showClose, setShowClose] = useState<boolean>(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const modifyAudioRef = useRef<HTMLAudioElement>(null);
   const closeAudioRef = useRef<HTMLAudioElement>(null);
+
+  function shakeCard(): void {
+    if (cardRef.current) {
+      cardRef.current.classList.remove("shake");
+      void cardRef.current.offsetWidth;
+      cardRef.current.classList.add("shake");
+    }
+  }
 
   async function submitModifyRequest(
     e: React.FormEvent<HTMLFormElement>
@@ -61,22 +70,16 @@ const ModifyOrderCard: FC<{
             modifyAudioRef.current.volume = 0.25;
             modifyAudioRef.current.play();
           }
-
-          // setShow(false);
         } catch (err) {
           setErrorMsg((err as Error).message);
+          shakeCard();
         }
       }
     } else {
-      if (cardRef.current) {
-        cardRef.current.classList.remove("shake");
-        void cardRef.current.offsetWidth;
-        cardRef.current.classList.add("shake");
-      }
     }
   }
 
-  async function submitCloseRequest(): Promise<void> {
+  async function submitFuturesCloseOrderRequest(): Promise<void> {
     try {
       const rsp = await fetch(import.meta.env.VITE_BASE_URL + "/order/close", {
         method: "PUT",
@@ -90,14 +93,11 @@ const ModifyOrderCard: FC<{
         throw new Error(data["detail"]);
       }
 
-      console.log(rsp);
-
       if (closeAudioRef.current) {
         closeAudioRef.current.volume = 0.25;
         closeAudioRef.current.play();
       }
 
-      // setShow(false);
       setShowClose(false);
     } catch (err) {
       setErrorMsg((err as Error).message);
@@ -118,20 +118,18 @@ const ModifyOrderCard: FC<{
         className="hidden"
         style={{ width: 0, height: 0 }}
       ></audio>
-      {showClose ? (
+
+      {showClose && (
         <>
-          {ReactDOM.createPortal(
-            <div
-              className="overlay-container flex align-center justify-center"
-              style={{ backdropFilter: "blur(1px)" }}
-            >
-              <div className="flex-column g-1 align-center bg-background-primary border-radius-primary p-sm">
+          <div className="w-full h-full flex-column g-1 align-center bg-background-primary border-radius-primary p-sm">
+            {marketType === MarketType.FUTURES ? (
+              <>
                 <span>Are you sure you want to close this order?</span>
                 <div className="w-full flex g-1" style={{ height: "2rem" }}>
                   <button
                     type="button"
                     className="btn btn-white w-full border-none hover-pointer"
-                    onClick={() => submitCloseRequest()}
+                    onClick={() => submitFuturesCloseOrderRequest()}
                   >
                     Yes
                   </button>
@@ -143,20 +141,68 @@ const ModifyOrderCard: FC<{
                     No
                   </button>
                 </div>
-                {errorMsg && (
-                  <div
-                    className="w-full flex align-center justify-center"
-                    style={{ height: "2rem" }}
-                  >
-                    <span className="error">{errorMsg}</span>
-                  </div>
-                )}
+              </>
+            ) : (
+              // <form
+              //   id="closeOrderForm"
+              //   className="w-full h-full"
+              //   ref={closeOrderFormRef}
+              // >
+              //   <div
+              //     className="w-full h-full flex-column"
+              //     style={{ height: "3.5rem" }}
+              //   >
+              //     <div className="w-full" style={{ height: "1.25rem" }}>
+              //       <label htmlFor="quantity">Quantity</label>
+              //     </div>
+              //     <div className="w-full" style={{ height: "2rem" }}>
+              //       <input
+              //         id="quantity"
+              //         className="w-full h-full bg-background-secondary border-radius-primary border-none p-sm"
+              //         type="number"
+              //         name="quantity"
+              //         step={0.01}
+              //       />
+              //     </div>
+              //   </div>
+              //   <div
+              //     className="w-full h-full flex g-1 align-center justify-between"
+              //     style={{ height: "2rem" }}
+              //   >
+              //     <button
+              //       type="submit"
+              //       className="w-full h-full btn btn-white border-none hover-pointer"
+              //       onClick={(e) => {
+              //         e.preventDefault();
+              //         // submitSpotCloseOrderRequest();
+              //       }}
+              //     >
+              //       CLOSE
+              //     </button>
+              //     <button
+              //       type="button"
+              //       className="w-full h-full  btn btn-white bg-transparent border-default hover-pointer text-white"
+              //       onClick={() => setShowClose(false)}
+              //     >
+              //       CANCEL
+              //     </button>
+              //   </div>
+              // </form>
+              <span>s</span>
+            )}
+            {errorMsg && (
+              <div
+                className="w-full flex align-center justify-center"
+                style={{ height: "2rem" }}
+              >
+                <span className="error">{errorMsg}</span>
               </div>
-            </div>,
-            document.body
-          )}
+            )}
+          </div>
         </>
-      ) : (
+      )}
+
+      {!showClose && (
         <>
           <div
             ref={cardRef}
@@ -170,7 +216,8 @@ const ModifyOrderCard: FC<{
                 className="w-auto h-full hover-pointer"
                 onClick={() => setShow(false)}
               >
-                <CloseIcon size="100%" />
+                {/* <CloseIcon size="100%" /> */}
+                <FaXmark />
               </div>
             </div>
             <form
@@ -194,7 +241,7 @@ const ModifyOrderCard: FC<{
                       id="takeProfit"
                       className="w-full bg-background-secondary p-sm border-radius-primary"
                       style={{ height: "2rem" }}
-                      defaultValue={data.take_profit}
+                      defaultValue={data.take_profit ?? undefined}
                     />
                   </div>
                 </div>
@@ -210,7 +257,7 @@ const ModifyOrderCard: FC<{
                       id="stopLoss"
                       className="w-full bg-background-secondary p-sm border-radius-primary"
                       style={{ height: "2rem" }}
-                      defaultValue={data.stop_loss}
+                      defaultValue={data.stop_loss ?? undefined}
                     />
                   </div>
                 </div>
@@ -222,7 +269,7 @@ const ModifyOrderCard: FC<{
                   </div>
                   <div className="w-full" style={{ height: "2rem" }}>
                     <input
-                      className="w-full h-full bg-background-secondary border-radius-primary"
+                      className="w-full h-full bg-background-secondary border-radius-primary p-sm"
                       type="number"
                       name="limit_price"
                       id="limitPrice"
@@ -239,21 +286,23 @@ const ModifyOrderCard: FC<{
                   Modify
                 </button>
               </div>
-              <div className="w-full" style={{ height: "2rem" }}>
-                <button
-                  className="btn btn-primary border-none hover-pointer w-full h-full"
-                  type="button"
-                  onClick={() => {
-                    setErrorMsg(undefined);
-                    setShowClose(true);
-                  }}
-                >
-                  Close
-                </button>
-              </div>
-              <div className="w-full" style={{ height: "2rem" }}>
+              {allowClose && (
+                <div className="w-full" style={{ height: "2rem" }}>
+                  <button
+                    className="btn btn-primary border-none hover-pointer w-full h-full"
+                    type="button"
+                    onClick={() => {
+                      setErrorMsg(undefined);
+                      setShowClose(true);
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+              )}
+              {/* <div className="w-full" style={{ height: "2rem" }}>
                 <span>{data.order_id}</span>
-              </div>
+              </div> */}
               {errorMsg && (
                 <div
                   className="w-full flex align-center justify-center"

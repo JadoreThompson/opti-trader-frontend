@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import ReactDOM from "react-dom";
 import { ToastContainer } from "react-toastify";
 import UtilsManager from "../utils/classses/UtilsManager";
@@ -6,8 +6,6 @@ import { OrderStatus } from "../utils/types";
 import ModifyOrderCard from "./ModifyOrderCard";
 import ChevronLeft from "./icons/ChevronLeft";
 import ChevronRight from "./icons/ChevronRight";
-import TrashIcon from "./icons/TrashIcon";
-import ViewListIcon from "./icons/ViewListIcon";
 
 const openOrdersTableHeaders: Record<string, string> = {
   amount: "AMOUNT",
@@ -32,50 +30,33 @@ const closedOrdersTableHeaders: Record<string, string> = {
 const OrdersTable: FC<{
   renderProp?: any;
   orders: Record<string, any>[];
-  filterChoice?: OrderStatus[];
+  filter: OrderStatus[];
+  setFilter: (arg: OrderStatus[]) => void;
+  page: number;
+  setPage: (arg: number) => void;
+  allowClose?: boolean;
+  hasNextPage: boolean;
 }> = ({
   renderProp,
   orders,
-  filterChoice = [
-    OrderStatus.FILLED,
-    OrderStatus.PARTIALLY_FILLED,
-    OrderStatus.PENDING,
-  ],
+  filter,
+  setFilter,
+  page,
+  setPage,
+  allowClose = true,
+  hasNextPage,
 }) => {
-  const [filter, setFilter] = useState<OrderStatus[]>(filterChoice);
   const [tab, setTab] = useState<number>(
-    filterChoice.includes(OrderStatus.FILLED) ? 0 : 1
+    filter.includes(OrderStatus.FILLED) ? 0 : 1
   );
-  const [page, setPage] = useState<number>(1);
-  const [maxPages, setMaxPages] = useState<number>(0);
   const [showModifyOrder, setShowModifyOrder] = useState<boolean>(false);
   const [selectedOrder, setSelectedOrder] = useState<
     Record<string, any> | undefined
   >(undefined);
+
   const maxPageSize = 10;
 
-  useEffect(() => {
-    if (page == 0 && maxPages > 0) {
-      setPage(1);
-      return;
-    }
-    if (page > maxPages) {
-      setPage(maxPages);
-    }
-  }, [page]);
-
-  useEffect(() => {
-    const maxPages = Math.ceil(
-      orders!.filter((order) => filter.includes(order.status))!.length /
-        maxPageSize
-    );
-    setMaxPages(maxPages);
-    maxPages > 0 ? setPage(1) : null;
-  }, [renderProp]);
-
-  useEffect(() => console.log(selectedOrder), [selectedOrder]);
-
-  const formatValues = (value?: string | number): string => {
+  function formatValues(value?: string | number): string {
     if (value === undefined) {
       return "";
     }
@@ -97,7 +78,10 @@ const OrdersTable: FC<{
               className="overlay-container flex align-center justify-center"
               style={{ backdropFilter: "blur(1px)" }}
             >
-              <div className="modify-order-card-container">
+              <div
+                className="modify-order-card-container"
+                style={{ width: "20%" }}
+              >
                 <ModifyOrderCard
                   data={{
                     order_id: selectedOrder.order_id,
@@ -112,7 +96,9 @@ const OrdersTable: FC<{
                       : undefined,
                   }}
                   order_type={selectedOrder.order_type}
+                  marketType={selectedOrder.market_type}
                   setShow={setShowModifyOrder}
+                  allowClose={allowClose}
                 />
               </div>
             </div>,
@@ -126,6 +112,7 @@ const OrdersTable: FC<{
             type="button"
             className={`btn hover-pointer ${tab === 0 ? "active" : ""}`}
             onClick={() => {
+              // tabRef.current = tab;
               setTab(0);
               setPage(1);
               setFilter([
@@ -141,6 +128,7 @@ const OrdersTable: FC<{
             type="button"
             className={`btn hover-pointer ${tab === 1 ? "active" : ""}`}
             onClick={() => {
+              // tabRef.current = tab;
               setTab(1);
               setPage(1);
               setFilter([OrderStatus.CLOSED]);
@@ -166,41 +154,46 @@ const OrdersTable: FC<{
               </tr>
             </thead>
             <tbody>
-              {orders!
-                .filter((order) => filter.includes(order.status))
-                .slice((page - 1) * maxPageSize, page * maxPageSize)
-                ?.map((order, orderInd) => (
-                  <tr
-                    key={orderInd}
-                    className="hover-bg-background-secondary"
-                    onClick={() => {
-                      setSelectedOrder(order);
-                      setShowModifyOrder(true);
-                    }}
-                  >
-                    {Object.keys(
-                      tab === 0
-                        ? openOrdersTableHeaders
-                        : closedOrdersTableHeaders
-                    ).map((key, keyInd) => (
-                      <td
-                        key={keyInd}
-                        className={`${
-                          ["realised_pnl", "unrealised_pnl"].includes(key)
-                            ? Number(order[key]) < 0
-                              ? "text-red decrease"
-                              : "text-green increase"
-                            : undefined
-                        }`}
-                        style={{ whiteSpace: "nowrap" }}
-                      >
-                        {order[key] != null && order[key] !== undefined
-                          ? formatValues(order[key])
-                          : ""}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
+              {
+                // orders!
+                //   .filter((order) => filter.includes(order.status))
+                //   .slice((page - 1) * maxPageSize, page * maxPageSize)
+                orders
+                  .filter((order) => filter.includes(order.status))
+                  .slice((page - 1) * maxPageSize, page * maxPageSize)
+                  .map((order, orderInd) => (
+                    <tr
+                      key={orderInd}
+                      className="hover-bg-background-secondary"
+                      onClick={() => {
+                        setSelectedOrder(order);
+                        setShowModifyOrder(true);
+                      }}
+                    >
+                      {Object.keys(
+                        tab === 0
+                          ? openOrdersTableHeaders
+                          : closedOrdersTableHeaders
+                      ).map((key, keyInd) => (
+                        <td
+                          key={keyInd}
+                          className={`${
+                            ["realised_pnl", "unrealised_pnl"].includes(key)
+                              ? Number(order[key]) < 0
+                                ? "text-red decrease"
+                                : "text-green increase"
+                              : undefined
+                          }`}
+                          style={{ whiteSpace: "nowrap" }}
+                        >
+                          {order[key] != null && order[key] !== undefined
+                            ? formatValues(order[key])
+                            : ""}
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+              }
             </tbody>
           </table>
         </div>
@@ -221,8 +214,9 @@ const OrdersTable: FC<{
               type="button"
               className="btn bg-transparent border-none h-full flex justify-center align-center hover-pointer"
               onClick={() => {
-                if (page === maxPages) return;
-                setPage(page + 1);
+                if (hasNextPage || orders.length > page * maxPageSize) {
+                  setPage(page + 1);
+                }
               }}
             >
               <ChevronRight fill="white" size="1.5rem" />

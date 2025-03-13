@@ -2,7 +2,7 @@ import { toast } from "react-toastify";
 import { Orderbook } from "../../componenets/DOM";
 import AlertIcon from "../../componenets/icons/AlertIcon";
 import DollarIcon from "../../componenets/icons/DollarIcon";
-import { Profile } from "../../pages/UserPage";
+import { Profile } from "../../contexts/useProfile";
 
 export default class UtilsManager {
   static toastOptions = {
@@ -146,14 +146,22 @@ export default class UtilsManager {
     toast.success(message, this.toastSuccessOptions);
   }
 
-  public static async fetchProfile(): Promise<Profile> {
+  // public static async fetchProfile(username?: string): Promise<Record<string, string>> {
+  public static async fetchProfile(username?: string): Promise<Profile> {
     try {
-      const rsp = await fetch(import.meta.env.VITE_BASE_URL + "/account/", {
-        method: "GET",
-        credentials: "include",
-      });
+      const rsp = await fetch(
+        import.meta.env.VITE_BASE_URL +
+          `/account${username ? `?username=${username}` : ""}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
 
-      if (!rsp.ok) throw new Error(rsp.statusText);
+      if (!rsp.ok) {
+        const data = await rsp.json();
+        throw new Error(data["detail"]);
+      }
 
       return await rsp.json();
     } catch (err) {

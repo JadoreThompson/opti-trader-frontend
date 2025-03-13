@@ -1,6 +1,7 @@
 import { FC } from "react";
+import { IconProps } from "../../utils/utils";
 
-const ArrowDown: FC<{ className?: string; fill?: string; size?: string }> = ({
+const ArrowDown: FC<IconProps> = ({
   className,
   fill = "white",
   size = "100px",

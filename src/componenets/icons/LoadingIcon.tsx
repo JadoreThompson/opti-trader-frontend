@@ -1,7 +1,6 @@
 import { FC } from "react";
-import { IconProps } from "react-toastify";
 
-const ArrowUp: FC<IconProps> = ({
+const LoadingIcon: FC<{ className?: string; fill?: string; size?: string }> = ({
   className,
   fill = "var(--color)",
   size = "100px",
@@ -16,11 +15,11 @@ const ArrowUp: FC<IconProps> = ({
       viewBox="0 0 24 24"
     >
       <path
-        d="M11 20h2V8h2V6h-2V4h-2v2H9v2h2v12zM7 10V8h2v2H7zm0 0v2H5v-2h2zm10 0V8h-2v2h2zm0 0v2h2v-2h-2z"
+        d="M13 2h-2v6h2V2zm0 14h-2v6h2v-6zm9-5v2h-6v-2h6zM8 13v-2H2v2h6zm7-6h2v2h-2V7zm4-2h-2v2h2V5zM9 7H7v2h2V7zM5 5h2v2H5V5zm10 12h2v2h2v-2h-2v-2h-2v2zm-8 0v-2h2v2H7v2H5v-2h2z"
         fill={fill}
-      />
+      />{" "}
     </svg>
   );
 };
 
-export default ArrowUp;
+export default LoadingIcon;

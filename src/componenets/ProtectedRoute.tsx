@@ -1,17 +1,20 @@
-import { FC, useContext, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { IsLoggedInContext } from "../contexts/IsLoggedInContext";
+import { useIsLoggedIn } from "../contexts/useIsLoggedIn";
+import { useProfile } from "../contexts/useProfile";
 import LoadingScreen from "../pages/LoadingScreen";
 
 const ProtectedRoute: FC<{ element: JSX.Element }> = ({ element }) => {
   const navigate = useNavigate();
-  const { setIsLoggedIn } = useContext(IsLoggedInContext);
+  const { setIsLoggedIn } = useIsLoggedIn();
+  const { setProfile } = useProfile();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     (async () => {
+      setIsLoading(true);
+
       try {
-        setIsLoading(true);
         const rsp = await fetch(
           import.meta.env.VITE_BASE_URL + "/auth/verify-token",
           { method: "GET", credentials: "include" }
@@ -19,11 +22,12 @@ const ProtectedRoute: FC<{ element: JSX.Element }> = ({ element }) => {
 
         if (!rsp.ok) throw new Error(rsp.statusText);
         setIsLoggedIn(true);
-        setIsLoading(false);
       } catch (err) {
         setIsLoggedIn(false);
-        setIsLoading(false);
+        setProfile(undefined);
       }
+      
+      setIsLoading(false);
     })();
   }, [navigate, setIsLoggedIn]);
 

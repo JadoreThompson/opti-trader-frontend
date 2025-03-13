@@ -1,13 +1,29 @@
-import { FC, FormEvent, useRef } from "react";
+import { FC, FormEvent, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import AuthPageLayout from "../componenets/AuthPageLayout";
+import { useIsLoggedIn } from "../contexts/useIsLoggedIn";
+import { Profile, useProfile } from "../contexts/useProfile";
 import UtilsManager from "../utils/classses/UtilsManager";
 
 const RegisterPage: FC = () => {
   const navigate = useNavigate();
+  const { isLoggedIn, setIsLoggedIn } = useIsLoggedIn();
+  const { setProfile } = useProfile();
   const passwordRef = useRef<HTMLInputElement>(null);
   const confirmPasswordRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      (async () => {
+        try {
+          const data: Profile = await UtilsManager.fetchProfile();
+          setProfile(data);
+          navigate(`/user/${data.username}`);
+        } catch (err) {}
+      })();
+    }
+  }, [isLoggedIn]);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
@@ -35,9 +51,10 @@ const RegisterPage: FC = () => {
       );
 
       if (!rsp.ok) throw new Error(rsp.statusText);
-      navigate("/");
+      setIsLoggedIn(true);
       toast.success("Registered successfully");
     } catch (err) {
+      setIsLoggedIn(false);
       toast.error((err as Error).message);
     }
   }
