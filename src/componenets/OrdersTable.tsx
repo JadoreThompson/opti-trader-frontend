@@ -1,11 +1,10 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import ReactDOM from "react-dom";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa6";
 import { ToastContainer } from "react-toastify";
 import UtilsManager from "../utils/classses/UtilsManager";
 import { OrderStatus } from "../utils/types";
 import ModifyOrderCard from "./ModifyOrderCard";
-import ChevronLeft from "./icons/ChevronLeft";
-import ChevronRight from "./icons/ChevronRight";
 
 const openOrdersTableHeaders: Record<string, string> = {
   amount: "AMOUNT",
@@ -21,7 +20,8 @@ const openOrdersTableHeaders: Record<string, string> = {
 const closedOrdersTableHeaders: Record<string, string> = {
   instrument: "INSTRUMENT",
   amount: "AMOUNT",
-  order_type: "ORDER_TYPE",
+  order_type: "ORDER TYPE",
+  market_type: "MARKET TYPE",
   side: "SIDE",
   filled_price: "ENTRY PRICE",
   realised_pnl: "P/L",
@@ -221,7 +221,7 @@ const OrdersTable: FC<{
                 setPage(page - 1);
               }}
             >
-              <ChevronLeft fill="white" size="1.5rem" />
+              <FaChevronLeft fill="white" size="1.5rem" />
             </button>
             <span className="span-lg">{page}</span>
             <button
@@ -233,7 +233,7 @@ const OrdersTable: FC<{
                 }
               }}
             >
-              <ChevronRight fill="white" size="1.5rem" />
+              <FaChevronRight fill="white" size="1.5rem" />
             </button>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import React, { FC, useRef, useState } from "react";
 import { Profile, useProfile } from "../contexts/useProfile";
-import CloseIcon from "./icons/CloseIcon";
-import PencilIcon from "./icons/PencilIcon";
+import { FaPencil, FaXmark } from "react-icons/fa6";
+
 
 const EditProfileCard: FC<{
   setShow: (arg: boolean) => void;
@@ -83,7 +83,7 @@ const EditProfileCard: FC<{
                 <h3>Edit Profile</h3>
               </div>
               <div className="w-auto h-full flex align-center justify-center hover-pointer">
-                <CloseIcon size="85%" />
+                <FaXmark size="85%" />
               </div>
             </div>
             <div
@@ -113,7 +113,7 @@ const EditProfileCard: FC<{
                     }
                   }}
                 >
-                  <PencilIcon />
+                  <FaPencil />
                 </div>
               </div>
             </div>

@@ -1,7 +1,6 @@
+import { FaCircleDollarToSlot, FaTriangleExclamation } from "react-icons/fa6";
 import { toast } from "react-toastify";
 import { Orderbook } from "../../componenets/DOM";
-import AlertIcon from "../../componenets/icons/AlertIcon";
-import DollarIcon from "../../componenets/icons/DollarIcon";
 import { Profile } from "../../contexts/useProfile";
 
 export default class UtilsManager {
@@ -10,12 +9,12 @@ export default class UtilsManager {
   };
 
   static toastSuccessOptions = {
-    icon: <DollarIcon size="50px" fill="green" />,
+    icon: <FaCircleDollarToSlot size="50px" fill="green" />,
     ...this.toastOptions,
   };
 
   static toastErrorOptions = {
-    icon: <AlertIcon size="50px" fill="#b33f32" />,
+    icon: <FaTriangleExclamation size="50px" fill="#b33f32" />,
     ...this.toastOptions,
   };
 

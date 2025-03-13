@@ -1,10 +1,9 @@
 import { FC, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
+import { FaSpinner, FaXmark } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import CustomHeader from "../componenets/CustomHeader";
 import DefaultLayout from "../componenets/DefaultLayout";
-import CloseIcon from "../componenets/icons/CloseIcon";
-import LoadingIcon from "../componenets/icons/LoadingIcon";
 import { useIsLoggedIn } from "../contexts/useIsLoggedIn";
 
 interface InstrumentData {
@@ -84,7 +83,7 @@ const InstrumentsPage: FC = () => {
                     className="absolute flex align-center justify-center"
                     style={{ top: 0, right: 0, height: "2rem", width: "2rem" }}
                   >
-                    <CloseIcon
+                    <FaXmark
                       size="55%"
                       className="hover-pointer"
                       onClick={() => setShowCreateForm(false)}
@@ -198,7 +197,7 @@ const InstrumentsPage: FC = () => {
                   style={{ backgroundColor: "#262629" }}
                 >
                   <div className="flex-column g-3 align-center justify-center">
-                    <LoadingIcon className="spin-load" />
+                    <FaSpinner className="spin-load" />
                     <span className="span-lg">No Instruments</span>
                   </div>
                 </div>

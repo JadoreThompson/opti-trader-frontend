@@ -1,12 +1,12 @@
 import { FC, useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
-import { FaBook, FaMagnifyingGlass } from "react-icons/fa6";
+import { FaBook, FaLayerGroup, FaLock, FaMagnifyingGlass } from "react-icons/fa6";
 import { useParams } from "react-router-dom";
+import AUMCard from "../componenets/AUMCard";
 import CustomHeader from "../componenets/CustomHeader";
 import DefaultLayout from "../componenets/DefaultLayout";
 import EditProfileCard from "../componenets/EditProfileCard";
 import OrdersTable from "../componenets/OrdersTable";
-import LockIcon from "../componenets/icons/LockIcon";
 import { Profile, useProfile } from "../contexts/useProfile";
 import UtilsManager from "../utils/classses/UtilsManager";
 import { MarketType, OrderStatus } from "../utils/types";
@@ -150,6 +150,7 @@ const UserPage: FC = () => {
         showSnackbar={false}
       />
     ),
+    1: <AUMCard username={username!}/>,
   };
 
   return (
@@ -231,6 +232,10 @@ const UserPage: FC = () => {
                         icon: FaBook,
                         text: "Trades",
                       },
+                      {
+                        icon: FaLayerGroup,
+                        text: "AUM",
+                      }
                     ].map((obj, ind) => (
                       <button
                         key={ind}
@@ -274,7 +279,7 @@ const UserPage: FC = () => {
                       </div>
                     </div>
                   )}
-                  <div className="h-full w-full">{contentOptions[tab]}</div>
+                  <div className="h-full w-full" style={{ height: '20rem'}}>{contentOptions[tab]}</div>
                 </div>
               </div>
             )}
@@ -282,7 +287,7 @@ const UserPage: FC = () => {
             {!userProfile && (
               <div className="overlay-container flex align-center justify-center pointer-events-none">
                 <div className="flex-column align-center g-2">
-                  <LockIcon fill="white" />
+                  <FaLock fill="white" />
                   <span className="span-lg">Sorry user not found</span>
                 </div>
               </div>

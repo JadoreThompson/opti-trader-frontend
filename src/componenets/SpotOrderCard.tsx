@@ -21,10 +21,8 @@ const SpotOrderCard: FC<{
   setSelectedOrderType,
   changeMarketType,
 }) => {
-  const { orders } = useContext(UserOrdersContext);
   const [showTPSL, setShowTPSL] = useState<boolean>(false);
   const [showBuyOptions, setShowBuyOptions] = useState<boolean>(true);
-  const [errorMsg, setErrorMsg] = useState<string | undefined>(undefined);
 
   async function handleCloseRequest(
     e: React.FormEvent<HTMLFormElement>

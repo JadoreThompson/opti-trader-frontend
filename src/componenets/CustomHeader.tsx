@@ -1,10 +1,9 @@
 import { FC } from "react";
-import { FaCoins, FaWallet } from "react-icons/fa6";
+import { FaBurger, FaCoins, FaWallet } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import { useIsLoggedIn } from "../contexts/useIsLoggedIn";
 import { useProfile } from "../contexts/useProfile";
 import UtilsManager from "../utils/classses/UtilsManager";
-import ViewListIcon from "./icons/ViewListIcon";
 
 const CustomHeader: FC<{
   renderProp?: any;
@@ -94,7 +93,7 @@ const CustomHeader: FC<{
               }
             }}
           >
-            <ViewListIcon size="3rem" fill="grey" />
+            <FaBurger size="3rem" fill="grey" />
           </button>
           {profile?.username && profile?.avatar && (
             <a
