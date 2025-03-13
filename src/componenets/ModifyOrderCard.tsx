@@ -1,18 +1,32 @@
 import { Value } from "@sinclair/typebox/value";
-import { FC, useRef, useState } from "react";
+import { FC, RefObject, useRef, useState } from "react";
 import { FaXmark } from "react-icons/fa6";
 import { ModifyOrderRequest } from "../utils/ValidationTypes";
-import { MarketType, OrderType } from "../utils/types";
+import { MarketType, OrderStatus, OrderType } from "../utils/types";
 
 const ModifyOrderCard: FC<{
   data: Record<string, string | null | number>;
+  setOrders: (
+    arg:
+      | Record<string, any>[]
+      | ((arg: Record<string, any>[]) => Record<string, any>[])
+  ) => void;
   order_type: OrderType;
   marketType: MarketType;
   setShow: (arg: boolean) => void;
   allowClose?: boolean;
-}> = ({ data, order_type, marketType, setShow, allowClose = true }) => {
+}> = ({
+  data,
+  setOrders,
+  order_type,
+  marketType,
+  setShow,
+  allowClose = true,
+}) => {
   const [errorMsg, setErrorMsg] = useState<string | undefined>(undefined);
   const [showClose, setShowClose] = useState<boolean>(false);
+
+  const cancelRef = useRef<boolean>(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const modifyAudioRef = useRef<HTMLAudioElement>(null);
   const closeAudioRef = useRef<HTMLAudioElement>(null);
@@ -23,6 +37,11 @@ const ModifyOrderCard: FC<{
       void cardRef.current.offsetWidth;
       cardRef.current.classList.add("shake");
     }
+  }
+
+  function playMusic(audioRef: RefObject<HTMLAudioElement>): void {
+    audioRef.current!.volume = 0.25;
+    audioRef.current!.play();
   }
 
   async function submitModifyRequest(
@@ -67,8 +86,7 @@ const ModifyOrderCard: FC<{
           }
 
           if (modifyAudioRef.current) {
-            modifyAudioRef.current.volume = 0.25;
-            modifyAudioRef.current.play();
+            playMusic(modifyAudioRef!);
           }
         } catch (err) {
           setErrorMsg((err as Error).message);
@@ -79,7 +97,7 @@ const ModifyOrderCard: FC<{
     }
   }
 
-  async function submitFuturesCloseOrderRequest(): Promise<void> {
+  async function submitCloseOrderRequest(): Promise<void> {
     try {
       const rsp = await fetch(import.meta.env.VITE_BASE_URL + "/order/close", {
         method: "PUT",
@@ -94,14 +112,35 @@ const ModifyOrderCard: FC<{
       }
 
       if (closeAudioRef.current) {
-        closeAudioRef.current.volume = 0.25;
-        closeAudioRef.current.play();
+        playMusic(closeAudioRef);
       }
 
       setShowClose(false);
     } catch (err) {
       setErrorMsg((err as Error).message);
     }
+  }
+
+  async function submitCancelOrderRequest(): Promise<void> {
+    try {
+      const rsp = await fetch(import.meta.env.VITE_BASE_URL + "/order/cancel", {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order_id: data.order_id }),
+      });
+
+      if (!rsp.ok) {
+        const data = await rsp.json();
+        throw new Error(data["detail"]);
+      }
+
+      removeFromTable(data.order_id as string);
+    } catch (err) {}
+  }
+
+  function removeFromTable(order_id: string): void {
+    setOrders((prev) => prev.filter((order) => order.order_id !== order_id));
   }
 
   return (
@@ -122,14 +161,18 @@ const ModifyOrderCard: FC<{
       {showClose && (
         <>
           <div className="w-full h-full flex-column g-1 align-center bg-background-primary border-radius-primary p-sm">
-            {marketType === MarketType.FUTURES ? (
+            {marketType === MarketType.FUTURES && (
               <>
-                <span>Are you sure you want to close this order?</span>
+                <span>Are you sure you want to {cancelRef.current ? "cancel" : "close"} this order?</span>
                 <div className="w-full flex g-1" style={{ height: "2rem" }}>
                   <button
                     type="button"
                     className="btn btn-white w-full border-none hover-pointer"
-                    onClick={() => submitFuturesCloseOrderRequest()}
+                    onClick={() =>
+                      cancelRef.current
+                        ? submitCancelOrderRequest()
+                        : submitCloseOrderRequest()
+                    }
                   >
                     Yes
                   </button>
@@ -142,54 +185,8 @@ const ModifyOrderCard: FC<{
                   </button>
                 </div>
               </>
-            ) : (
-              // <form
-              //   id="closeOrderForm"
-              //   className="w-full h-full"
-              //   ref={closeOrderFormRef}
-              // >
-              //   <div
-              //     className="w-full h-full flex-column"
-              //     style={{ height: "3.5rem" }}
-              //   >
-              //     <div className="w-full" style={{ height: "1.25rem" }}>
-              //       <label htmlFor="quantity">Quantity</label>
-              //     </div>
-              //     <div className="w-full" style={{ height: "2rem" }}>
-              //       <input
-              //         id="quantity"
-              //         className="w-full h-full bg-background-secondary border-radius-primary border-none p-sm"
-              //         type="number"
-              //         name="quantity"
-              //         step={0.01}
-              //       />
-              //     </div>
-              //   </div>
-              //   <div
-              //     className="w-full h-full flex g-1 align-center justify-between"
-              //     style={{ height: "2rem" }}
-              //   >
-              //     <button
-              //       type="submit"
-              //       className="w-full h-full btn btn-white border-none hover-pointer"
-              //       onClick={(e) => {
-              //         e.preventDefault();
-              //         // submitSpotCloseOrderRequest();
-              //       }}
-              //     >
-              //       CLOSE
-              //     </button>
-              //     <button
-              //       type="button"
-              //       className="w-full h-full  btn btn-white bg-transparent border-default hover-pointer text-white"
-              //       onClick={() => setShowClose(false)}
-              //     >
-              //       CANCEL
-              //     </button>
-              //   </div>
-              // </form>
-              <span>s</span>
             )}
+
             {errorMsg && (
               <div
                 className="w-full flex align-center justify-center"
@@ -216,7 +213,6 @@ const ModifyOrderCard: FC<{
                 className="w-auto h-full hover-pointer"
                 onClick={() => setShow(false)}
               >
-                {/* <CloseIcon size="100%" /> */}
                 <FaXmark />
               </div>
             </div>
@@ -292,6 +288,7 @@ const ModifyOrderCard: FC<{
                     className="btn btn-primary border-none hover-pointer w-full h-full"
                     type="button"
                     onClick={() => {
+                      cancelRef.current = false;
                       setErrorMsg(undefined);
                       setShowClose(true);
                     }}
@@ -300,9 +297,22 @@ const ModifyOrderCard: FC<{
                   </button>
                 </div>
               )}
-              {/* <div className="w-full" style={{ height: "2rem" }}>
-                <span>{data.order_id}</span>
-              </div> */}
+              {data.status === OrderStatus.PENDING && (
+                <div className="w-full" style={{ height: "2rem" }}>
+                  <button
+                    className="btn btn-primary border-none hover-pointer w-full h-full"
+                    type="button"
+                    onClick={() => {
+                      cancelRef.current = true;
+                      setErrorMsg(undefined);
+                      setShowClose(true);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+              
               {errorMsg && (
                 <div
                   className="w-full flex align-center justify-center"

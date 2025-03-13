@@ -168,4 +168,17 @@ export default class UtilsManager {
       throw err;
     }
   }
+
+  public static removeDuplicateOrders(
+    newOrders: Record<string, any>[],
+    oldOrders?: Record<string, any>[]
+  ): Record<string, any>[] {
+    const existingOrders = new Map(
+      (oldOrders ?? []).map((order) => [order.order_id, order])
+    );
+
+    newOrders.forEach((order) => existingOrders.set(order.order_id, order));
+
+    return Array.from(existingOrders.values());
+  }
 }

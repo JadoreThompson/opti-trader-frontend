@@ -38,7 +38,7 @@ interface BalanceUpdate {
   balance: string;
 }
 
-interface PaginatedOrders {
+export interface PaginatedOrders {
   orders: Record<string, any>[];
   has_next_page: boolean;
 }
@@ -83,7 +83,6 @@ const TradingPage: FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        console.log("Performing fetch request");
         const rsp = await fetch(
           import.meta.env.VITE_BASE_URL +
             `/account/orders?instrument=${instrument}&market_type=${marketType}${ordersFilter
@@ -94,21 +93,14 @@ const TradingPage: FC = () => {
 
         const data = await rsp.json();
         if (!rsp.ok) throw new Error(data["error"]);
-        console.log(data);
-        setOrders((prev?: Record<string, any>[]) => {
-          const existingOrders = new Map(
-            (prev ?? []).map((order) => [order.order_id, order])
-          );
 
-          (data as PaginatedOrders).orders.forEach((order) =>
-            existingOrders.set(order.order_id, order)
-          );
-
-          return Array.from(existingOrders.values());
-        });
-
+        setOrders(
+          UtilsManager.removeDuplicateOrders(
+            (data as PaginatedOrders).orders,
+            orders
+          )
+        );
         setHasNextPage((data as PaginatedOrders).has_next_page);
-
         setOrdersTableRenderProp(ordersTableRenderProp + 1);
       } catch (err) {
         UtilsManager.toastError((err as Error).message);
@@ -435,6 +427,7 @@ const TradingPage: FC = () => {
               <OrdersTable
                 renderProp={ordersTableRenderProp}
                 orders={orders}
+                setOrders={setOrders}
                 filter={ordersFilter}
                 setFilter={setOrdersFilter}
                 page={tablePage}

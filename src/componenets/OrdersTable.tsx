@@ -30,21 +30,29 @@ const closedOrdersTableHeaders: Record<string, string> = {
 const OrdersTable: FC<{
   renderProp?: any;
   orders: Record<string, any>[];
+  setOrders: (
+    arg:
+      | Record<string, any>[]
+      | ((arg: Record<string, any>[]) => Record<string, any>[])
+  ) => void;
   filter: OrderStatus[];
-  setFilter: (arg: OrderStatus[]) => void;
+  setFilter?: (arg: OrderStatus[]) => void;
   page: number;
   setPage: (arg: number) => void;
   allowClose?: boolean;
   hasNextPage: boolean;
+  showSnackbar?: boolean;
 }> = ({
   renderProp,
   orders,
+  setOrders,
   filter,
   setFilter,
   page,
   setPage,
   allowClose = true,
   hasNextPage,
+  showSnackbar = true,
 }) => {
   const [tab, setTab] = useState<number>(
     filter.includes(OrderStatus.FILLED) ? 0 : 1
@@ -66,7 +74,7 @@ const OrdersTable: FC<{
     } else {
       return UtilsManager.formatPrice(value);
     }
-  };
+  }
 
   return (
     <>
@@ -94,11 +102,13 @@ const OrdersTable: FC<{
                     stop_loss: selectedOrder.stop_loss
                       ? selectedOrder.stop_loss.replace("$", "")
                       : undefined,
+                    status: selectedOrder.status,
                   }}
                   order_type={selectedOrder.order_type}
                   marketType={selectedOrder.market_type}
                   setShow={setShowModifyOrder}
                   allowClose={allowClose}
+                  setOrders={setOrders}
                 />
               </div>
             </div>,
@@ -107,36 +117,41 @@ const OrdersTable: FC<{
         </>
       )}
       <div className={`w-full h-full ${renderProp}`}>
-        <div className="w-full snackbar flex justify-start">
-          <button
-            type="button"
-            className={`btn hover-pointer ${tab === 0 ? "active" : ""}`}
-            onClick={() => {
-              // tabRef.current = tab;
-              setTab(0);
-              setPage(1);
-              setFilter([
-                OrderStatus.FILLED,
-                OrderStatus.PARTIALLY_FILLED,
-                OrderStatus.PENDING,
-              ]);
-            }}
-          >
-            OPEN ORDERS
-          </button>
-          <button
-            type="button"
-            className={`btn hover-pointer ${tab === 1 ? "active" : ""}`}
-            onClick={() => {
-              // tabRef.current = tab;
-              setTab(1);
-              setPage(1);
-              setFilter([OrderStatus.CLOSED]);
-            }}
-          >
-            CLOSED ORDERS
-          </button>
-        </div>
+        {showSnackbar && (
+          <div className="w-full snackbar flex justify-start">
+            <button
+              type="button"
+              className={`btn hover-pointer ${tab === 0 ? "active" : ""}`}
+              onClick={() => {
+                // tabRef.current = tab;
+                setTab(0);
+                setPage(1);
+                if (setFilter) {
+                  setFilter([
+                    OrderStatus.FILLED,
+                    OrderStatus.PARTIALLY_FILLED,
+                    OrderStatus.PENDING,
+                  ]);
+                }
+              }}
+            >
+              OPEN ORDERS
+            </button>
+            <button
+              type="button"
+              className={`btn hover-pointer ${tab === 1 ? "active" : ""}`}
+              onClick={() => {
+                setTab(1);
+                setPage(1);
+                if (setFilter) {
+                  setFilter([OrderStatus.CLOSED]);
+                }
+              }}
+            >
+              CLOSED ORDERS
+            </button>
+          </div>
+        )}
         <div className="w-full mt-3" style={{ overflowX: "scroll" }}>
           <table
             id="ordersTable"
@@ -154,46 +169,41 @@ const OrdersTable: FC<{
               </tr>
             </thead>
             <tbody>
-              {
-                // orders!
-                //   .filter((order) => filter.includes(order.status))
-                //   .slice((page - 1) * maxPageSize, page * maxPageSize)
-                orders
-                  .filter((order) => filter.includes(order.status))
-                  .slice((page - 1) * maxPageSize, page * maxPageSize)
-                  .map((order, orderInd) => (
-                    <tr
-                      key={orderInd}
-                      className="hover-bg-background-secondary"
-                      onClick={() => {
-                        setSelectedOrder(order);
-                        setShowModifyOrder(true);
-                      }}
-                    >
-                      {Object.keys(
-                        tab === 0
-                          ? openOrdersTableHeaders
-                          : closedOrdersTableHeaders
-                      ).map((key, keyInd) => (
-                        <td
-                          key={keyInd}
-                          className={`${
-                            ["realised_pnl", "unrealised_pnl"].includes(key)
-                              ? Number(order[key]) < 0
-                                ? "text-red decrease"
-                                : "text-green increase"
-                              : undefined
-                          }`}
-                          style={{ whiteSpace: "nowrap" }}
-                        >
-                          {order[key] != null && order[key] !== undefined
-                            ? formatValues(order[key])
-                            : ""}
-                        </td>
-                      ))}
-                    </tr>
-                  ))
-              }
+              {orders
+                .filter((order) => filter.includes(order.status))
+                .slice((page - 1) * maxPageSize, page * maxPageSize)
+                .map((order, orderInd) => (
+                  <tr
+                    key={orderInd}
+                    className="hover-bg-background-secondary"
+                    onClick={() => {
+                      setSelectedOrder(order);
+                      setShowModifyOrder(true);
+                    }}
+                  >
+                    {Object.keys(
+                      tab === 0
+                        ? openOrdersTableHeaders
+                        : closedOrdersTableHeaders
+                    ).map((key, keyInd) => (
+                      <td
+                        key={keyInd}
+                        className={`${
+                          ["realised_pnl", "unrealised_pnl"].includes(key)
+                            ? Number(order[key]) < 0
+                              ? "text-red decrease"
+                              : "text-green increase"
+                            : undefined
+                        }`}
+                        style={{ whiteSpace: "nowrap" }}
+                      >
+                        {order[key] != null && order[key] !== undefined
+                          ? formatValues(order[key])
+                          : ""}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
