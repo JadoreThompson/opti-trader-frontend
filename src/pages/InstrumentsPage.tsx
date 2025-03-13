@@ -56,7 +56,7 @@ const InstrumentsPage: FC = () => {
 
     (async () => {
       const data = await fetchInstruments();
-      
+
       if (data) {
         setInstruments((prev) => [...prev!, ...data.instruments]);
         setHasNextPage(data.has_next_page);
@@ -197,7 +197,10 @@ const InstrumentsPage: FC = () => {
         element={
           <>
             <h1 className="mb-3">Pairs</h1>
-            <div className="w-full h-full" style={{ height: "38rem" }}>
+            <div
+              className="w-full h-full justify-start"
+              style={{ maxHeight: "30rem" }}
+            >
               <div
                 className="w-full flex justify-end align-center p-sm"
                 style={{ height: "3rem" }}
@@ -214,17 +217,17 @@ const InstrumentsPage: FC = () => {
               </div>
               {instruments ? (
                 <>
-                  <table className="w-full">
+                  <table
+                    className="w-full"
+                    style={{ height: "calc(100% - 3rem)" }}
+                  >
                     <thead className="bg-background-secondary w-full border-radius-primary flex">
                       <tr className="p-xs border-radius-primary bg-background-secondary w-full flex justify-between">
                         <th>Ticker</th>
                         <th>Price</th>
                       </tr>
                     </thead>
-                    <tbody
-                      className="flex-column p-xs overflow-y-scroll scroll-hidden"
-                      style={{ height: "36rem" }}
-                    >
+                    <tbody className="flex-column p-xs scroll-hidden">
                       {instruments!
                         .slice((page - 1) * maxPageSize, page * maxPageSize + 1)
                         .map((value, ind) => (
