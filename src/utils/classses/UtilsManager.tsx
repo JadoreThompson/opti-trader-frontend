@@ -179,4 +179,11 @@ export default class UtilsManager {
 
     return Array.from(existingOrders.values());
   }
+
+  public static async logout(): Promise<void> {
+    await fetch(import.meta.env.VITE_BASE_URL + "/auth/remove-token", {
+      method: "GET",
+      credentials: "include",
+    });
+  }
 }

@@ -1,15 +1,19 @@
 import React, { FC, useRef, useState } from "react";
-import { Profile, useProfile } from "../contexts/useProfile";
 import { FaPencil, FaXmark } from "react-icons/fa6";
-
+import { Profile, useProfile } from "../contexts/useProfile";
+import { useNavigate } from "react-router-dom";
+import UtilsManager from "../utils/classses/UtilsManager";
 
 const EditProfileCard: FC<{
   setShow: (arg: boolean) => void;
   imgSrc: string;
 }> = ({ setShow, imgSrc }) => {
+  const navigate = useNavigate();
   const { setProfile } = useProfile();
+  
   const [currentImgSrc, setCurrentImgSrc] = useState<string>(imgSrc);
   const [errorMsg, setErrorMsg] = useState<string | undefined>(undefined);
+  
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const avatarImgRef = useRef<HTMLImageElement>(null);
   const usernameInputRef = useRef<HTMLInputElement>(null);
@@ -48,7 +52,15 @@ const EditProfileCard: FC<{
         throw new Error(data["detail"]);
       }
 
-      setProfile((state) => ({ ...(state ?? {}), ...formData } as Profile));
+      if (formData["username"]) {
+        setProfile(
+          (state) =>
+            ({ ...(state ?? {}), username: formData.username } as Profile)
+        );
+      }
+
+      await UtilsManager.logout();
+      navigate("/login");
     } catch (err) {
       setErrorMsg((err as Error).message);
     }
