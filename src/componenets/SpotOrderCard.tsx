@@ -54,14 +54,11 @@ const SpotOrderCard: FC<{
           const data = await rsp.json();
           throw new Error(data["detail"]);
         }
-
-        // setErrorMsg(undefined);
       } catch (err) {
-        // setErrorMsg((err as Error).message);
         UtilsManager.toastError((err as Error).message);
       }
     } else {
-      console.log("invalid", formData);
+      UtilsManager.toastError("Fields invalid");
     }
   }
 

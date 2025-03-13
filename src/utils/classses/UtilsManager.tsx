@@ -146,7 +146,6 @@ export default class UtilsManager {
     toast.success(message, this.toastSuccessOptions);
   }
 
-  // public static async fetchProfile(username?: string): Promise<Record<string, string>> {
   public static async fetchProfile(username?: string): Promise<Profile> {
     try {
       const rsp = await fetch(

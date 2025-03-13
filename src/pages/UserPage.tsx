@@ -1,6 +1,6 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
-import { FaBook } from "react-icons/fa6";
+import { FaBook, FaMagnifyingGlass } from "react-icons/fa6";
 import { useParams } from "react-router-dom";
 import CustomHeader from "../componenets/CustomHeader";
 import DefaultLayout from "../componenets/DefaultLayout";
@@ -16,22 +16,23 @@ const UserPage: FC = () => {
   const { username } = useParams();
   const { profile } = useProfile();
 
+  const [tab, setTab] = useState<number>(0);
+  const [showEditProfile, setShowEditProfile] = useState<boolean>(false);
   const [userProfile, setUserProfile] = useState<Profile | undefined>(
     undefined
   );
-  const [showEditProfile, setShowEditProfile] = useState<boolean>(false);
-  const [orders, setOrders] = useState<Record<string, any>[] | undefined>(
-    undefined
-  );
+  const [isUser, setIsUser] = useState<boolean>(false);
+  const [orders, setOrders] = useState<Record<string, any>[] | undefined>([]);
   const [ordersTableRenderProp, setOrdersTableRenderProp] = useState<number>(0);
+  const [requestOrders, setRequestOrders] = useState<number>(0);
+  const [tablePage, setTablePage] = useState<number>(1);
   const [hasNextPage, setHasNextPage] = useState<boolean>(false);
   const [instrument, setInstrument] = useState<string | undefined>(undefined);
   const [marketType, setMarketType] = useState<MarketType>(MarketType.FUTURES);
-  const [tablePage, setTablePage] = useState<number>(0);
-  const [isUser, setIsUser] = useState<boolean>(false);
-  const [tab, setTab] = useState<number>(0);
 
   const ordersFilter: OrderStatus[] = [OrderStatus.CLOSED];
+  const tablePageRef = useRef<number[]>([]);
+  const instrumentInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (profile) {
@@ -49,9 +50,7 @@ const UserPage: FC = () => {
           setIsUser(true);
         }
         setUserProfile(data as unknown as Profile);
-      } catch (err) {
-        console.log(err);
-      }
+      } catch (err) {}
     })();
   }, [profile]);
 
@@ -59,35 +58,82 @@ const UserPage: FC = () => {
     if (tab === 0) {
       (async () => {
         const data = await getOrders(username!);
+
         if (data) {
-          setOrders(UtilsManager.removeDuplicateOrders(data.orders, orders));
+          if (data.orders.length > 0) {
+            setOrders(UtilsManager.removeDuplicateOrders(data.orders, orders));
+          } else {
+            setOrders([]);
+          }
+
           setHasNextPage(data.has_next_page);
           setOrdersTableRenderProp(ordersTableRenderProp + 1);
+          setTab(0);
         }
       })();
     }
   }, [username, tab]);
 
-  useEffect(() => console.log(orders), [orders]);
+  useEffect(() => {
+    if (tablePage > 1) {
+      if (tablePageRef.current.includes(tablePage)) {
+        return;
+      }
 
-  async function getOrders(username: string) {
+      (async () => {
+        const data = await getOrders(username!);
+
+        if (data) {
+          setOrders(UtilsManager.removeDuplicateOrders(data.orders, orders));
+          setHasNextPage(data.has_next_page);
+          setOrdersTableRenderProp(ordersTableRenderProp + 1);
+          tablePageRef.current.push(tablePage);
+        }
+      })();
+    }
+  }, [tablePage]);
+
+  useEffect(() => {
+    (async () => {
+      const data = await getOrders(username!);
+
+      if (data) {
+        if (data.orders.length > 0) {
+          setOrders(UtilsManager.removeDuplicateOrders(data.orders, orders));
+        } else {
+          setOrders([]);
+        }
+
+        setHasNextPage(data.has_next_page);
+        setOrdersTableRenderProp(ordersTableRenderProp + 1);
+        setTab(0);
+        setTablePage(1);
+      }
+    })();
+  }, [requestOrders]);
+
+  async function getOrders(username: string): Promise<PaginatedOrders | null> {
     try {
-      const rsp = await fetch(
-        import.meta.env.VITE_BASE_URL +
-          `/account/orders?username=${username}${
-            instrument ? `&instrument=${instrument}` : ""
-          }&market_type=${marketType}&status=${ordersFilter[0]}&page=${Math.max(
-            0,
-            tablePage - 1
-          )}`,
-        { method: "GET", credentials: "include" }
-      );
+      let url: string =
+        import.meta.env.VITE_BASE_URL + `/account/orders?username=${username}`;
 
+      if (instrument) {
+        url += `&instrument=${instrument}`;
+      }
+
+      url += `&market_type=${marketType}&status=${
+        ordersFilter[0]
+      }&page=${Math.max(0, tablePage - 1)}`;
+
+      const rsp = await fetch(url, { method: "GET", credentials: "include" });
       const data = await rsp.json();
+
       if (!rsp.ok) throw new Error(data["detail"]);
+
       return data as PaginatedOrders;
     } catch (err) {
       UtilsManager.toastError((err as Error).message);
+      return null;
     }
   }
 
@@ -98,6 +144,7 @@ const UserPage: FC = () => {
         filter={ordersFilter}
         page={tablePage}
         setPage={setTablePage}
+        allowModify={false}
         allowClose={false}
         hasNextPage={hasNextPage}
         showSnackbar={false}
@@ -198,12 +245,36 @@ const UserPage: FC = () => {
                       </button>
                     ))}
                   </div>
-                  <div
-                    className="h-full w-full"
-                    // style={{ backgroundColor: "red" }}
-                  >
-                    {contentOptions[tab]}
-                  </div>
+
+                  {tab === 0 && (
+                    <div className="w-full flex align-center justify-start">
+                      <div
+                        className="flex g-1 align-center justify-start border-default border-radius-secondary p-sm"
+                        style={{ height: "2rem" }}
+                      >
+                        <FaMagnifyingGlass />
+                        <input
+                          ref={instrumentInputRef}
+                          type="text"
+                          className="border-none w-full h-full"
+                          onBlur={(e) => {
+                            const value: null | string = (
+                              e.target as HTMLInputElement
+                            ).value.trim();
+
+                            if (value) {
+                              setInstrument(value.trim());
+                            } else {
+                              setInstrument(undefined);
+                            }
+
+                            setRequestOrders(requestOrders + 1);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  <div className="h-full w-full">{contentOptions[tab]}</div>
                 </div>
               </div>
             )}

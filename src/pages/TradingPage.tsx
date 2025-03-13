@@ -68,6 +68,7 @@ const TradingPage: FC = () => {
     Timeframe.M5
   );
 
+  const tablePageRef = useRef<number[]>([]);
   const chartRef = useRef<any>(undefined);
   const seriesRef = useRef<any>(undefined);
   const seriesDataRef = useRef<OHLC[] | undefined>(undefined);
@@ -81,6 +82,8 @@ const TradingPage: FC = () => {
   }, [marketType]);
 
   useEffect(() => {
+    if (tablePageRef.current.includes(tablePage)) return;
+
     (async () => {
       try {
         const rsp = await fetch(
@@ -102,6 +105,7 @@ const TradingPage: FC = () => {
         );
         setHasNextPage((data as PaginatedOrders).has_next_page);
         setOrdersTableRenderProp(ordersTableRenderProp + 1);
+        tablePageRef.current.push(tablePage);
       } catch (err) {
         UtilsManager.toastError((err as Error).message);
       }
@@ -111,13 +115,8 @@ const TradingPage: FC = () => {
   useEffect(() => {
     if (Object.keys(profile ?? {}).length == 0 || !isLoggedIn) return;
     (async () => {
-      console.log("im in");
       const authToken: AuthToken | null = await getOrderWsToken();
-      console.log("order token: ", authToken);
-      if (!authToken) {
-        console.log("[order ws] connection failed");
-        return;
-      }
+      if (!authToken) return;
 
       const handlers: Partial<
         Record<SocketPayloadCategory, (arg: any) => void>
@@ -131,7 +130,6 @@ const TradingPage: FC = () => {
       );
 
       ordersWsRef.current.onopen = (e) => {
-        console.log("orders websocket connection opened:", e);
         ordersWsRef.current?.send(JSON.stringify(authToken));
       };
 
@@ -141,12 +139,9 @@ const TradingPage: FC = () => {
         if (func) {
           func(message.content);
         }
-        // console.log("Order WS:", message);
       };
 
-      ordersWsRef.current.onclose = (e) => {
-        console.log("Orders websocket connection closed:", e);
-      };
+      ordersWsRef.current.onclose = (e) => {};
     })();
 
     return () => {
@@ -163,23 +158,16 @@ const TradingPage: FC = () => {
         `/instrument/ws/?instrument=BTCUSD`
     );
 
-    priceWsRef.current.onopen = (e) => {
-      console.log("Price websocket connection opened:", e);
-    };
+    priceWsRef.current.onopen = (e) => {};
 
     priceWsRef.current.onmessage = (e) => {
       const message = JSON.parse(e.data) as SocketPayload;
       handlePriceUpdate(message.content as PriceUpdate);
-      // console.log(message);
     };
 
-    priceWsRef.current.onclose = (e) => {
-      console.log("Price websocket connection closed:", e);
-    };
+    priceWsRef.current.onclose = (e) => {};
 
-    priceWsRef.current.onerror = (e) => {
-      console.log("Price websocket error - ", e);
-    };
+    priceWsRef.current.onerror = (e) => {};
 
     return () => {
       if (priceWsRef.current != undefined) {
@@ -241,7 +229,7 @@ const TradingPage: FC = () => {
       if (!updated.some((order) => order["order_id"] === payload["order_id"])) {
         updated.push(payload);
       }
-      console.log("The updated orders are: ", updated);
+
       return updated;
     });
     setOrdersTableRenderProp(ordersTableRenderProp + 1);

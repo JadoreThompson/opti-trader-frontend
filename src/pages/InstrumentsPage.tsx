@@ -21,17 +21,6 @@ const InstrumentsPage: FC = () => {
     undefined
   );
 
-  // useEffect(
-  //   () =>
-  //     setInstruments(
-  //       new Array(20).fill({
-  //         name: "btcusd",
-  //         price: 10,
-  //       })
-  //     ),
-  //   []
-  // );
-
   useEffect(() => {
     (async () => {
       try {
@@ -39,12 +28,12 @@ const InstrumentsPage: FC = () => {
           import.meta.env.VITE_BASE_URL + "/instrument/list",
           { method: "GET", credentials: "include" }
         );
-
         const data = await rsp.json();
+
         if (!rsp.ok) {
           throw new Error(data["detail"]);
         }
-        console.log(data);
+
         setInstruments(data);
       } catch (err) {}
     })();

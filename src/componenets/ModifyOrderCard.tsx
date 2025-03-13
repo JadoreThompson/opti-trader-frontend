@@ -163,16 +163,20 @@ const ModifyOrderCard: FC<{
           <div className="w-full h-full flex-column g-1 align-center bg-background-primary border-radius-primary p-sm">
             {marketType === MarketType.FUTURES && (
               <>
-                <span>Are you sure you want to {cancelRef.current ? "cancel" : "close"} this order?</span>
+                <span>
+                  Are you sure you want to{" "}
+                  {cancelRef.current ? "cancel" : "close"} this order?
+                </span>
                 <div className="w-full flex g-1" style={{ height: "2rem" }}>
                   <button
                     type="button"
                     className="btn btn-white w-full border-none hover-pointer"
-                    onClick={() =>
+                    onClick={() => {
                       cancelRef.current
                         ? submitCancelOrderRequest()
-                        : submitCloseOrderRequest()
-                    }
+                        : submitCloseOrderRequest();
+                      setShow(false);
+                    }}
                   >
                     Yes
                   </button>
@@ -312,7 +316,7 @@ const ModifyOrderCard: FC<{
                   </button>
                 </div>
               )}
-              
+
               {errorMsg && (
                 <div
                   className="w-full flex align-center justify-center"

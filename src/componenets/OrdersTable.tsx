@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { ToastContainer } from "react-toastify";
 import UtilsManager from "../utils/classses/UtilsManager";
@@ -19,6 +19,7 @@ const openOrdersTableHeaders: Record<string, string> = {
 };
 
 const closedOrdersTableHeaders: Record<string, string> = {
+  instrument: "INSTRUMENT",
   amount: "AMOUNT",
   order_type: "ORDER_TYPE",
   side: "SIDE",
@@ -30,7 +31,7 @@ const closedOrdersTableHeaders: Record<string, string> = {
 const OrdersTable: FC<{
   renderProp?: any;
   orders: Record<string, any>[];
-  setOrders: (
+  setOrders?: (
     arg:
       | Record<string, any>[]
       | ((arg: Record<string, any>[]) => Record<string, any>[])
@@ -39,6 +40,7 @@ const OrdersTable: FC<{
   setFilter?: (arg: OrderStatus[]) => void;
   page: number;
   setPage: (arg: number) => void;
+  allowModify?: boolean;
   allowClose?: boolean;
   hasNextPage: boolean;
   showSnackbar?: boolean;
@@ -50,6 +52,7 @@ const OrdersTable: FC<{
   setFilter,
   page,
   setPage,
+  allowModify = true,
   allowClose = true,
   hasNextPage,
   showSnackbar = true,
@@ -108,7 +111,7 @@ const OrdersTable: FC<{
                   marketType={selectedOrder.market_type}
                   setShow={setShowModifyOrder}
                   allowClose={allowClose}
-                  setOrders={setOrders}
+                  setOrders={setOrders!}
                 />
               </div>
             </div>,
@@ -123,7 +126,6 @@ const OrdersTable: FC<{
               type="button"
               className={`btn hover-pointer ${tab === 0 ? "active" : ""}`}
               onClick={() => {
-                // tabRef.current = tab;
                 setTab(0);
                 setPage(1);
                 if (setFilter) {
@@ -171,14 +173,16 @@ const OrdersTable: FC<{
             <tbody>
               {orders
                 .filter((order) => filter.includes(order.status))
-                .slice((page - 1) * maxPageSize, page * maxPageSize)
+                .slice((page - 1) * maxPageSize, page * maxPageSize + 1)
                 .map((order, orderInd) => (
                   <tr
                     key={orderInd}
                     className="hover-bg-background-secondary"
                     onClick={() => {
-                      setSelectedOrder(order);
-                      setShowModifyOrder(true);
+                      if (allowModify) {
+                        setSelectedOrder(order);
+                        setShowModifyOrder(true);
+                      }
                     }}
                   >
                     {Object.keys(
