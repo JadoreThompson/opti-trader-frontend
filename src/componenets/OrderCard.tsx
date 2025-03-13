@@ -3,6 +3,7 @@ import { FC, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import UtilsManager from "../utils/classses/UtilsManager";
 
+import { useProfile } from "../contexts/useProfile";
 import { OrderRequest } from "../utils/ValidationTypes";
 import { MarketType } from "../utils/types";
 import FuturesOrderCard from "./FuturesOrderCard";
@@ -17,6 +18,7 @@ const OrderCard: FC<{ marketType: MarketType; instrument: string }> = ({
   marketType,
   instrument,
 }) => {
+  const { setProfile } = useProfile();
   const [selectedOrderType, setSelectedOrderType] = useState<
     OrderType | undefined
   >(undefined);
@@ -67,7 +69,8 @@ const OrderCard: FC<{ marketType: MarketType; instrument: string }> = ({
         const data = await rsp.json();
         if (!rsp.ok) throw new Error(data["detail"]);
 
-        UtilsManager.toastSuccess(data["message"]);
+        UtilsManager.toastSuccess("Order placed");
+        setProfile((prev) => ({ ...prev!, balance: data.balance }));
       } catch (err) {
         UtilsManager.toastError((err as Error).message);
       }

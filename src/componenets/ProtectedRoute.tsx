@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useIsLoggedIn } from "../contexts/useIsLoggedIn";
 import { useProfile } from "../contexts/useProfile";
 import LoadingScreen from "../pages/LoadingScreen";
+import UtilsManager from "../utils/classses/UtilsManager";
 
 const ProtectedRoute: FC<{ element: JSX.Element }> = ({ element }) => {
   const navigate = useNavigate();
@@ -22,11 +23,12 @@ const ProtectedRoute: FC<{ element: JSX.Element }> = ({ element }) => {
 
         if (!rsp.ok) throw new Error(rsp.statusText);
         setIsLoggedIn(true);
+        setProfile(await UtilsManager.fetchProfile());
       } catch (err) {
         setIsLoggedIn(false);
         setProfile(undefined);
       }
-      
+
       setIsLoading(false);
     })();
   }, [navigate, setIsLoggedIn]);
