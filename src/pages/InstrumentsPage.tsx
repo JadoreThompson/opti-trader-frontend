@@ -196,102 +196,111 @@ const InstrumentsPage: FC = () => {
       <DefaultLayout
         element={
           <>
-            <h1 className="mb-3">Pairs</h1>
-            <div
-              className="w-full h-full justify-start"
-              style={{ maxHeight: "30rem" }}
-            >
-              <div
-                className="w-full flex justify-end align-center p-sm"
-                style={{ height: "3rem" }}
-              >
-                <button
-                  className="btn btn-green border-none hover-pointer h-full"
-                  style={{ height: "2rem" }}
-                  onClick={() =>
-                    isLoggedIn ? setShowCreateForm(true) : navigate("/login")
-                  }
+            <div className="w-full h-full flex align-center justify-center">
+              <div style={{ width: "75%" }}>
+                <h1 className="mb-3">Pairs</h1>
+                <div
+                  className="w-full h-full justify-start"
+                  style={{ maxHeight: "30rem" }}
                 >
-                  Create
-                </button>
-              </div>
-              {instruments ? (
-                <>
-                  <table
-                    className="w-full"
-                    style={{ height: "calc(100% - 3rem)" }}
+                  <div
+                    className="w-full flex justify-end align-center p-sm"
+                    style={{ height: "3rem" }}
                   >
-                    <thead className="bg-background-secondary w-full border-radius-primary flex">
-                      <tr className="p-xs border-radius-primary bg-background-secondary w-full flex justify-between">
-                        <th>Ticker</th>
-                        <th>Price</th>
-                      </tr>
-                    </thead>
-                    <tbody className="flex-column p-xs scroll-hidden">
-                      {instruments!
-                        .slice((page - 1) * maxPageSize, page * maxPageSize + 1)
-                        .map((value, ind) => (
-                          <tr
-                            key={ind}
-                            className="instrument-record flex justify-between hover-pointer hover-bg-background-secondary p-sm"
-                            style={{ borderBottom: "1px solid #262629" }}
+                    <button
+                      className="btn btn-green border-none hover-pointer h-full"
+                      style={{ height: "2rem" }}
+                      onClick={() =>
+                        isLoggedIn
+                          ? setShowCreateForm(true)
+                          : navigate("/login")
+                      }
+                    >
+                      Create
+                    </button>
+                  </div>
+                  {instruments ? (
+                    <>
+                      <table
+                        className="w-full"
+                        style={{ height: "calc(100% - 3rem)" }}
+                      >
+                        <thead className="bg-background-secondary w-full border-radius-primary flex">
+                          <tr className="p-xs border-radius-primary bg-background-secondary w-full flex justify-between">
+                            <th>Ticker</th>
+                            <th>Price</th>
+                          </tr>
+                        </thead>
+                        <tbody className="flex-column p-xs scroll-hidden">
+                          {instruments!
+                            .slice(
+                              (page - 1) * maxPageSize,
+                              page * maxPageSize + 1
+                            )
+                            .map((value, ind) => (
+                              <tr
+                                key={ind}
+                                className="instrument-record flex justify-between hover-pointer hover-bg-background-secondary p-sm"
+                                style={{ borderBottom: "1px solid #262629" }}
+                                onClick={() => {
+                                  window.location.href = `/futures/${value.name}`;
+                                }}
+                              >
+                                <td>{value.name}</td>
+                                <td>{value.price}</td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                      <div
+                        className="w-full flex justify-end"
+                        style={{ height: "2rem" }}
+                      >
+                        <div className="w-auto h-full flex justify-between align-center">
+                          <button
+                            type="button"
+                            className="btn bg-transparent border-none h-full flex justify-center align-center hover-pointer"
                             onClick={() => {
-                              window.location.href = `/futures/${value.name}`;
+                              if (page <= 1) return;
+                              setPage(page - 1);
+                              setHasNextPage(true);
                             }}
                           >
-                            <td>{value.name}</td>
-                            <td>{value.price}</td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                  <div
-                    className="w-full flex justify-end"
-                    style={{ height: "2rem" }}
-                  >
-                    <div className="w-auto h-full flex justify-between align-center">
-                      <button
-                        type="button"
-                        className="btn bg-transparent border-none h-full flex justify-center align-center hover-pointer"
-                        onClick={() => {
-                          if (page <= 1) return;
-                          setPage(page - 1);
-                          setHasNextPage(true);
-                        }}
-                      >
-                        <FaChevronLeft fill="white" size="1.5rem" />
-                      </button>
-                      <span className="span-lg">{page}</span>
-                      <button
-                        type="button"
-                        className="btn bg-transparent border-none h-full flex justify-center align-center hover-pointer"
-                        onClick={() => {
-                          if (hasNextPage) {
-                            if (lastPage) {
-                              if (page >= lastPage) {
-                                return;
+                            <FaChevronLeft fill="white" size="1.5rem" />
+                          </button>
+                          <span className="span-lg">{page}</span>
+                          <button
+                            type="button"
+                            className="btn bg-transparent border-none h-full flex justify-center align-center hover-pointer"
+                            onClick={() => {
+                              if (hasNextPage) {
+                                if (lastPage) {
+                                  if (page >= lastPage) {
+                                    return;
+                                  }
+                                }
+                                setPage(page + 1);
                               }
-                            }
-                            setPage(page + 1);
-                          }
-                        }}
-                      >
-                        <FaChevronRight fill="white" size="1.5rem" />
-                      </button>
+                            }}
+                          >
+                            <FaChevronRight fill="white" size="1.5rem" />
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div
+                      className="w-full h-full flex align-center justify-center border-radius-primary border-default"
+                      style={{ backgroundColor: "#262629" }}
+                    >
+                      <div className="flex-column g-3 align-center justify-center">
+                        <FaSpinner className="spin-load" />
+                        <span className="span-lg">No Instruments</span>
+                      </div>
                     </div>
-                  </div>
-                </>
-              ) : (
-                <div
-                  className="w-full h-full flex align-center justify-center border-radius-primary border-default"
-                  style={{ backgroundColor: "#262629" }}
-                >
-                  <div className="flex-column g-3 align-center justify-center">
-                    <FaSpinner className="spin-load" />
-                    <span className="span-lg">No Instruments</span>
-                  </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           </>
         }
