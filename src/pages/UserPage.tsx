@@ -1,6 +1,11 @@
 import { FC, useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
-import { FaBook, FaLayerGroup, FaLock, FaMagnifyingGlass } from "react-icons/fa6";
+import {
+  FaBook,
+  FaLayerGroup,
+  FaLock,
+  FaMagnifyingGlass,
+} from "react-icons/fa6";
 import { useParams } from "react-router-dom";
 import AUMCard from "../componenets/AUMCard";
 import CustomHeader from "../componenets/CustomHeader";
@@ -137,6 +142,16 @@ const UserPage: FC = () => {
     }
   }
 
+  function searchForInstrument(value?: string): void {
+    if (value) {
+      setInstrument(value.trim());
+    } else {
+      setInstrument(undefined);
+    }
+
+    setRequestOrders(requestOrders + 1);
+  }
+
   const contentOptions: Record<number, JSX.Element> = {
     0: (
       <OrdersTable
@@ -150,7 +165,7 @@ const UserPage: FC = () => {
         showSnackbar={false}
       />
     ),
-    1: <AUMCard username={username!}/>,
+    1: <AUMCard username={username!} />,
   };
 
   return (
@@ -235,7 +250,7 @@ const UserPage: FC = () => {
                       {
                         icon: FaLayerGroup,
                         text: "AUM",
-                      }
+                      },
                     ].map((obj, ind) => (
                       <button
                         key={ind}
@@ -262,24 +277,19 @@ const UserPage: FC = () => {
                           ref={instrumentInputRef}
                           type="text"
                           className="border-none w-full h-full"
-                          onBlur={(e) => {
-                            const value: null | string = (
-                              e.target as HTMLInputElement
-                            ).value.trim();
-
-                            if (value) {
-                              setInstrument(value.trim());
-                            } else {
-                              setInstrument(undefined);
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              searchForInstrument((e.target as HTMLInputElement).value);
                             }
-
-                            setRequestOrders(requestOrders + 1);
                           }}
+                          onBlur={(e) => searchForInstrument(e.target.value)}
                         />
                       </div>
                     </div>
                   )}
-                  <div className="h-full w-full" style={{ height: '20rem'}}>{contentOptions[tab]}</div>
+                  <div className="h-full w-full" style={{ height: "20rem" }}>
+                    {contentOptions[tab]}
+                  </div>
                 </div>
               </div>
             )}

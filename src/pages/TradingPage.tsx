@@ -1,5 +1,5 @@
 import { FC, useEffect, useRef, useState } from "react";
-import { FaXmark } from "react-icons/fa6";
+import { FaWifi, FaXmark } from "react-icons/fa6";
 import { useNavigate, useParams } from "react-router-dom";
 import CustomHeader from "../componenets/CustomHeader";
 import DOM from "../componenets/DOM";
@@ -47,11 +47,13 @@ type AuthToken = Record<"token", string>;
 
 const TradingPage: FC = () => {
   const navigate = useNavigate();
+
   const { marketType, instrument } = useParams();
   const { isLoggedIn } = useIsLoggedIn();
   const { profile, setProfile } = useProfile();
   const { orders, setOrders } = useUserOrders();
 
+  const [connectionStatus, setConnectionStatus] = useState<number>(0);
   const [price, setPrice] = useState<number | undefined>(undefined);
   const [tab, setTab] = useState<number>(0);
   const [showOrderCard, setShowOrderCard] = useState<boolean>(false);
@@ -63,6 +65,7 @@ const TradingPage: FC = () => {
     OrderStatus.PARTIALLY_FILLED,
     OrderStatus.PENDING,
   ]);
+  const [requestOrdersProp, setRequestOrdersProp] = useState<number>(0);
   const [headerRenderProp, setHeaderRenderProp] = useState<number>(0);
   const [selectedTimeframe, setSelectedTimeframe] = useState<Timeframe>(
     Timeframe.M5
@@ -81,39 +84,38 @@ const TradingPage: FC = () => {
     }
   }, [marketType]);
 
+  useEffect(() => console.log(ordersFilter), [ordersFilter]);
+
   useEffect(() => {
     if (tablePageRef.current.includes(tablePage)) return;
 
     (async () => {
-      try {
-        const rsp = await fetch(
-          import.meta.env.VITE_BASE_URL +
-            `/account/orders?instrument=${instrument}&market_type=${marketType}${ordersFilter
-              .map((status) => `&status=${status}`)
-              .join("")}&page=${Math.max(0, tablePage - 1)}`,
-          { method: "GET", credentials: "include" }
-        );
-
-        const data = await rsp.json();
-        if (!rsp.ok) throw new Error(data["error"]);
-
-        setOrders(
-          UtilsManager.removeDuplicateOrders(
-            (data as PaginatedOrders).orders,
-            orders
-          )
-        );
-        setHasNextPage((data as PaginatedOrders).has_next_page);
+      const data = await fetchOrders();
+      if (data) {
+        setOrders(UtilsManager.removeDuplicateOrders(data.orders, orders));
+        setHasNextPage(data.has_next_page);
         setOrdersTableRenderProp(ordersTableRenderProp + 1);
-        tablePageRef.current.push(tablePage);
-      } catch (err) {
-        UtilsManager.toastError((err as Error).message);
       }
+      tablePageRef.current.push(tablePage);
     })();
   }, [tablePage]);
 
   useEffect(() => {
+    if (requestOrdersProp > 0) {
+      (async () => {
+        const data = await fetchOrders();
+        if (data) {
+          setOrders(UtilsManager.removeDuplicateOrders(data.orders, orders));
+          setHasNextPage(data.has_next_page);
+          setOrdersTableRenderProp(ordersTableRenderProp + 1);
+        }
+      })();
+    }
+  }, [requestOrdersProp]);
+
+  useEffect(() => {
     if (Object.keys(profile ?? {}).length == 0 || !isLoggedIn) return;
+
     (async () => {
       const authToken: AuthToken | null = await getOrderWsToken();
       if (!authToken) return;
@@ -129,7 +131,7 @@ const TradingPage: FC = () => {
         import.meta.env.VITE_BASE_URL.replace("http", "ws") + "/order/ws"
       );
 
-      ordersWsRef.current.onopen = (e) => {
+      ordersWsRef.current.onopen = () => {
         ordersWsRef.current?.send(JSON.stringify(authToken));
       };
 
@@ -141,7 +143,7 @@ const TradingPage: FC = () => {
         }
       };
 
-      ordersWsRef.current.onclose = (e) => {};
+      ordersWsRef.current.onclose = () => {};
     })();
 
     return () => {
@@ -153,21 +155,28 @@ const TradingPage: FC = () => {
   }, []);
 
   useEffect(() => {
+    if (priceWsRef.current != undefined) return;
     priceWsRef.current = new WebSocket(
       import.meta.env.VITE_BASE_URL.replace("http", "ws") +
         `/instrument/ws/?instrument=BTCUSD`
     );
 
-    priceWsRef.current.onopen = (e) => {};
+    priceWsRef.current.onopen = () => {};
 
     priceWsRef.current.onmessage = (e) => {
+      if (connectionStatus === 0) {
+        setConnectionStatus(1);
+      }
       const message = JSON.parse(e.data) as SocketPayload;
       handlePriceUpdate(message.content as PriceUpdate);
+      console.log(message);
     };
 
-    priceWsRef.current.onclose = (e) => {};
+    priceWsRef.current.onclose = () => {
+      setConnectionStatus(0);
+    };
 
-    priceWsRef.current.onerror = (e) => {};
+    priceWsRef.current.onerror = () => {};
 
     return () => {
       if (priceWsRef.current != undefined) {
@@ -255,6 +264,36 @@ const TradingPage: FC = () => {
       return null;
     }
   }
+
+  async function fetchOrders(): Promise<PaginatedOrders | null> {
+    try {
+      const rsp = await fetch(
+        import.meta.env.VITE_BASE_URL +
+          `/account/orders?instrument=${instrument}&market_type=${marketType}${ordersFilter
+            .map((status) => `&status=${status}`)
+            .join("")}&page=${Math.max(0, tablePage - 1)}`,
+        { method: "GET", credentials: "include" }
+      );
+
+      const data = await rsp.json();
+      if (!rsp.ok) throw new Error(data["detail"]);
+      return data as PaginatedOrders;
+    } catch (err) {
+      UtilsManager.toastError((err as Error).message);
+      return null;
+    }
+  }
+
+  const connectionStatusContent: Record<number, Record<string, string>> = {
+    0: {
+      color: "orange",
+      message: "Awaiting connection",
+    },
+    1: {
+      color: "green",
+      message: "Connection established",
+    },
+  };
 
   return (
     <>
@@ -420,9 +459,41 @@ const TradingPage: FC = () => {
                 setFilter={setOrdersFilter}
                 page={tablePage}
                 setPage={setTablePage}
+                setRequestOrders={setRequestOrdersProp}
                 allowClose={marketType === MarketType.FUTURES}
                 hasNextPage={hasNextPage}
               />
+            </div>
+
+            <div
+              className="fixed w-full flex align-center justify-start bg-background-primary"
+              style={{
+                bottom: 0,
+                left: "4.5rem",
+                height: "2rem",
+                borderTop: "1px solid grey",
+              }}
+            >
+              <div
+                className="w-auto h-full flex align-center justify-center bg-transparent"
+                style={{
+                  transform: "rotate(50deg)",
+                  width: "2rem",
+                  height: "2rem",
+                }}
+              >
+                <FaWifi
+                  size="1rem"
+                  fill={connectionStatusContent[connectionStatus].color}
+                />
+              </div>
+              <span
+                style={{
+                  color: connectionStatusContent[connectionStatus].color,
+                }}
+              >
+                {connectionStatusContent[connectionStatus].message}
+              </span>
             </div>
           </>
         }

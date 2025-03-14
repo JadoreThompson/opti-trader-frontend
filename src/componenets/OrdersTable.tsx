@@ -40,6 +40,7 @@ const OrdersTable: FC<{
   setFilter?: (arg: OrderStatus[]) => void;
   page: number;
   setPage: (arg: number) => void;
+  setRequestOrders?: (arg: number | ((arg: number) => number)) => void;
   allowModify?: boolean;
   allowClose?: boolean;
   hasNextPage: boolean;
@@ -52,6 +53,7 @@ const OrdersTable: FC<{
   setFilter,
   page,
   setPage,
+  setRequestOrders,
   allowModify = true,
   allowClose = true,
   hasNextPage,
@@ -128,12 +130,17 @@ const OrdersTable: FC<{
               onClick={() => {
                 setTab(0);
                 setPage(1);
+                
                 if (setFilter) {
                   setFilter([
                     OrderStatus.FILLED,
                     OrderStatus.PARTIALLY_FILLED,
                     OrderStatus.PENDING,
                   ]);
+                }
+
+                if (setRequestOrders) {
+                  setRequestOrders((prev) => prev + 1);
                 }
               }}
             >
@@ -145,8 +152,13 @@ const OrdersTable: FC<{
               onClick={() => {
                 setTab(1);
                 setPage(1);
+                
                 if (setFilter) {
                   setFilter([OrderStatus.CLOSED]);
+                }
+
+                if (setRequestOrders) {
+                  setRequestOrders((prev) => prev + 1);
                 }
               }}
             >

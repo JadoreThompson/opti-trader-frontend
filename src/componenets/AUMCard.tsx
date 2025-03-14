@@ -12,20 +12,20 @@ const AUMCard: FC<{ username: string }> = ({ username }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<echarts.ECharts | undefined>(undefined);
 
-  //   useEffect(() => {
-  //     (async () => {
-  //       try {
-  //         const rsp = await fetch(
-  //           import.meta.env.VITE_BASE_URL + `/account/assets?username=${username}`,
-  //           { method: "GET", credentials: "include" }
-  //         );
+    useEffect(() => {
+      (async () => {
+        try {
+          const rsp = await fetch(
+            import.meta.env.VITE_BASE_URL + `/account/assets?username=${username}`,
+            { method: "GET", credentials: "include" }
+          );
 
-  //         const data = await rsp.json();
-  //         if (!rsp.ok) throw new Error(data["detail"]);
-  //         setChartData(data);
-  //       } catch (err) {}
-  //     })();
-  //   }, []);
+          const data = await rsp.json();
+          if (!rsp.ok) throw new Error(data["detail"]);
+          setChartData(data);
+        } catch (err) {}
+      })();
+    }, []);
 
   useEffect(() => {
     const buildChart = () => {

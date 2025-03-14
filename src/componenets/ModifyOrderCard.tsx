@@ -1,8 +1,10 @@
 import { Value } from "@sinclair/typebox/value";
-import { FC, RefObject, useRef, useState } from "react";
+import { FC, useRef, useState } from "react";
 import { FaXmark } from "react-icons/fa6";
 import { ModifyOrderRequest } from "../utils/ValidationTypes";
+import UtilsManager from "../utils/classses/UtilsManager";
 import { MarketType, OrderStatus, OrderType } from "../utils/types";
+import { playMusic } from "./OrderCard";
 
 const ModifyOrderCard: FC<{
   data: Record<string, string | null | number>;
@@ -37,11 +39,6 @@ const ModifyOrderCard: FC<{
       void cardRef.current.offsetWidth;
       cardRef.current.classList.add("shake");
     }
-  }
-
-  function playMusic(audioRef: RefObject<HTMLAudioElement>): void {
-    audioRef.current!.volume = 0.25;
-    audioRef.current!.play();
   }
 
   async function submitModifyRequest(
@@ -117,6 +114,7 @@ const ModifyOrderCard: FC<{
 
       setShowClose(false);
     } catch (err) {
+      UtilsManager.toastError((err as Error).message);
       setErrorMsg((err as Error).message);
     }
   }
@@ -136,7 +134,10 @@ const ModifyOrderCard: FC<{
       }
 
       removeFromTable(data.order_id as string);
-    } catch (err) {}
+      UtilsManager.toastSuccess("Order cancelled");
+    } catch (err) {
+      UtilsManager.toastError((err as Error).message);
+    }
   }
 
   function removeFromTable(order_id: string): void {

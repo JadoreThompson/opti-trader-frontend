@@ -1,6 +1,6 @@
 import { Value } from "@sinclair/typebox/value";
-import { FC, useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
+import { FC, RefObject, useRef, useState } from "react";
+import { ToastContainer } from "react-toastify";
 import UtilsManager from "../utils/classses/UtilsManager";
 
 import { useProfile } from "../contexts/useProfile";
@@ -14,6 +14,14 @@ enum OrderType {
   LIMIT = "limit",
 }
 
+export function playMusic(audioRef: RefObject<HTMLAudioElement>): void {
+  if (!audioRef.current!.paused) {
+    audioRef.current!.pause();
+  }
+  audioRef.current!.volume = 0.25;
+  audioRef.current!.play();
+}
+
 const OrderCard: FC<{ marketType: MarketType; instrument: string }> = ({
   marketType,
   instrument,
@@ -22,6 +30,7 @@ const OrderCard: FC<{ marketType: MarketType; instrument: string }> = ({
   const [selectedOrderType, setSelectedOrderType] = useState<
     OrderType | undefined
   >(undefined);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   async function placeTrade(
     e: React.FormEvent<HTMLFormElement>
@@ -29,10 +38,7 @@ const OrderCard: FC<{ marketType: MarketType; instrument: string }> = ({
     e.preventDefault();
 
     if (selectedOrderType === undefined) {
-      toast.error(
-        "Please select an order type",
-        UtilsManager.toastErrorOptions
-      );
+      UtilsManager.toastError("Please select an order type");
       return;
     }
 
@@ -69,6 +75,9 @@ const OrderCard: FC<{ marketType: MarketType; instrument: string }> = ({
         const data = await rsp.json();
         if (!rsp.ok) throw new Error(data["detail"]);
 
+        if (audioRef.current) {
+          playMusic(audioRef);
+        }
         UtilsManager.toastSuccess("Order placed");
         setProfile((prev) => ({ ...prev!, balance: data.balance }));
       } catch (err) {
@@ -85,6 +94,12 @@ const OrderCard: FC<{ marketType: MarketType; instrument: string }> = ({
 
   return (
     <>
+    <audio
+        ref={audioRef}
+        src="../src/assets/music/coin-sound.mp3"
+        className="hidden"
+        style={{ width: 0, height: 0 }}
+      ></audio>
       <ToastContainer />
       {marketType === MarketType.FUTURES ? (
         <FuturesOrderCard

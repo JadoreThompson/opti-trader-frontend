@@ -11,10 +11,11 @@ const DefaultLayout: FC<{ element: JSX.Element }> = ({ element }) => {
     <>
       <div
         id="sidebar"
-        className="fixed flex-column g-2 justify-start h-full p-sm"
+        className="fixed flex-column g-2 justify-start h-full p-sm bg-background-primary"
         style={{
           width: "4.5rem",
           boxShadow: "0 0 5px 1px #970707",
+          zIndex: 998,
         }}
       >
         {isLoggedIn && profile && (

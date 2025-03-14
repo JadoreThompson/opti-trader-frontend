@@ -1,10 +1,9 @@
 import { Value } from "@sinclair/typebox/value";
-import { FC, useContext, useState } from "react";
+import { FC, useState } from "react";
 import { FaCoins } from "react-icons/fa6";
 import { SpotCloseOrderRequest } from "../utils/ValidationTypes";
 import UtilsManager from "../utils/classses/UtilsManager";
 import { MarketType, OrderType, Side } from "../utils/types";
-import { UserOrdersContext } from "../contexts/OrdersContext";
 
 const SpotOrderCard: FC<{
   instrument: string;
