@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { FaBurger, FaCoins, FaWallet } from "react-icons/fa6";
+import { FaBars, FaCoins, FaWallet } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import { useIsLoggedIn } from "../contexts/useIsLoggedIn";
 import { useProfile } from "../contexts/useProfile";
@@ -31,7 +31,7 @@ const CustomHeader: FC<{
         </div>
 
         {profile?.balance !== undefined && (
-          <div className="h-full w-full flex-center">
+          <div className="h-full w-full flex-center balance-display">
             <div className="h-full border-bg-secondary border-radius-primary flex-center g-2 overflow-hidden">
               <div className="h-full w-auto flex g-1 align-center p-xs">
                 <FaCoins fill="gold" size="1.25rem" />
@@ -49,32 +49,34 @@ const CustomHeader: FC<{
         )}
 
         <div className="h-full w-full flex justify-end">
-          {isLoggedIn ? (
-            <button
-              type="button"
-              className="btn btn-primary border-none hover-pointer"
-              onClick={async () => {
-                try {
-                  await fetch(
-                    import.meta.env.VITE_BASE_URL + "/auth/remove-token",
-                    { method: "GET", credentials: "include" }
-                  );
-                  setIsLoggedIn(false);
-                  setProfile(undefined);
-                } catch (err) {}
-              }}
-            >
-              Logout
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="btn btn-green border-none hover-pointer"
-              onClick={() => navigate("/login")}
-            >
-              Login
-            </button>
-          )}
+          <div className="login-logout h-full">
+            {isLoggedIn ? (
+              <button
+                type="button"
+                className="btn btn-primary border-none hover-pointer h-full"
+                onClick={async () => {
+                  try {
+                    await fetch(
+                      import.meta.env.VITE_BASE_URL + "/auth/remove-token",
+                      { method: "GET", credentials: "include" }
+                    );
+                    setIsLoggedIn(false);
+                    setProfile(undefined);
+                  } catch (err) {}
+                }}
+              >
+                Logout
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-green border-none hover-pointer h-full"
+                onClick={() => navigate("/login")}
+              >
+                Login
+              </button>
+            )}
+          </div>
           <button
             id="sidebarToggle"
             className="btn h-full bg-transparent border-none hover-pointer"
@@ -93,12 +95,12 @@ const CustomHeader: FC<{
               }
             }}
           >
-            <FaBurger size="3rem" fill="grey" />
+            <FaBars size="3rem" fill="grey" />
           </button>
           {profile?.username && profile?.avatar && (
             <a
               href={profile.username ? `/user/${profile.username}` : "#"}
-              className="h-full flex align-center g-1 border-radius-primary p-xs hover-pointer"
+              className="profile-display h-full flex align-center g-1 border-radius-primary p-xs hover-pointer"
             >
               <div
                 className="border-radius-primary h-full overflow-hidden"

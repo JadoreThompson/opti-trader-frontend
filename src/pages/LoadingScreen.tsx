@@ -1,5 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import {
+  FaBatteryEmpty,
   FaBatteryFull,
   FaBatteryHalf,
   FaBatteryQuarter,
@@ -13,7 +14,7 @@ const LoadingScreen: FC<{ stop: boolean }> = ({ stop }) => {
     (async () => {
       while (!stop) {
         await UtilsManager.sleep(500);
-        setOption((prev) => (prev === 2 ? 0 : prev + 1));
+        setOption((prev) => (prev === 3 ? 0 : prev + 1));
       }
     })();
   }, [stop]);
@@ -24,11 +25,10 @@ const LoadingScreen: FC<{ stop: boolean }> = ({ stop }) => {
         className="flex align-center justify-center"
         style={{ height: "10rem" }}
       >
-        {option === 0 && <FaBatteryQuarter size="100%" />}
-
-        {option === 1 && <FaBatteryHalf size="100%" />}
-
-        {option === 2 && <FaBatteryFull size="100%" />}
+        {option === 0 && <FaBatteryEmpty size="5rem" />}
+        {option === 1 && <FaBatteryQuarter size="5rem" />}
+        {option === 2 && <FaBatteryHalf size="5rem" />}
+        {option === 3 && <FaBatteryFull size="5rem" />}
       </div>
     </div>
   );

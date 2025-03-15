@@ -197,7 +197,7 @@ const InstrumentsPage: FC = () => {
         element={
           <>
             <div className="w-full h-full flex align-center justify-center">
-              <div style={{ width: "75%" }}>
+              <div className="w-sm-full w-lg-75">
                 <h1 className="mb-3">Pairs</h1>
                 <div
                   className="w-full h-full justify-start"

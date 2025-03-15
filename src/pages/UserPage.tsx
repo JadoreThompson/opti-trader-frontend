@@ -195,10 +195,7 @@ const UserPage: FC = () => {
 
             {userProfile && (
               <div className="w-full h-full flex justify-center">
-                <div
-                  className="flex-column justify-start p-md mt-3"
-                  style={{ width: "75%" }}
-                >
+                <div className="flex-column justify-start p-md mt-3 w-sm-full w-lg-75">
                   <div
                     className="w-full flex justify-between align-center p-md"
                     style={{
@@ -279,7 +276,9 @@ const UserPage: FC = () => {
                           className="border-none w-full h-full"
                           onKeyDown={(e) => {
                             if (e.key === "Enter") {
-                              searchForInstrument((e.target as HTMLInputElement).value);
+                              searchForInstrument(
+                                (e.target as HTMLInputElement).value
+                              );
                             }
                           }}
                           onBlur={(e) => searchForInstrument(e.target.value)}

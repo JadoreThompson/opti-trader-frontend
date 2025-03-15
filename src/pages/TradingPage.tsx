@@ -466,12 +466,12 @@ const TradingPage: FC = () => {
             </div>
 
             <div
-              className="fixed w-full flex align-center justify-start bg-background-primary"
+              className="trade-info-bar fixed w-full flex align-center justify-start bg-background-primary"
               style={{
-                bottom: 0,
-                left: "4.5rem",
-                height: "2rem",
-                borderTop: "1px solid grey",
+                // bottom: 0,
+                // left: "4.5rem",
+                // height: "2rem",
+                // borderTop: "1px solid grey",
               }}
             >
               <div
