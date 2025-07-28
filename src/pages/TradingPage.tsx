@@ -1,3 +1,4 @@
+import PositionsTable from "@/components/PositionsTable";
 import { cn } from "@/lib/utils";
 import { Bell, User, Wifi } from "lucide-react";
 import { useRef, useState, type FC } from "react";
@@ -42,9 +43,10 @@ const TradingPage: FC = () => {
         </header>
 
         <main className="w-full mt-10 flex p-1">
-          <div className="w-[500px] min-h-[500px] rounded-sm p-1 bg-primary">
+          <div className="w-[900px] min-h-[500px] rounded-sm p-1 bg-primary">
             {/* <OrderBook /> */}
             {/* <RecentTrades /> */}
+            <PositionsTable />
           </div>
         </main>
 
