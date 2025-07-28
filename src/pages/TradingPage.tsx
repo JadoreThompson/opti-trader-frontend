@@ -1,8 +1,6 @@
-import BasicOrderCard from "@/components/BasicOrderCard";
-import { MarketType } from "@/lib/types/marketType";
 import { cn } from "@/lib/utils";
 import { Bell, User, Wifi } from "lucide-react";
-import { useState, type FC } from "react";
+import { useRef, useState, type FC } from "react";
 import { Link } from "react-router";
 
 type ConnectionStatus = "connected" | "connecting" | "disconnected";
@@ -15,13 +13,16 @@ const TradingPage: FC = () => {
   const [simpleTickers, setSimpleTickers] = useState<TickerSummary[]>(
     Array(10).fill({ ticker: "SOL/USDT", pct: 24.7, price: 1234.11 }),
   );
+  const stylesRef = useRef<CSSStyleDeclaration>(
+    getComputedStyle(document.documentElement),
+  );
 
   const getConnectionColor = (): string =>
     connectionStatus === "connected"
-      ? "#3cc373"
+      ? stylesRef.current.getPropertyValue("--green")
       : connectionStatus === "connecting"
         ? "orange"
-        : "#c93639";
+        : stylesRef.current.getPropertyValue("--red");
 
   return (
     <>
@@ -41,8 +42,9 @@ const TradingPage: FC = () => {
         </header>
 
         <main className="w-full mt-10 flex p-1">
-          <div className="w-[300px] min-h-[500px] rounded-sm p-1 bg-primary">
-            <BasicOrderCard marketType={MarketType.FUTURES} />
+          <div className="w-[500px] min-h-[500px] rounded-sm p-1 bg-primary">
+            {/* <OrderBook /> */}
+            {/* <RecentTrades /> */}
           </div>
         </main>
 
