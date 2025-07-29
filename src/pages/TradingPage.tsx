@@ -1,13 +1,15 @@
-import BasicOrderCard from '@/components/BasicOrderCard'
-import OrderHistoryTable from '@/components/tables/OrderHistoryTable'
-import PositionsTable from '@/components/tables/PositionsTable'
+import BasicOrderCard from '@/components/BasicOrderForm'
 import OrderBook from '@/components/OrderBook'
 import RecentTrades from '@/components/RecentTrades'
+import OrderHistoryTable from '@/components/tables/OrderHistoryTable'
+import PositionsTable from '@/components/tables/PositionsTable'
 import { Button } from '@/components/ui/button'
+import { HTTP_BASE_URL, WS_BASE_URL } from '@/config'
 import { cn } from '@/lib/utils'
 import { Bell, ChevronUp, User, Wifi } from 'lucide-react'
 import { useEffect, useRef, useState, type FC } from 'react'
 import { Link } from 'react-router'
+import { toast, Toaster } from 'sonner'
 
 type ConnectionStatus = 'connected' | 'connecting' | 'disconnected'
 type TickerSummary = { ticker: string; pct: number; price: number }
@@ -18,8 +20,9 @@ const TradingPage: FC = () => {
     const stylesRef = useRef<CSSStyleDeclaration>(
         getComputedStyle(document.documentElement)
     )
+    const [wsToken, setWsToken] = useState<string | undefined>(undefined)
     const [connectionStatus, setConnectionStatus] =
-        useState<ConnectionStatus>('connected')
+        useState<ConnectionStatus>('disconnected')
 
     const [simpleTickers, setSimpleTickers] = useState<TickerSummary[]>(
         Array(10).fill({ ticker: 'SOL/USDT', pct: 24.7, price: 1234.11 })
@@ -27,12 +30,19 @@ const TradingPage: FC = () => {
     const [tableTab, setTableTab] = useState<Tab>('positions')
     const [showScrollToTop, setShowScollToTop] = useState<boolean>(false)
 
-    const getConnectionColor = (): string =>
+    const connectionColor =
         connectionStatus === 'connected'
             ? stylesRef.current.getPropertyValue('--green')
             : connectionStatus === 'connecting'
               ? 'orange'
               : stylesRef.current.getPropertyValue('--red')
+
+    const connectionMsg =
+        connectionStatus === 'connected'
+            ? 'Connected'
+            : connectionStatus === 'connecting'
+              ? 'Connecting...'
+              : 'Disconnected'
 
     useEffect(() => {
         document.addEventListener('scroll', () =>
@@ -40,8 +50,69 @@ const TradingPage: FC = () => {
         )
     }, [])
 
+    useEffect(() => {
+        const fetchToken = async () => {
+            const rsp = await fetch(HTTP_BASE_URL + '/order/access-token', {
+                credentials: 'include',
+            })
+            if (rsp.ok) {
+                setWsToken((await rsp.json())['token'])
+            }
+        }
+
+        fetchToken()
+    }, [])
+
+    useEffect(() => {
+        if (!wsToken) return
+
+        const heartbeat = async (ws: WebSocket) => {
+            while (true) {
+                await new Promise((resolve) => setTimeout(resolve, 4000))
+
+                if (!ws.OPEN) {
+                    break
+                }
+
+                ws.send('ping')
+            }
+        }
+
+        const ws = new WebSocket(WS_BASE_URL + '/order/ws')
+
+        ws.onopen = () => {
+            setConnectionStatus('connecting')
+            ws.send(wsToken)
+            heartbeat(ws)
+        }
+
+        ws.onmessage = async (e) => {
+            if (e.data === 'connected') {
+                return setConnectionStatus('connected')
+            }
+
+            const msg = JSON.parse(e.data)
+            if (connectionStatus != 'connected') {
+                setConnectionStatus('connected')
+            }
+
+            switch (msg.event_type) {
+                case 'order_new':
+                    toast('Order Placed', {
+                        description: `Order ID: ${msg.order_id}`,
+                    })
+                    break
+            }
+        }
+
+        return () => {
+            ws.close()
+        }
+    }, [wsToken])
+
     return (
         <>
+            <Toaster />
             <div id="dave" className="w-full h-auto flex bg-zinc-900 pb-7">
                 <header className="w-full h-10 z-[999] fixed top-0 left-0 flex justify-between items-center border-b border-b-gray bg-background px-7">
                     <div></div>
@@ -102,12 +173,9 @@ const TradingPage: FC = () => {
                 <div className="w-full h-7 min-h-0 max-h-10 z-[999] fixed bottom-0 flex items-center border-t-1 border-t-gray bg-background text-xs">
                     <div className="w-full h-full relative">
                         <div className="w-fit h-full absolute top-0 left-0 z-2 flex items-center gap-2 px-2 border-r-1 border-r-gray bg-[var(--background)]">
-                            <Wifi
-                                className="rotate-50 size-3"
-                                color={getConnectionColor()}
-                            />
-                            <span style={{ color: getConnectionColor() }}>
-                                Stable Connection
+                            <Wifi className="size-3" color={connectionColor} />
+                            <span style={{ color: connectionColor }}>
+                                {connectionMsg}
                             </span>
                         </div>
                         <div className="w-full h-full flex flex-row">
@@ -144,14 +212,6 @@ const TradingPage: FC = () => {
                     </div>
                 </div>
             </div>
-            {/* {showScrollToTop && (
-                <div
-                    className="fixed w-10 h-10 bottom-12 right-10 flex items-center justify-center rounded-full bg-gray-900 cursor-pointer"
-                    onClick={() => window.scrollTo({ top: 0 })}
-                >
-                    <ChevronUp className="size-5" />
-                </div>
-            )} */}
 
             <div
                 className={`fixed w-10 h-10 bottom-12 right-10 flex items-center justify-center rounded-full bg-gray-900 cursor-pointer transition-all duration-300 ${showScrollToTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-100'}`}

@@ -1,8 +1,10 @@
-import { API_BASE_URL } from '@/config'
+import { HTTP_BASE_URL } from '@/config'
+import { FuturesLimitOrder } from '@/lib/types/form-types/order'
 import { MarketType } from '@/lib/types/marketType'
 import { OrderType } from '@/lib/types/orderType'
 import { Side } from '@/lib/types/side'
 import { cn } from '@/lib/utils'
+import { AssertError, Value } from '@sinclair/typebox/value'
 import { useState, type FC } from 'react'
 import { toast } from 'sonner'
 import Toaster from './Toaster'
@@ -14,13 +16,19 @@ import { Tabs, TabsList, TabsTrigger } from './ui/tabs'
  * Supports Limit and Market Orders.
  */
 
-const BasicOrderCard: FC<{ balance: number; marketType: MarketType }> = ({
+const BasicOrderCard: FC<{
+    balance: number
+    marketType: MarketType
+    instrument: string
+}> = ({
     balance = 89237.0,
-    marketType,
+    marketType = MarketType.FUTURES,
+    instrument = 'BTCUSD',
 }) => {
     const [side, setSide] = useState<Side>(Side.BID)
     const [orderType, setOrderType] = useState<OrderType>(OrderType.LIMIT)
     const [showTPSL, setShowTPSL] = useState(false)
+    const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
     const sideColor =
         side === Side.BID
@@ -40,32 +48,52 @@ const BasicOrderCard: FC<{ balance: number; marketType: MarketType }> = ({
         e: React.FormEvent<HTMLFormElement>
     ): Promise<void> => {
         e.preventDefault()
+        setErrorMsg(null)
 
         const formData = Object.fromEntries(
             new FormData(e.currentTarget).entries()
         )
-        const endpoint =
-            API_BASE_URL +
-            (marketType === MarketType.FUTURES ? '/futures' : '/spot')
+        formData['market_type'] = marketType
+        formData['instrument'] = instrument
+        formData['order_type'] = orderType
+        formData['side'] = side
 
-        // const rsp = await fetch(endpoint, {
-        //   method: "POST",
-        //   credentials: "include",
-        //   headers: { "Content-Type": "application/json" },
-        //   body: JSON.stringify(formData),
-        // });
+        try {
+            const body = Value.Parse(FuturesLimitOrder, formData)
+            const rsp = await fetch(
+                HTTP_BASE_URL +
+                    (marketType === MarketType.FUTURES
+                        ? '/order/futures'
+                        : '/order/spot'),
+                {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                }
+            )
+            console.log(rsp)
+            const data = await rsp.json()
+            console.log(data)
 
-        // if (!rsp.ok) {
-        // } else {
-        // }
+            if (rsp.status != 201) throw new Error(data['error'])
 
-        toast('Hi')
+            toast('Order Submitted', {
+                description: `Order ID: ${data['order_id']}`,
+            })
+        } catch (error) {
+            if (error instanceof AssertError) {
+                setErrorMsg('Invalid reqeust')
+            } else {
+                setErrorMsg((error as Error).message)
+            }
+        }
     }
 
     return (
         <>
             <Toaster />
-            <form onSubmit={handleFormSubmit} className='w-full'>
+            <form onSubmit={handleFormSubmit} className="w-full">
                 <div className="w-full rounded-xl border-none p-4">
                     {/* Side Switch Tabs */}
                     <Tabs
@@ -109,7 +137,7 @@ const BasicOrderCard: FC<{ balance: number; marketType: MarketType }> = ({
                     </div>
 
                     {/* Order Form */}
-                    <div className="space-y-4">
+                    <div className="space-y-4 mb-2">
                         {orderType === 'limit' && (
                             <div>
                                 <label className="text-xs text-muted-foreground">
@@ -117,6 +145,7 @@ const BasicOrderCard: FC<{ balance: number; marketType: MarketType }> = ({
                                 </label>
                                 <Input
                                     type="number"
+                                    name="limit_price"
                                     placeholder="0.00"
                                     className="h-9"
                                     required
@@ -133,6 +162,7 @@ const BasicOrderCard: FC<{ balance: number; marketType: MarketType }> = ({
                             </div>
                             <Input
                                 type="number"
+                                name="quantity"
                                 placeholder="0.00"
                                 className="h-9"
                                 required
@@ -156,6 +186,7 @@ const BasicOrderCard: FC<{ balance: number; marketType: MarketType }> = ({
                                         </label>
                                         <Input
                                             type="number"
+                                            name="take_profit"
                                             placeholder="TP Price"
                                             className="h-9"
                                         />
@@ -166,6 +197,7 @@ const BasicOrderCard: FC<{ balance: number; marketType: MarketType }> = ({
                                         </label>
                                         <Input
                                             type="number"
+                                            name="stop_loss"
                                             placeholder="SL Price"
                                             className="h-9"
                                         />
@@ -175,11 +207,19 @@ const BasicOrderCard: FC<{ balance: number; marketType: MarketType }> = ({
                         </div>
                     </div>
 
+                    {errorMsg && (
+                        <div className="w-full text-center mb-2">
+                            <span className="text-red-500 text-sm">
+                                {errorMsg}
+                            </span>
+                        </div>
+                    )}
+
                     {/* Submit Button */}
                     <Button
                         type="submit"
                         className={cn(
-                            'mt-6 w-full text-white cursor-pointer',
+                            ' w-full text-white cursor-pointer',
                             sideColor
                         )}
                     >
