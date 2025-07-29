@@ -2,8 +2,8 @@ import { useRef, useState, type FC } from "react";
 
 type PriceLevel = { price: number; size: number };
 interface OrderBookProps {
-  asks: PriceLevel[];
-  bids: PriceLevel[];
+  asks?: PriceLevel[];
+  bids?: PriceLevel[];
 }
 
 const OrderBook: FC<OrderBookProps> = ({
@@ -21,8 +21,8 @@ const OrderBook: FC<OrderBookProps> = ({
   );
 
   return (
-    <div className="w-full h-full p-4 text-xs">
-      <h2 className="mb-2 font-semibold text-lg">Order Book</h2>
+    <div className="w-full h-full text-xs">
+      <h2 className="mb-2 font-semibold text-lg p-4">Order Book</h2>
       <div className="w-full flex flex-row">
         <div className="w-full h-full flex flex-col">
           <div className="flex justify-between">
@@ -37,7 +37,7 @@ const OrderBook: FC<OrderBookProps> = ({
                 key={`bid-${idx}`}
                 className={`w-full h-[20px] relative flex flex-row-reverse text-[${stylesRef.current.getPropertyValue("--green")}]`}
               >
-                <div className="w-full h-full z-999 absolute top-0 left-0 flex justify-between p-1">
+                <div className="w-full h-full z-2 absolute top-0 left-0 flex justify-between p-1">
                   <span>{bid.size}</span>
                   <span>{bid.price.toFixed(2)}</span>
                 </div>
@@ -59,14 +59,14 @@ const OrderBook: FC<OrderBookProps> = ({
             </span>
             <span className="text-sm font-bold text-gray-500">SIZE</span>
           </div>
-          <div className="w-full">
+          <div className="w-full ">
             {asks.map((ask, idx) => (
               <div
                 key={`ask-${idx}`}
                 className="w-full h-[20px] relative flex"
                 style={{ color: stylesRef.current.getPropertyValue("--red") }}
               >
-                <div className="w-full h-full absolute top-0 left-0 flex justify-between p-1">
+                <div className="w-full h-full z-2 absolute top-0 left-0 flex justify-between p-1">
                   <span>{ask.price.toFixed(2)}</span>
                   <span>{ask.size}</span>
                 </div>
