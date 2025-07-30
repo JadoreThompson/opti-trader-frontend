@@ -1,5 +1,8 @@
 import { HTTP_BASE_URL } from '@/config'
-import { FuturesLimitOrder } from '@/lib/types/form-types/order'
+import {
+    FuturesLimitOrder,
+    FuturesMarketOrder,
+} from '@/lib/types/form-types/order'
 import { MarketType } from '@/lib/types/marketType'
 import { OrderType } from '@/lib/types/orderType'
 import { Side } from '@/lib/types/side'
@@ -23,7 +26,7 @@ const BasicOrderCard: FC<{
 }> = ({
     balance = 89237.0,
     marketType = MarketType.FUTURES,
-    instrument = 'BTCUSD',
+    instrument = 'BTCUSD-FUTURES',
 }) => {
     const [side, setSide] = useState<Side>(Side.BID)
     const [orderType, setOrderType] = useState<OrderType>(OrderType.LIMIT)
@@ -58,8 +61,20 @@ const BasicOrderCard: FC<{
         formData['order_type'] = orderType
         formData['side'] = side
 
+        for (const key of ['take_profit', 'stop_loss']) {
+            if (!((formData[key] || '') as string).trim()) {
+                delete formData[key]
+            }
+        }
+
         try {
-            const body = Value.Parse(FuturesLimitOrder, formData)
+            const body = Value.Parse(
+                orderType === OrderType.LIMIT
+                    ? FuturesLimitOrder
+                    : FuturesMarketOrder,
+                formData
+            )
+
             const rsp = await fetch(
                 HTTP_BASE_URL +
                     (marketType === MarketType.FUTURES
@@ -72,9 +87,7 @@ const BasicOrderCard: FC<{
                     body: JSON.stringify(body),
                 }
             )
-            console.log(rsp)
             const data = await rsp.json()
-            console.log(data)
 
             if (rsp.status != 201) throw new Error(data['error'])
 
@@ -84,6 +97,7 @@ const BasicOrderCard: FC<{
         } catch (error) {
             if (error instanceof AssertError) {
                 setErrorMsg('Invalid reqeust')
+                console.log('Form Data:', formData)
             } else {
                 setErrorMsg((error as Error).message)
             }

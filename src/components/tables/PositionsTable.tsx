@@ -1,13 +1,13 @@
 import type { Order } from '@/lib/types/api-types/order'
 import { OrderType } from '@/lib/types/orderType'
 import { Side } from '@/lib/types/side'
-import { cn, formatUnderscore, mockOrders } from '@/lib/utils'
+import { cn, formatUnderscore } from '@/lib/utils'
 import { Pencil, X } from 'lucide-react'
 import { useRef, useState, type FC } from 'react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 
-const PositionsTable: FC<{ orders?: Order[] }> = ({ orders = mockOrders }) => {
+const PositionsTable: FC<{ orders: Order[] }> = ({ orders }) => {
     const tableBottomRef = useRef<HTMLDivElement>(null)
     const cardRef = useRef<HTMLDivElement>(null)
     const overlayRef = useRef<HTMLDivElement>(null)
@@ -126,11 +126,6 @@ const PositionsTable: FC<{ orders?: Order[] }> = ({ orders = mockOrders }) => {
                         </Button>
                         <Button
                             onClick={() => {
-                                console.log(
-                                    'Modify',
-                                    focusedOrder.order_id,
-                                    editData
-                                )
                                 setShowModify(false)
                                 setFocusedOrder(undefined)
                             }}
@@ -201,11 +196,6 @@ const PositionsTable: FC<{ orders?: Order[] }> = ({ orders = mockOrders }) => {
                         </Button>
                         <Button
                             onClick={() => {
-                                console.log(
-                                    'Close',
-                                    focusedOrder.order_id,
-                                    editData.quantity
-                                )
                                 setShowClose(false)
                                 setFocusedOrder(undefined)
                             }}
@@ -241,102 +231,122 @@ const PositionsTable: FC<{ orders?: Order[] }> = ({ orders = mockOrders }) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {orders.map((order, idx) => (
-                            <tr
-                                key={order.order_id}
-                                className={`h-10 ${idx > 0 ? 'border-t' : ''}`}
-                            >
-                                <td>{order.instrument}</td>
-                                <td>{order.quantity}</td>
-                                <td>
-                                    {order.side === Side.BID ? 'Buy' : 'Sell'}
-                                </td>
-                                <td>
-                                    {order.order_type.charAt(0).toUpperCase() +
-                                        order.order_type.slice(1)}
-                                </td>
-                                <td
-                                    className={
-                                        order.limit_price == null
-                                            ? 'text-gray-500'
-                                            : ''
-                                    }
-                                >
-                                    {order.limit_price ?? '--'}
-                                </td>
-                                <td
-                                    className={
-                                        order.take_profit == null
-                                            ? 'text-gray-500'
-                                            : ''
-                                    }
-                                >
-                                    {order.take_profit ?? '--'}
-                                </td>
-                                <td
-                                    className={
-                                        order.stop_loss == null
-                                            ? 'text-gray-500'
-                                            : ''
-                                    }
-                                >
-                                    {order.stop_loss ?? '--'}
-                                </td>
-                                <td
-                                    className={
-                                        order.filled_price == null
-                                            ? 'text-gray-500'
-                                            : ''
-                                    }
-                                >
-                                    {order.filled_price ?? '--'}
-                                </td>
-                                <td
-                                    className={
-                                        order.unrealised_pnl == null
-                                            ? 'text-gray-500'
-                                            : order.unrealised_pnl < 0
-                                              ? 'text-[var(--red)]'
-                                              : 'text-[var(--green)]'
-                                    }
-                                >
-                                    {order.unrealised_pnl != null
-                                        ? order.unrealised_pnl.toFixed(2)
-                                        : '--'}
-                                </td>
-                                <td>{formatUnderscore(order.status)}</td>
-                                <td>
-                                    <div className="flex items-center justify-center gap-2">
-                                        <Pencil
-                                            className={cn(
-                                                'size-4 cursor-pointer',
-                                                'text-gray-500'
-                                            )}
-                                            onClick={(e) =>
-                                                handleActionClick(
-                                                    e,
-                                                    'modify',
-                                                    order
-                                                )
-                                            }
-                                        />
-                                        <X
-                                            className={cn(
-                                                'size-4 cursor-pointer',
-                                                'text-gray-500'
-                                            )}
-                                            onClick={(e) =>
-                                                handleActionClick(
-                                                    e,
-                                                    'close',
-                                                    order
-                                                )
-                                            }
-                                        />
-                                    </div>
+                        {orders.length === 0 ? (
+                            <tr>
+                                <td colSpan={11} className="h-20 text-center ">
+                                    <span className="text-neutral-500">
+                                        No open Positions
+                                    </span>
                                 </td>
                             </tr>
-                        ))}
+                        ) : (
+                            <>
+                                {orders.map((order, idx) => (
+                                    <tr
+                                        key={order.order_id}
+                                        className={`h-10 ${idx > 0 ? 'border-t' : ''}`}
+                                    >
+                                        <td>{order.instrument}</td>
+                                        <td>{order.quantity}</td>
+                                        <td>
+                                            {order.side === Side.BID
+                                                ? 'Buy'
+                                                : 'Sell'}
+                                        </td>
+                                        <td>
+                                            {order.order_type
+                                                .charAt(0)
+                                                .toUpperCase() +
+                                                order.order_type.slice(1)}
+                                        </td>
+                                        <td
+                                            className={
+                                                order.limit_price == null
+                                                    ? 'text-gray-500'
+                                                    : ''
+                                            }
+                                        >
+                                            {order.limit_price ?? '--'}
+                                        </td>
+                                        <td
+                                            className={
+                                                order.take_profit == null
+                                                    ? 'text-gray-500'
+                                                    : ''
+                                            }
+                                        >
+                                            {order.take_profit ?? '--'}
+                                        </td>
+                                        <td
+                                            className={
+                                                order.stop_loss == null
+                                                    ? 'text-gray-500'
+                                                    : ''
+                                            }
+                                        >
+                                            {order.stop_loss ?? '--'}
+                                        </td>
+                                        <td
+                                            className={
+                                                order.filled_price == null
+                                                    ? 'text-gray-500'
+                                                    : ''
+                                            }
+                                        >
+                                            {order.filled_price ?? '--'}
+                                        </td>
+                                        <td
+                                            className={
+                                                order.unrealised_pnl == null
+                                                    ? 'text-gray-500'
+                                                    : order.unrealised_pnl < 0
+                                                      ? 'text-[var(--red)]'
+                                                      : 'text-[var(--green)]'
+                                            }
+                                        >
+                                            {order.unrealised_pnl != null
+                                                ? order.unrealised_pnl.toFixed(
+                                                      2
+                                                  )
+                                                : '--'}
+                                        </td>
+                                        <td>
+                                            {formatUnderscore(order.status)}
+                                        </td>
+                                        <td>
+                                            <div className="flex items-center justify-center gap-2">
+                                                <Pencil
+                                                    className={cn(
+                                                        'size-4 cursor-pointer',
+                                                        'text-gray-500'
+                                                    )}
+                                                    onClick={(e) =>
+                                                        handleActionClick(
+                                                            e,
+                                                            'modify',
+                                                            order
+                                                        )
+                                                    }
+                                                />
+                                                <X
+                                                    className={cn(
+                                                        'size-4 cursor-pointer',
+                                                        'text-gray-500'
+                                                    )}
+                                                    onClick={(e) =>
+                                                        handleActionClick(
+                                                            e,
+                                                            'close',
+                                                            order
+                                                        )
+                                                    }
+                                                />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </>
+                        )}
                     </tbody>
                 </table>
                 <div ref={tableBottomRef} />

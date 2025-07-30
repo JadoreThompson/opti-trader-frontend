@@ -1,9 +1,9 @@
 import type { Order } from '@/lib/types/api-types/order'
 import { Side } from '@/lib/types/side'
-import { formatUnderscore, mockOrders } from '@/lib/utils'
+import { formatUnderscore } from '@/lib/utils'
 import { useRef, type FC } from 'react'
 
-const OrderHistory: FC<{ orders?: Order[] }> = ({ orders = mockOrders }) => {
+const OrderHistory: FC<{ orders: Order[] }> = ({ orders }) => {
     const tableBottomRef = useRef<HTMLDivElement>(null)
 
     return (

@@ -5,6 +5,10 @@ import OrderHistoryTable from '@/components/tables/OrderHistoryTable'
 import PositionsTable from '@/components/tables/PositionsTable'
 import { Button } from '@/components/ui/button'
 import { HTTP_BASE_URL, WS_BASE_URL } from '@/config'
+import type { Event } from '@/lib/types/api-types/event'
+import { EventType } from '@/lib/types/api-types/eventType'
+import type { Order } from '@/lib/types/api-types/order'
+import { OrderStatus } from '@/lib/types/orderStatus'
 import { cn } from '@/lib/utils'
 import { Bell, ChevronUp, User, Wifi } from 'lucide-react'
 import { useEffect, useRef, useState, type FC } from 'react'
@@ -15,6 +19,22 @@ type ConnectionStatus = 'connected' | 'connecting' | 'disconnected'
 type TickerSummary = { ticker: string; pct: number; price: number }
 const tableTabs = ['positions', 'history']
 type Tab = (typeof tableTabs)[number]
+
+// Constatnts
+const eventTitles: Partial<Record<EventType, string>> = {
+    [EventType.ORDER_NEW]: 'Order Placed',
+    [EventType.ORDER_PARTIALLY_CANCELLED]: 'Order Partially Cancelled',
+    [EventType.ORDER_CANCELLED]: 'Order Cancelled',
+    [EventType.ORDER_MODIFIED]: 'Order Modified',
+    [EventType.ORDER_PARTIALLY_FILLED]: 'Order Partially Filled',
+    [EventType.ORDER_FILLED]: 'Order Filled',
+    [EventType.ORDER_PARTIALLY_CLOSED]: 'Order Partially Closed',
+    [EventType.ORDER_CLOSED]: 'Order Closed',
+    [EventType.ORDER_REJECTED]: 'Order Rejected',
+    [EventType.ORDER_NEW_REJECTED]: 'Order Rejected',
+    [EventType.ORDER_CANCEL_REJECTED]: 'Cancel rejected',
+    [EventType.ORDER_MODIFY_REJECTED]: 'Modify rejected',
+}
 
 const TradingPage: FC = () => {
     const stylesRef = useRef<CSSStyleDeclaration>(
@@ -29,6 +49,8 @@ const TradingPage: FC = () => {
     )
     const [tableTab, setTableTab] = useState<Tab>('positions')
     const [showScrollToTop, setShowScollToTop] = useState<boolean>(false)
+    const [openPositions, setOpenPositions] = useState<Order[]>([])
+    const [orderHistory, setOrderHistory] = useState<Order[]>([])
 
     const connectionColor =
         connectionStatus === 'connected'
@@ -43,6 +65,16 @@ const TradingPage: FC = () => {
             : connectionStatus === 'connecting'
               ? 'Connecting...'
               : 'Disconnected'
+
+    useEffect(
+        () => console.log('Open Positions: ', openPositions),
+        [openPositions]
+    )
+
+    useEffect(
+        () => console.log('Order History: ', orderHistory),
+        [orderHistory]
+    )
 
     useEffect(() => {
         document.addEventListener('scroll', () =>
@@ -91,24 +123,100 @@ const TradingPage: FC = () => {
                 return setConnectionStatus('connected')
             }
 
-            const msg = JSON.parse(e.data)
-            if (connectionStatus != 'connected') {
-                setConnectionStatus('connected')
+            const msg: Event = JSON.parse(e.data)
+            const payload = msg.data
+
+            console.log('Incoming Message: ', msg)
+
+            if (msg.event_type === 'payload_update') {
+                const typedPayload = payload as Order
+                handleTableUpdate(typedPayload, setOrderHistory)
+
+                if (
+                    ![OrderStatus.CANCELLED, OrderStatus.CLOSED].includes(
+                        payload.status
+                    )
+                ) {
+                    handleTableUpdate(typedPayload, setOpenPositions)
+                }
+                
+                return;
             }
 
-            switch (msg.event_type) {
-                case 'order_new':
-                    toast('Order Placed', {
-                        description: `Order ID: ${msg.order_id}`,
-                    })
-                    break
+            const title =
+                eventTitles[msg.event_type as EventType] ?? 'Unknown event'
+
+            toast(title, {
+                description: `Order ID: ${msg.order_id}`,
+            })
+
+            const orderUpdateEvents = [
+                EventType.ORDER_MODIFIED,
+                EventType.ORDER_PARTIALLY_FILLED,
+                EventType.ORDER_FILLED,
+                EventType.ORDER_PARTIALLY_CLOSED,
+            ]
+
+            const orderRemoveEvents = [
+                EventType.ORDER_CANCELLED,
+                EventType.ORDER_CLOSED,
+            ]
+
+            if (orderUpdateEvents.includes(msg.event_type)) {
+                let obj = { order_id: msg.order_id } as Order
+
+                if (msg.event_type == EventType.ORDER_MODIFIED) {
+                    obj.take_profit = payload.take_profit
+                    obj.stop_loss = payload.stop_loss
+                } else {
+                    obj.status = msg.event_type.replace(
+                        'order_',
+                        ''
+                    ) as OrderStatus
+                }
+
+                handleTableUpdate(obj, setOpenPositions)
+            } else if (orderRemoveEvents.includes(msg.event_type)) {
+                handleOrderRemoval(msg.order_id)
             }
+        }
+
+        ws.onclose = () => {
+            setConnectionStatus('disconnected')
         }
 
         return () => {
             ws.close()
         }
     }, [wsToken])
+
+    function handleTableUpdate(
+        incomingOrder: Order,
+        setter: (value: React.SetStateAction<Order[]>) => void
+    ) {
+        setter((prev) => {
+            const existingIndex =
+                prev?.findIndex(
+                    (order) => order.order_id === incomingOrder.order_id
+                ) ?? -1
+
+            if (existingIndex >= 0) {
+                return prev.map((order, index) =>
+                    index === existingIndex
+                        ? { ...order, ...incomingOrder }
+                        : order
+                )
+            } else {
+                return [...prev, incomingOrder]
+            }
+        })
+    }
+
+    function handleOrderRemoval(order_id: string) {
+        setOpenPositions((prev) =>
+            prev.filter((order) => order.order_id !== order_id)
+        )
+    }
 
     return (
         <>
@@ -163,8 +271,12 @@ const TradingPage: FC = () => {
                             ))}
                         </div>
                         <div className="w-full p-3">
-                            {tableTab === 'positions' && <PositionsTable />}
-                            {tableTab === 'history' && <OrderHistoryTable />}
+                            {tableTab === 'positions' && (
+                                <PositionsTable orders={openPositions} />
+                            )}
+                            {tableTab === 'history' && (
+                                <OrderHistoryTable orders={orderHistory} />
+                            )}
                         </div>
                     </div>
                 </main>
