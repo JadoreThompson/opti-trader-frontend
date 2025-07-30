@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { HTTP_BASE_URL, WS_BASE_URL } from '@/config'
 import type { Event } from '@/lib/types/apiTypes/event'
 import { EventType } from '@/lib/types/apiTypes/eventType'
+import type { InstrumentSummary } from '@/lib/types/apiTypes/instrumentSummary'
 import type { Order } from '@/lib/types/apiTypes/order'
 import type { PaginatedResponse } from '@/lib/types/apiTypes/paginatedResponse'
 import type { PriceUpdate } from '@/lib/types/apiTypes/priceUpdate'
@@ -58,6 +59,14 @@ const TradingPage: FC = () => {
     const [currentTimeFrame, setCurrentTimeFrame] = useState<TimeFrame>(
         TimeFrame.H1
     )
+    const instrument = 'BTCUSD-FUTURES'
+    const [instrumentSummary, setInstrumentSummary] =
+        useState<InstrumentSummary | null>(null)
+    const [prevPrice, setPrevPrice] = useState<number | null>(null)
+    const [price, setPrice] = useState<number | null>(null)
+    // const prevPrice = useMemo(() => {
+    //     console.log("Price:", price, "Prev", this)
+    // }, [price]);
 
     const [wsToken, setWsToken] = useState<string | undefined>(undefined)
     const [connectionStatus, setConnectionStatus] =
@@ -107,12 +116,26 @@ const TradingPage: FC = () => {
         const fetchCandles = async () => {
             const rsp = await fetch(
                 HTTP_BASE_URL +
-                    '/instrument/BTCUSD-FUTURES/candles?time_frame=1h'
+                    `/instrument/${instrument}/candles?time_frame=${currentTimeFrame}`
             )
             if (rsp.ok) {
                 const data = await rsp.json()
                 setCandles(data)
                 candlesRef.current = data
+            }
+        }
+
+        fetchCandles()
+    }, [])
+
+    useEffect(() => {
+        const fetchCandles = async () => {
+            const rsp = await fetch(
+                HTTP_BASE_URL + `/instrument/${instrument}/summary`
+            )
+            if (rsp.ok) {
+                const data: InstrumentSummary = await rsp.json()
+                setInstrumentSummary(data)
             }
         }
 
@@ -129,12 +152,11 @@ const TradingPage: FC = () => {
             [TimeFrame.D1]: 24 * 60 * 60,
         }
 
-        const ws = new WebSocket(WS_BASE_URL + '/instrument/BTCUSD-FUTURES/ws')
+        const ws = new WebSocket(WS_BASE_URL + `/instrument/${instrument}/ws`)
         ws.onmessage = (e) => {
             if (candleStickSeriesRef.current) {
-                const price: PriceUpdate = JSON.parse(e.data)
+                const incomingPrice: PriceUpdate = JSON.parse(e.data)
                 const seconds = timeframeToSeconds[currentTimeFrame]
-                console.log("Price Update: ", price)
 
                 if (candlesRef.current.length) {
                     const curTime = Date.now() / 1000
@@ -146,22 +168,25 @@ const TradingPage: FC = () => {
                     if (nextTime > curTime) {
                         const updatedCandle = {
                             open: prevCandle.open,
-                            high: Math.max(prevCandle.high, price),
-                            low: Math.max(prevCandle.low, price),
-                            close: price,
-                            time: prevCandle.time
+                            high: Math.max(prevCandle.high, incomingPrice),
+                            low: Math.max(prevCandle.low, incomingPrice),
+                            close: incomingPrice,
+                            time: prevCandle.time,
                         }
                         candleStickSeriesRef.current.update(updatedCandle)
                     } else {
                         candleStickSeriesRef.current.update({
-                            open: price,
-                            high: price,
-                            low: price,
-                            close: price,
+                            open: incomingPrice,
+                            high: incomingPrice,
+                            low: incomingPrice,
+                            close: incomingPrice,
                             time: nextTime as Time,
                         })
                     }
                 }
+
+                setPrevPrice(price)
+                setPrice(incomingPrice)
             }
         }
 
@@ -381,7 +406,11 @@ const TradingPage: FC = () => {
                     <div className="w-full flex flex-row gap-1">
                         <div className="h-[550px] grow-1 rounded-sm bg-background">
                             <ChartPanel
-                                data={candles}
+                                {...(instrumentSummary ?? {})}
+                                instrument={instrument}
+                                price={price}
+                                prevPrice={prevPrice}
+                                candles={candles}
                                 seriesRef={candleStickSeriesRef}
                             />
                         </div>
