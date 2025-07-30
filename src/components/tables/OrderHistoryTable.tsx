@@ -1,10 +1,30 @@
-import type { Order } from '@/lib/types/api-types/order'
+import type { OrderTableProps } from '@/lib/props/tableProps.'
 import { Side } from '@/lib/types/side'
 import { formatUnderscore } from '@/lib/utils'
-import { useRef, type FC } from 'react'
+import { useEffect, useRef, type FC } from 'react'
 
-const OrderHistory: FC<{ orders: Order[] }> = ({ orders }) => {
+const OrderHistory: FC<OrderTableProps> = ({ orders, onScrollEnd }) => {
     const tableBottomRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    onScrollEnd()
+                }
+            })
+        })
+
+        if (tableBottomRef.current) {
+            observer.observe(tableBottomRef.current)
+        }
+
+        return () => {
+            if (tableBottomRef.current) {
+                observer.disconnect()
+            }
+        }
+    }, [])
 
     return (
         <>

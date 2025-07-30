@@ -1,13 +1,14 @@
+import type { OrderTableProps } from '@/lib/props/tableProps.'
 import type { Order } from '@/lib/types/api-types/order'
 import { OrderType } from '@/lib/types/orderType'
 import { Side } from '@/lib/types/side'
 import { cn, formatUnderscore } from '@/lib/utils'
 import { Pencil, X } from 'lucide-react'
-import { useRef, useState, type FC } from 'react'
+import { useEffect, useRef, useState, type FC } from 'react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 
-const PositionsTable: FC<{ orders: Order[] }> = ({ orders }) => {
+const PositionsTable: FC<OrderTableProps> = ({ orders, onScrollEnd }) => {
     const tableBottomRef = useRef<HTMLDivElement>(null)
     const cardRef = useRef<HTMLDivElement>(null)
     const overlayRef = useRef<HTMLDivElement>(null)
@@ -22,6 +23,26 @@ const PositionsTable: FC<{ orders: Order[] }> = ({ orders }) => {
         stop_loss?: number
         quantity?: number
     }>({})
+
+    useEffect(() => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    onScrollEnd()
+                }
+            })
+        })
+
+        if (tableBottomRef.current) {
+            observer.observe(tableBottomRef.current)
+        }
+
+        return () => {
+            if (tableBottomRef.current) {
+                observer.disconnect()
+            }
+        }
+    }, [])
 
     const handleActionClick = (
         e: React.MouseEvent<SVGSVGElement>,

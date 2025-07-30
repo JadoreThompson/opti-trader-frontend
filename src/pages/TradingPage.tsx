@@ -8,6 +8,8 @@ import { HTTP_BASE_URL, WS_BASE_URL } from '@/config'
 import type { Event } from '@/lib/types/api-types/event'
 import { EventType } from '@/lib/types/api-types/eventType'
 import type { Order } from '@/lib/types/api-types/order'
+import type { PaginatedResponse } from '@/lib/types/api-types/paginatedResponse'
+import { MarketType } from '@/lib/types/marketType'
 import { OrderStatus } from '@/lib/types/orderStatus'
 import { cn } from '@/lib/utils'
 import { Bell, ChevronUp, User, Wifi } from 'lucide-react'
@@ -40,6 +42,8 @@ const TradingPage: FC = () => {
     const stylesRef = useRef<CSSStyleDeclaration>(
         getComputedStyle(document.documentElement)
     )
+    const pageNumRef = useRef<number>(0)
+
     const [wsToken, setWsToken] = useState<string | undefined>(undefined)
     const [connectionStatus, setConnectionStatus] =
         useState<ConnectionStatus>('disconnected')
@@ -47,10 +51,13 @@ const TradingPage: FC = () => {
     const [simpleTickers, setSimpleTickers] = useState<TickerSummary[]>(
         Array(10).fill({ ticker: 'SOL/USDT', pct: 24.7, price: 1234.11 })
     )
+
     const [tableTab, setTableTab] = useState<Tab>('positions')
     const [showScrollToTop, setShowScollToTop] = useState<boolean>(false)
+
     const [openPositions, setOpenPositions] = useState<Order[]>([])
     const [orderHistory, setOrderHistory] = useState<Order[]>([])
+    // const [tablePage, setTablePage] = useState<number>(1);
 
     const connectionColor =
         connectionStatus === 'connected'
@@ -139,8 +146,8 @@ const TradingPage: FC = () => {
                 ) {
                     handleTableUpdate(typedPayload, setOpenPositions)
                 }
-                
-                return;
+
+                return
             }
 
             const title =
@@ -190,6 +197,10 @@ const TradingPage: FC = () => {
         }
     }, [wsToken])
 
+    useEffect(() => {
+        pageNumRef.current = 1
+    }, [tableTab])
+
     function handleTableUpdate(
         incomingOrder: Order,
         setter: (value: React.SetStateAction<Order[]>) => void
@@ -216,6 +227,48 @@ const TradingPage: FC = () => {
         setOpenPositions((prev) =>
             prev.filter((order) => order.order_id !== order_id)
         )
+    }
+
+    async function fetchPositions(): Promise<void> {
+        const params = new URLSearchParams()
+
+        params.append('page', pageNumRef.current.toString())
+        params.append('market_type', MarketType.FUTURES)
+
+        for (const status of [
+            OrderStatus.PENDING,
+            OrderStatus.PARTIALLY_FILLED,
+            OrderStatus.FILLED,
+        ]) {
+            params.append('status', status)
+        }
+
+        const rsp = await fetch(HTTP_BASE_URL + `/user/orders?${params}`, {
+            credentials: 'include',
+        })
+        if (rsp.ok) {
+            const data: PaginatedResponse<Order> = await rsp.json()
+            setOpenPositions((prev) => [...prev, ...data.data])
+        }
+    }
+
+    async function fetchOrderHistory(): Promise<void> {
+        const params = new URLSearchParams()
+
+        params.append('page', pageNumRef.current.toString())
+        params.append('market_type', MarketType.FUTURES)
+
+        for (const status of Object.values(OrderStatus)) {
+            params.append('status', status)
+        }
+
+        const rsp = await fetch(HTTP_BASE_URL + `/user/orders?${params}`, {
+            credentials: 'include',
+        })
+        if (rsp.ok) {
+            const data: PaginatedResponse<Order> = await rsp.json()
+            setOrderHistory((prev) => [...prev, ...data.data])
+        }
     }
 
     return (
@@ -272,10 +325,22 @@ const TradingPage: FC = () => {
                         </div>
                         <div className="w-full p-3">
                             {tableTab === 'positions' && (
-                                <PositionsTable orders={openPositions} />
+                                <PositionsTable
+                                    orders={openPositions}
+                                    onScrollEnd={() => {
+                                        pageNumRef.current += 1
+                                        fetchPositions()
+                                    }}
+                                />
                             )}
                             {tableTab === 'history' && (
-                                <OrderHistoryTable orders={orderHistory} />
+                                <OrderHistoryTable
+                                    orders={orderHistory}
+                                    onScrollEnd={() => {
+                                        pageNumRef.current += 1
+                                        fetchOrderHistory()
+                                    }}
+                                />
                             )}
                         </div>
                     </div>
