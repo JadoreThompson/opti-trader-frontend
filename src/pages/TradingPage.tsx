@@ -1,17 +1,25 @@
 import BasicOrderCard from '@/components/BasicOrderForm'
+import ChartPanel from '@/components/ChartPanel'
 import OrderBook from '@/components/OrderBook'
 import RecentTrades from '@/components/RecentTrades'
 import OrderHistoryTable from '@/components/tables/OrderHistoryTable'
 import PositionsTable from '@/components/tables/PositionsTable'
 import { Button } from '@/components/ui/button'
 import { HTTP_BASE_URL, WS_BASE_URL } from '@/config'
-import type { Event } from '@/lib/types/api-types/event'
-import { EventType } from '@/lib/types/api-types/eventType'
-import type { Order } from '@/lib/types/api-types/order'
-import type { PaginatedResponse } from '@/lib/types/api-types/paginatedResponse'
+import type { Event } from '@/lib/types/apiTypes/event'
+import { EventType } from '@/lib/types/apiTypes/eventType'
+import type { Order } from '@/lib/types/apiTypes/order'
+import type { PaginatedResponse } from '@/lib/types/apiTypes/paginatedResponse'
+import type { PriceUpdate } from '@/lib/types/apiTypes/priceUpdate'
 import { MarketType } from '@/lib/types/marketType'
 import { OrderStatus } from '@/lib/types/orderStatus'
+import { TimeFrame } from '@/lib/types/timeframe'
 import { cn } from '@/lib/utils'
+import {
+    type CandlestickData,
+    type ISeriesApi,
+    type Time,
+} from 'lightweight-charts'
 import { Bell, ChevronUp, User, Wifi } from 'lucide-react'
 import { useEffect, useRef, useState, type FC } from 'react'
 import { Link } from 'react-router'
@@ -43,6 +51,13 @@ const TradingPage: FC = () => {
         getComputedStyle(document.documentElement)
     )
     const pageNumRef = useRef<number>(0)
+    const candleStickSeriesRef = useRef<ISeriesApi<'Candlestick'>>(null)
+    const candlesRef = useRef<CandlestickData<Time>[]>([])
+
+    const [candles, setCandles] = useState<CandlestickData<Time>[]>([])
+    const [currentTimeFrame, setCurrentTimeFrame] = useState<TimeFrame>(
+        TimeFrame.H1
+    )
 
     const [wsToken, setWsToken] = useState<string | undefined>(undefined)
     const [connectionStatus, setConnectionStatus] =
@@ -57,7 +72,6 @@ const TradingPage: FC = () => {
 
     const [openPositions, setOpenPositions] = useState<Order[]>([])
     const [orderHistory, setOrderHistory] = useState<Order[]>([])
-    // const [tablePage, setTablePage] = useState<number>(1);
 
     const connectionColor =
         connectionStatus === 'connected'
@@ -90,6 +104,73 @@ const TradingPage: FC = () => {
     }, [])
 
     useEffect(() => {
+        const fetchCandles = async () => {
+            const rsp = await fetch(
+                HTTP_BASE_URL +
+                    '/instrument/BTCUSD-FUTURES/candles?time_frame=1h'
+            )
+            if (rsp.ok) {
+                const data = await rsp.json()
+                setCandles(data)
+                candlesRef.current = data
+            }
+        }
+
+        fetchCandles()
+    }, [])
+
+    useEffect(() => {
+        const timeframeToSeconds: Record<TimeFrame, number> = {
+            [TimeFrame.S5]: 5,
+            [TimeFrame.M1]: 60,
+            [TimeFrame.M5]: 5 * 60,
+            [TimeFrame.H1]: 60 * 60,
+            [TimeFrame.H4]: 4 * 60 * 60,
+            [TimeFrame.D1]: 24 * 60 * 60,
+        }
+
+        const ws = new WebSocket(WS_BASE_URL + '/instrument/BTCUSD-FUTURES/ws')
+        ws.onmessage = (e) => {
+            if (candleStickSeriesRef.current) {
+                const price: PriceUpdate = JSON.parse(e.data)
+                const seconds = timeframeToSeconds[currentTimeFrame]
+                console.log("Price Update: ", price)
+
+                if (candlesRef.current.length) {
+                    const curTime = Date.now() / 1000
+                    const prevCandle =
+                        candlesRef.current[candlesRef.current.length - 1]
+                    const prevTime = prevCandle.time as number
+                    const nextTime = prevTime + seconds
+
+                    if (nextTime > curTime) {
+                        const updatedCandle = {
+                            open: prevCandle.open,
+                            high: Math.max(prevCandle.high, price),
+                            low: Math.max(prevCandle.low, price),
+                            close: price,
+                            time: prevCandle.time
+                        }
+                        candleStickSeriesRef.current.update(updatedCandle)
+                    } else {
+                        candleStickSeriesRef.current.update({
+                            open: price,
+                            high: price,
+                            low: price,
+                            close: price,
+                            time: nextTime as Time,
+                        })
+                    }
+                }
+            }
+        }
+
+        return () => {
+            ws.close()
+        }
+    }, [candleStickSeriesRef])
+
+    useEffect(() => {
         const fetchToken = async () => {
             const rsp = await fetch(HTTP_BASE_URL + '/order/access-token', {
                 credentials: 'include',
@@ -102,6 +183,7 @@ const TradingPage: FC = () => {
         fetchToken()
     }, [])
 
+    // Orders WS
     useEffect(() => {
         if (!wsToken) return
 
@@ -274,7 +356,7 @@ const TradingPage: FC = () => {
     return (
         <>
             <Toaster />
-            <div id="dave" className="w-full h-auto flex bg-zinc-900 pb-7">
+            <div className="w-full h-auto flex bg-zinc-900 pb-7">
                 <header className="w-full h-10 z-[999] fixed top-0 left-0 flex justify-between items-center border-b border-b-gray bg-background px-7">
                     <div></div>
                     <div className="w-fit h-full flex flex-row items-center gap-2 px-2">
@@ -297,7 +379,12 @@ const TradingPage: FC = () => {
 
                 <main className="w-full min-h-screen mt-10 flex flex-col gap-1 p-1">
                     <div className="w-full flex flex-row gap-1">
-                        <div className="h-[550px] grow-1 rounded-sm bg-background"></div>
+                        <div className="h-[550px] grow-1 rounded-sm bg-background">
+                            <ChartPanel
+                                data={candles}
+                                seriesRef={candleStickSeriesRef}
+                            />
+                        </div>
                         <div className="w-[20%] flex flex-col gap-1 rounded-sm">
                             <div className="w-full h-fit pb-1 rounded-sm bg-background">
                                 <OrderBook />

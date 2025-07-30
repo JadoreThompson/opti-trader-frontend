@@ -1,4 +1,4 @@
-import type { Order } from '../types/api-types/order'
+import type { Order } from '../types/apiTypes/order'
 
 export interface TableProps {
     onScrollEnd: () => void

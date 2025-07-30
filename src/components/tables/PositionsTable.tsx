@@ -1,5 +1,5 @@
 import type { OrderTableProps } from '@/lib/props/tableProps.'
-import type { Order } from '@/lib/types/api-types/order'
+import type { Order } from '@/lib/types/apiTypes/order'
 import { OrderType } from '@/lib/types/orderType'
 import { Side } from '@/lib/types/side'
 import { cn, formatUnderscore } from '@/lib/utils'

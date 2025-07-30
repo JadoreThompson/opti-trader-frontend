@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import type { Order } from './types/api-types/order'
+import type { Order } from './types/apiTypes/order'
 import { OrderStatus } from './types/orderStatus'
 import { OrderType } from './types/orderType'
 import { Side } from './types/side'

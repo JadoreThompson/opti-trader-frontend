@@ -1,9 +1,50 @@
-import type { FC } from "react";
+import {
+    CandlestickSeries,
+    ColorType,
+    createChart,
+    type CandlestickData,
+    type ISeriesApi,
+    type Time,
+} from 'lightweight-charts'
+import { useEffect, useRef, type FC } from 'react'
 
-const ChartPanel: FC = () => (
-  <div className="flex-1 bg-gray-900 text-center text-gray-500">
-    <p className="mt-24">[Chart Placeholder]</p>
-  </div>
-);
+const ChartPanel: FC<{
+    data: CandlestickData<Time>[]
+    seriesRef: React.RefObject<ISeriesApi<'Candlestick'> | null>
+}> = ({ data, seriesRef }) => {
+    const containerRef = useRef<HTMLDivElement>(null)
 
-export default ChartPanel;
+    useEffect(() => {
+        if (!containerRef.current || !data.length) return
+
+        const chart = createChart(containerRef.current, {
+            layout: {
+                background: {
+                    type: ColorType.Solid,
+                    color: 'transparent',
+                },
+                textColor: 'white',
+            },
+            grid: {
+                vertLines: { color: '#151515' },
+                horzLines: { color: '#151515' },
+            },
+            timeScale: {
+                timeVisible: true
+            }
+        })
+        
+        seriesRef.current = chart.addSeries(CandlestickSeries)
+        seriesRef.current.setData(data)
+    }, [containerRef, data])
+
+    return (
+        <div className="w-full h-full p-5">
+            <div
+                ref={containerRef}
+                className="w-full h-full flex-1 text-center"
+            ></div>
+        </div>
+    )
+}
+export default ChartPanel
