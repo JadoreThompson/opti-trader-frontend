@@ -1,9 +1,11 @@
-import { EventType } from '@/lib/types/apiTypes/eventType'
-import { formatUnderscore } from '@/lib/utils'
-import type { FC } from 'react'
+import { EventType } from '@/lib/types/apiTypes/eventType';
+import { formatUnderscore } from '@/lib/utils';
+import type { FC } from 'react';
 
-const ActivityLog: FC<{
-    data: { event_type: EventType; message: string }[]
+export type Log = { event_type: EventType; message: string };
+
+const EventLog: FC<{
+    data: Log[]
 }> = ({ data }) => {
     const getColor = (eventType: EventType) => {
         switch (eventType) {
@@ -37,7 +39,7 @@ const ActivityLog: FC<{
     }
 
     return (
-        <div className="w-full min-h-120 max-h-120 flex flex-col gap-2">
+        <div className="w-full min-h-120 max-h-120 flex flex-col gap-3 overflow-y-scroll p-3">
             <h3 className="font-bold mb-2">Activity Log</h3>
             {data.map((val, i) => (
                 <div
@@ -59,4 +61,4 @@ const ActivityLog: FC<{
     )
 }
 
-export default ActivityLog
+export default EventLog

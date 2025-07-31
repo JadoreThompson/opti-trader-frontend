@@ -1,7 +1,7 @@
-import ActivityLog from '@/components/ActivityLog'
 import BasicOrderCard from '@/components/BasicOrderForm'
 import ChartPanel from '@/components/ChartPanel'
-import OrderBook from '@/components/OrderBook'
+import EventLog, { type Log } from '@/components/EventLog'
+import OrderBook, { type PriceLevel } from '@/components/OrderBook'
 import RecentTrades from '@/components/RecentTrades'
 import OrderHistoryTable from '@/components/tables/OrderHistoryTable'
 import PositionsTable from '@/components/tables/PositionsTable'
@@ -14,6 +14,7 @@ import type { Order } from '@/lib/types/apiTypes/order'
 import type { PaginatedResponse } from '@/lib/types/apiTypes/paginatedResponse'
 import { MarketType } from '@/lib/types/marketType'
 import { OrderStatus } from '@/lib/types/orderStatus'
+import type { RecentTrade } from '@/lib/types/recentTrade'
 import { TimeFrame } from '@/lib/types/timeframe'
 import { cn } from '@/lib/utils'
 import {
@@ -46,11 +47,10 @@ const TradingPage: FC = () => {
     const instrument = 'BTCUSD-FUTURES'
     const [instrumentSummary, setInstrumentSummary] =
         useState<InstrumentSummary | null>(null)
-    const [prevPrice, setPrevPrice] = useState<number | null>(null)
-    const [price, setPrice] = useState<number | null>(null)
-    // const prevPrice = useMemo(() => {
-    //     console.log("Price:", price, "Prev", this)
-    // }, [price]);
+    const [prices, setPrices] = useState<{
+        price: number | null
+        prevPrice: number | null
+    }>({} as { price: number | null; prevPrice: number | null })
 
     const [wsToken, setWsToken] = useState<string | undefined>(undefined)
     const [connectionStatus, setConnectionStatus] =
@@ -65,8 +65,14 @@ const TradingPage: FC = () => {
 
     const [openPositions, setOpenPositions] = useState<Order[]>([])
     const [orderHistory, setOrderHistory] = useState<Order[]>([])
+    const [balance, setBalance] = useState<number | null>(null)
 
-    const [events, setEvents] = useState<any[]>([])
+    const [events, setEvents] = useState<Log[]>([])
+    const [orderBook, setOrderBook] = useState<{
+        bids: PriceLevel[]
+        asks: PriceLevel[]
+    }>({} as { bids: PriceLevel[]; asks: PriceLevel[] })
+    const [recentTrades, setRecentTrades] = useState<RecentTrade[]>([])
 
     const connectionColor =
         connectionStatus === 'connected'
@@ -81,16 +87,6 @@ const TradingPage: FC = () => {
             : connectionStatus === 'connecting'
               ? 'Connecting...'
               : 'Disconnected'
-
-    useEffect(
-        () => console.log('Open Positions: ', openPositions),
-        [openPositions]
-    )
-
-    useEffect(
-        () => console.log('Order History: ', orderHistory),
-        [orderHistory]
-    )
 
     useEffect(() => {
         document.addEventListener('scroll', () =>
@@ -140,11 +136,36 @@ const TradingPage: FC = () => {
         ws.onmessage = (e) => {
             if (e.data !== 'connected') {
                 const message = JSON.parse(e.data)
-
+                console.log('Incoming msg', message)
+                console.log(message.data)
                 if (message.event_type === 'price_update') {
                     if (candleStickSeriesRef.current) {
                         handleIncomingPrice(Number.parseFloat(message.data))
                     }
+                } else if (message.event_type === 'orderbook_update') {
+                    setOrderBook({
+                        bids: Object.entries(message.data.bids)
+                            .map(([k, v]) => ({
+                                price: Number.parseFloat(k),
+                                quantity: Number.parseInt(v as string),
+                            }))
+                            .reverse(),
+                        asks: Object.entries(message.data.asks).map(
+                            ([k, v]) => ({
+                                price: Number.parseFloat(k),
+                                quantity: Number.parseInt(v as string),
+                            })
+                        ),
+                    })
+                } else if (message.event_type === 'recent_trade') {
+                    setRecentTrades((prev) => {
+                        const newRTrades = [...prev]
+                        if (newRTrades.length == 10) {
+                            newRTrades.pop()
+                        }
+                        newRTrades.unshift(message.data)
+                        return newRTrades
+                    })
                 }
             }
         }
@@ -202,18 +223,13 @@ const TradingPage: FC = () => {
                 return
             }
 
-            setEvents((prev) => {
-                const newEvents = [...prev]
-                if (newEvents.length == 10) {
-                    newEvents.pop()
-                }
-
-                newEvents.unshift({
+            setEvents((prev) => [
+                {
                     event_type: msg.event_type,
                     message: `Order ID: ${msg.order_id}`,
-                })
-                return newEvents
-            })
+                },
+                ...prev,
+            ])
 
             const orderUpdateEvents = [
                 EventType.ORDER_MODIFIED,
@@ -257,8 +273,43 @@ const TradingPage: FC = () => {
     }, [wsToken])
 
     useEffect(() => {
-        pageNumRef.current = 1
-    }, [tableTab])
+        const fetchEvents = async () => {
+            const rsp = await fetch(HTTP_BASE_URL + '/user/events', {
+                credentials: 'include',
+            })
+            if (rsp.ok) {
+                const data: PaginatedResponse<{
+                    order_event_id: string
+                    event_type: EventType
+                    order_id: string
+                }> = await rsp.json()
+                setEvents(
+                    data.data.map((val) => ({
+                        event_type: val.event_type,
+                        message: `Order ID: ${val.order_id}`,
+                    }))
+                )
+            }
+        }
+
+        fetchEvents()
+    }, [])
+
+    useEffect(() => {
+        const fetchEvents = async () => {
+            const rsp = await fetch(HTTP_BASE_URL + '/user/summary', {
+                credentials: 'include',
+            })
+            if (rsp.ok) {
+                const data: { balance: number; pnl: number } = await rsp.json()
+                console.log(data)
+                setBalance(data.balance)
+            }
+        }
+
+        fetchEvents()
+    }, [])
+
 
     async function handleWsHeartbeat(ws: WebSocket): Promise<void> {
         while (true) {
@@ -298,7 +349,7 @@ const TradingPage: FC = () => {
         )
     }
 
-    function handleIncomingPrice(price: number): void {
+    function handleIncomingPrice(value: number): void {
         if (!candleStickSeriesRef.current) return
 
         const timeframeToSeconds: Record<TimeFrame, number> = {
@@ -321,25 +372,22 @@ const TradingPage: FC = () => {
             if (nextTime > curTime) {
                 const updatedCandle = {
                     open: prevCandle.open,
-                    high: Math.max(prevCandle.high, price),
-                    low: Math.max(prevCandle.low, price),
-                    close: price,
+                    high: Math.max(prevCandle.high, value),
+                    low: Math.max(prevCandle.low, value),
+                    close: value,
                     time: prevCandle.time,
                 }
                 candleStickSeriesRef.current.update(updatedCandle)
             } else {
                 candleStickSeriesRef.current.update({
-                    open: price,
-                    high: price,
-                    low: price,
-                    close: price,
+                    open: value,
+                    high: value,
+                    low: value,
+                    close: value,
                     time: nextTime as Time,
                 })
             }
         }
-
-        setPrevPrice(price)
-        setPrice(price)
     }
 
     async function fetchPositions(): Promise<void> {
@@ -415,19 +463,18 @@ const TradingPage: FC = () => {
                             <div className="h-150 grow-1 rounded-sm bg-background">
                                 <ChartPanel
                                     {...(instrumentSummary ?? {})}
+                                    {...prices}
                                     instrument={instrument}
-                                    price={price}
-                                    prevPrice={prevPrice}
                                     candles={candles}
                                     seriesRef={candleStickSeriesRef}
                                 />
                             </div>
                             <div className="w-[20%] h-full flex flex-col gap-1 rounded-sm">
-                                <div className="w-full h-fit pb-1 rounded-sm bg-background">
-                                    <OrderBook />
+                                <div className="w-full h-1/2 pb-1 rounded-sm bg-background">
+                                    <OrderBook {...orderBook} />
                                 </div>
-                                <div className="w-full flex-1 rounded-sm bg-background">
-                                    <RecentTrades />
+                                <div className="w-full h-1/2 rounded-sm bg-background">
+                                    <RecentTrades trades={recentTrades} />
                                 </div>
                             </div>
                         </div>
@@ -438,7 +485,10 @@ const TradingPage: FC = () => {
                                         <Button
                                             type="button"
                                             className={`bg-transparent hover:bg-transparent rounded-none border-b-2 hover:text-white cursor-pointer ${tableTab == tab ? 'border-b-white text-white' : 'border-b-transparent text-neutral-900'}`}
-                                            onClick={() => setTableTab(tab)}
+                                            onClick={() => {
+                                                pageNumRef.current = 1
+                                                setTableTab(tab)
+                                            }}
                                         >
                                             {tab.charAt(0).toUpperCase() +
                                                 tab.slice(1)}
@@ -471,74 +521,15 @@ const TradingPage: FC = () => {
 
                     <div className="flex-1 flex flex-col gap-1">
                         <div className="h-150 rounded-sm bg-background">
-                            <BasicOrderCard />
-                        </div>
-                        <div className="flex-1 h-fit max-h-fit min-h-0 sticky top-11 rounded-sm bg-background p-3">
-                            <ActivityLog data={events} />
-                        </div>
-                    </div>
-                    {/* <div className="w-full flex flex-row gap-1">
-                        <div className="h-[550px] grow-1 rounded-sm bg-background">
-                            <ChartPanel
-                                {...(instrumentSummary ?? {})}
-                                instrument={instrument}
-                                price={price}
-                                prevPrice={prevPrice}
-                                candles={candles}
-                                seriesRef={candleStickSeriesRef}
+                            <BasicOrderCard
+                                balance={balance}
+                                setEventLogs={setEvents}
                             />
                         </div>
-                        <div className="w-[20%] flex flex-col gap-1 rounded-sm">
-                            <div className="w-full h-fit pb-1 rounded-sm bg-background">
-                                <OrderBook />
-                            </div>
-                            <div className="w-full flex-1 rounded-sm bg-background">
-                                <RecentTrades />
-                            </div>
-                        </div>
-                        <div className="w-[20%] rounded-sm bg-background">
-                            <BasicOrderCard />
+                        <div className="flex-1 h-auto max-h-fit min-h-0 sticky top-11 rounded-sm bg-background">
+                            <EventLog data={events} />
                         </div>
                     </div>
-                    <div className="w-full flex flex-row gap-1">
-                        <div className="w-314 bg-background rounded-sm p-1">
-                            <div className="w-full mb-2 flex items-center justify-start p-3">
-                                {tableTabs.map((tab) => (
-                                    <Button
-                                        type="button"
-                                        className={`bg-transparent hover:bg-transparent rounded-none border-b-2 hover:text-white cursor-pointer ${tableTab == tab ? 'border-b-white text-white' : 'border-b-transparent text-neutral-900'}`}
-                                        onClick={() => setTableTab(tab)}
-                                    >
-                                        {tab.charAt(0).toUpperCase() +
-                                            tab.slice(1)}
-                                    </Button>
-                                ))}
-                            </div>
-                            <div className="w-full p-3">
-                                {tableTab === 'positions' && (
-                                    <PositionsTable
-                                        orders={openPositions}
-                                        onScrollEnd={() => {
-                                            pageNumRef.current += 1
-                                            fetchPositions()
-                                        }}
-                                    />
-                                )}
-                                {tableTab === 'history' && (
-                                    <OrderHistoryTable
-                                        orders={orderHistory}
-                                        onScrollEnd={() => {
-                                            pageNumRef.current += 1
-                                            fetchOrderHistory()
-                                        }}
-                                    />
-                                )}
-                            </div>
-                        </div>
-                        <div className="flex-1 h-fit min-h-0 sticky top-11 rounded-sm bg-background p-3">
-                            <ActivityLog data={events} />
-                        </div>
-                    </div> */}
                 </main>
 
                 {/* Footer */}

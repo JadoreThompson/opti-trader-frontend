@@ -11,11 +11,11 @@ const RecentTrades: FC<{ trades: RecentTrade[] }> = ({
   }),
 }) => {
   return (
-    <div className="p-4 text-xs w-full">
-      <h3 className="mb-2 font-semibold">Recent Trades</h3>
+    <div className="p-4 w-full">
+      <h3 className="mb-2 font-semibold text-sm">Recent Trades</h3>
       <div className="space-y-1">
         {trades.map((t, idx) => (
-          <div key={idx} className="flex justify-between">
+          <div key={idx} className="flex justify-between text-xs">
             <span
               className={
                 t.side === Side.BID ? "text-green-500" : "text-red-500"
@@ -23,7 +23,7 @@ const RecentTrades: FC<{ trades: RecentTrade[] }> = ({
             >
               {t.price.toFixed(2)}
             </span>
-            <span>{t.size}</span>
+            <span>{t.quantity}</span>
             <span className="text-gray-500">{t.time}</span>
           </div>
         ))}

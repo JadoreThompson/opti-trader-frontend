@@ -12,4 +12,9 @@ export enum EventType {
     ORDER_CANCEL_REJECTED = 'order_cancel_rejected',
     ORDER_MODIFY_REJECTED = 'order_modify_rejected',
     PAYLOAD_UPDATE = 'payload_update',
+
+    // This isn't emmited by the API but is used
+    // internally, we're using it just for UX purposes
+    BID_SUBMITTED = 'bid_submitted',
+    ASK_SUBMITTED = 'ask_submitted'
 }
