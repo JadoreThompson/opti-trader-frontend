@@ -11,7 +11,6 @@ import { EventType } from '@/lib/types/apiTypes/eventType'
 import type { InstrumentSummary } from '@/lib/types/apiTypes/instrumentSummary'
 import type { Order } from '@/lib/types/apiTypes/order'
 import type { PaginatedResponse } from '@/lib/types/apiTypes/paginatedResponse'
-import type { PriceUpdate } from '@/lib/types/apiTypes/priceUpdate'
 import { MarketType } from '@/lib/types/marketType'
 import { OrderStatus } from '@/lib/types/orderStatus'
 import { TimeFrame } from '@/lib/types/timeframe'
@@ -143,50 +142,23 @@ const TradingPage: FC = () => {
     }, [])
 
     useEffect(() => {
-        const timeframeToSeconds: Record<TimeFrame, number> = {
-            [TimeFrame.S5]: 5,
-            [TimeFrame.M1]: 60,
-            [TimeFrame.M5]: 5 * 60,
-            [TimeFrame.H1]: 60 * 60,
-            [TimeFrame.H4]: 4 * 60 * 60,
-            [TimeFrame.D1]: 24 * 60 * 60,
+        const ws = new WebSocket(WS_BASE_URL + `/instrument/${instrument}/ws`)
+
+        ws.onopen = () => {
+            ws.send(JSON.stringify({ subscribe: 'orderbook_update' }))
+            ws.send(JSON.stringify({ subscribe: 'recent_trade' }))
+            handleWsHeartbeat(ws)
         }
 
-        const ws = new WebSocket(WS_BASE_URL + `/instrument/${instrument}/ws`)
         ws.onmessage = (e) => {
-            if (candleStickSeriesRef.current) {
-                const incomingPrice: PriceUpdate = JSON.parse(e.data)
-                const seconds = timeframeToSeconds[currentTimeFrame]
+            if (e.data !== 'connected') {
+                const message = JSON.parse(e.data)
 
-                if (candlesRef.current.length) {
-                    const curTime = Date.now() / 1000
-                    const prevCandle =
-                        candlesRef.current[candlesRef.current.length - 1]
-                    const prevTime = prevCandle.time as number
-                    const nextTime = prevTime + seconds
-
-                    if (nextTime > curTime) {
-                        const updatedCandle = {
-                            open: prevCandle.open,
-                            high: Math.max(prevCandle.high, incomingPrice),
-                            low: Math.max(prevCandle.low, incomingPrice),
-                            close: incomingPrice,
-                            time: prevCandle.time,
-                        }
-                        candleStickSeriesRef.current.update(updatedCandle)
-                    } else {
-                        candleStickSeriesRef.current.update({
-                            open: incomingPrice,
-                            high: incomingPrice,
-                            low: incomingPrice,
-                            close: incomingPrice,
-                            time: nextTime as Time,
-                        })
+                if (message.event_type === 'price_update') {
+                    if (candleStickSeriesRef.current) {
+                        handleIncomingPrice(Number.parseFloat(message.data))
                     }
                 }
-
-                setPrevPrice(price)
-                setPrice(incomingPrice)
             }
         }
 
@@ -195,6 +167,7 @@ const TradingPage: FC = () => {
         }
     }, [candleStickSeriesRef])
 
+    // Orders WS
     useEffect(() => {
         const fetchToken = async () => {
             const rsp = await fetch(HTTP_BASE_URL + '/order/access-token', {
@@ -208,28 +181,15 @@ const TradingPage: FC = () => {
         fetchToken()
     }, [])
 
-    // Orders WS
     useEffect(() => {
         if (!wsToken) return
-
-        const heartbeat = async (ws: WebSocket) => {
-            while (true) {
-                await new Promise((resolve) => setTimeout(resolve, 4000))
-
-                if (!ws.OPEN) {
-                    break
-                }
-
-                ws.send('ping')
-            }
-        }
 
         const ws = new WebSocket(WS_BASE_URL + '/order/ws')
 
         ws.onopen = () => {
             setConnectionStatus('connecting')
             ws.send(wsToken)
-            heartbeat(ws)
+            handleWsHeartbeat(ws)
         }
 
         ws.onmessage = async (e) => {
@@ -295,7 +255,8 @@ const TradingPage: FC = () => {
             }
         }
 
-        ws.onclose = () => {
+        ws.onclose = (e) => {
+            console.log("ORder ws closed ", e);
             setConnectionStatus('disconnected')
         }
 
@@ -307,6 +268,16 @@ const TradingPage: FC = () => {
     useEffect(() => {
         pageNumRef.current = 1
     }, [tableTab])
+
+    async function handleWsHeartbeat(ws: WebSocket): Promise<void> {
+        while (true) {
+            await new Promise((resolve) => setTimeout(resolve, 4000))
+
+            if (!ws.OPEN) break
+
+            ws.send('ping')
+        }
+    }
 
     function handleTableUpdate(
         incomingOrder: Order,
@@ -334,6 +305,50 @@ const TradingPage: FC = () => {
         setOpenPositions((prev) =>
             prev.filter((order) => order.order_id !== order_id)
         )
+    }
+
+    function handleIncomingPrice(price: number): void {
+        if (!candleStickSeriesRef.current) return
+
+        const timeframeToSeconds: Record<TimeFrame, number> = {
+            [TimeFrame.S5]: 5,
+            [TimeFrame.M1]: 60,
+            [TimeFrame.M5]: 5 * 60,
+            [TimeFrame.H1]: 60 * 60,
+            [TimeFrame.H4]: 4 * 60 * 60,
+            [TimeFrame.D1]: 24 * 60 * 60,
+        }
+
+        const seconds = timeframeToSeconds[currentTimeFrame]
+
+        if (candlesRef.current.length) {
+            const curTime = Date.now() / 1000
+            const prevCandle = candlesRef.current[candlesRef.current.length - 1]
+            const prevTime = prevCandle.time as number
+            const nextTime = prevTime + seconds
+
+            if (nextTime > curTime) {
+                const updatedCandle = {
+                    open: prevCandle.open,
+                    high: Math.max(prevCandle.high, price),
+                    low: Math.max(prevCandle.low, price),
+                    close: price,
+                    time: prevCandle.time,
+                }
+                candleStickSeriesRef.current.update(updatedCandle)
+            } else {
+                candleStickSeriesRef.current.update({
+                    open: price,
+                    high: price,
+                    low: price,
+                    close: price,
+                    time: nextTime as Time,
+                })
+            }
+        }
+
+        setPrevPrice(price)
+        setPrice(price)
     }
 
     async function fetchPositions(): Promise<void> {
