@@ -1,3 +1,4 @@
+import ActivityLog from '@/components/ActivityLog'
 import BasicOrderCard from '@/components/BasicOrderForm'
 import ChartPanel from '@/components/ChartPanel'
 import OrderBook from '@/components/OrderBook'
@@ -23,28 +24,12 @@ import {
 import { Bell, ChevronUp, User, Wifi } from 'lucide-react'
 import { useEffect, useRef, useState, type FC } from 'react'
 import { Link } from 'react-router'
-import { toast, Toaster } from 'sonner'
+import { Toaster } from 'sonner'
 
 type ConnectionStatus = 'connected' | 'connecting' | 'disconnected'
 type TickerSummary = { ticker: string; pct: number; price: number }
 const tableTabs = ['positions', 'history']
 type Tab = (typeof tableTabs)[number]
-
-// Constatnts
-const eventTitles: Partial<Record<EventType, string>> = {
-    [EventType.ORDER_NEW]: 'Order Placed',
-    [EventType.ORDER_PARTIALLY_CANCELLED]: 'Order Partially Cancelled',
-    [EventType.ORDER_CANCELLED]: 'Order Cancelled',
-    [EventType.ORDER_MODIFIED]: 'Order Modified',
-    [EventType.ORDER_PARTIALLY_FILLED]: 'Order Partially Filled',
-    [EventType.ORDER_FILLED]: 'Order Filled',
-    [EventType.ORDER_PARTIALLY_CLOSED]: 'Order Partially Closed',
-    [EventType.ORDER_CLOSED]: 'Order Closed',
-    [EventType.ORDER_REJECTED]: 'Order Rejected',
-    [EventType.ORDER_NEW_REJECTED]: 'Order Rejected',
-    [EventType.ORDER_CANCEL_REJECTED]: 'Cancel rejected',
-    [EventType.ORDER_MODIFY_REJECTED]: 'Modify rejected',
-}
 
 const TradingPage: FC = () => {
     const stylesRef = useRef<CSSStyleDeclaration>(
@@ -80,6 +65,8 @@ const TradingPage: FC = () => {
 
     const [openPositions, setOpenPositions] = useState<Order[]>([])
     const [orderHistory, setOrderHistory] = useState<Order[]>([])
+
+    const [events, setEvents] = useState<any[]>([])
 
     const connectionColor =
         connectionStatus === 'connected'
@@ -200,9 +187,7 @@ const TradingPage: FC = () => {
             const msg: Event = JSON.parse(e.data)
             const payload = msg.data
 
-            console.log('Incoming Message: ', msg)
-
-            if (msg.event_type === 'payload_update') {
+            if (msg.event_type === EventType.PAYLOAD_UPDATE) {
                 const typedPayload = payload as Order
                 handleTableUpdate(typedPayload, setOrderHistory)
 
@@ -217,11 +202,17 @@ const TradingPage: FC = () => {
                 return
             }
 
-            const title =
-                eventTitles[msg.event_type as EventType] ?? 'Unknown event'
+            setEvents((prev) => {
+                const newEvents = [...prev]
+                if (newEvents.length == 10) {
+                    newEvents.pop()
+                }
 
-            toast(title, {
-                description: `Order ID: ${msg.order_id}`,
+                newEvents.unshift({
+                    event_type: msg.event_type,
+                    message: `Order ID: ${msg.order_id}`,
+                })
+                return newEvents
             })
 
             const orderUpdateEvents = [
@@ -256,7 +247,7 @@ const TradingPage: FC = () => {
         }
 
         ws.onclose = (e) => {
-            console.log("ORder ws closed ", e);
+            console.log('Order ws closed ', e)
             setConnectionStatus('disconnected')
         }
 
@@ -271,7 +262,7 @@ const TradingPage: FC = () => {
 
     async function handleWsHeartbeat(ws: WebSocket): Promise<void> {
         while (true) {
-            await new Promise((resolve) => setTimeout(resolve, 4000))
+            await new Promise((resolve) => setTimeout(resolve, 1000))
 
             if (!ws.OPEN) break
 
@@ -396,6 +387,7 @@ const TradingPage: FC = () => {
     return (
         <>
             <Toaster />
+
             <div className="w-full h-auto flex bg-zinc-900 pb-7">
                 <header className="w-full h-10 z-[999] fixed top-0 left-0 flex justify-between items-center border-b border-b-gray bg-background px-7">
                     <div></div>
@@ -417,8 +409,75 @@ const TradingPage: FC = () => {
                     </div>
                 </header>
 
-                <main className="w-full min-h-screen mt-10 flex flex-col gap-1 p-1">
-                    <div className="w-full flex flex-row gap-1">
+                <main className="w-full min-h-screen mt-10 flex flex-row gap-1 p-1">
+                    <div className="w-[80%] flex flex-col gap-1">
+                        <div className="h-150 max-h-150 flex flex-row gap-1">
+                            <div className="h-150 grow-1 rounded-sm bg-background">
+                                <ChartPanel
+                                    {...(instrumentSummary ?? {})}
+                                    instrument={instrument}
+                                    price={price}
+                                    prevPrice={prevPrice}
+                                    candles={candles}
+                                    seriesRef={candleStickSeriesRef}
+                                />
+                            </div>
+                            <div className="w-[20%] h-full flex flex-col gap-1 rounded-sm">
+                                <div className="w-full h-fit pb-1 rounded-sm bg-background">
+                                    <OrderBook />
+                                </div>
+                                <div className="w-full flex-1 rounded-sm bg-background">
+                                    <RecentTrades />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="w-full flex flex-row gap-1">
+                            <div className="w-full bg-background rounded-sm p-1">
+                                <div className="w-full mb-2 flex items-center justify-start p-3">
+                                    {tableTabs.map((tab) => (
+                                        <Button
+                                            type="button"
+                                            className={`bg-transparent hover:bg-transparent rounded-none border-b-2 hover:text-white cursor-pointer ${tableTab == tab ? 'border-b-white text-white' : 'border-b-transparent text-neutral-900'}`}
+                                            onClick={() => setTableTab(tab)}
+                                        >
+                                            {tab.charAt(0).toUpperCase() +
+                                                tab.slice(1)}
+                                        </Button>
+                                    ))}
+                                </div>
+                                <div className="w-full p-3">
+                                    {tableTab === 'positions' && (
+                                        <PositionsTable
+                                            orders={openPositions}
+                                            onScrollEnd={() => {
+                                                pageNumRef.current += 1
+                                                fetchPositions()
+                                            }}
+                                        />
+                                    )}
+                                    {tableTab === 'history' && (
+                                        <OrderHistoryTable
+                                            orders={orderHistory}
+                                            onScrollEnd={() => {
+                                                pageNumRef.current += 1
+                                                fetchOrderHistory()
+                                            }}
+                                        />
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 flex flex-col gap-1">
+                        <div className="h-150 rounded-sm bg-background">
+                            <BasicOrderCard />
+                        </div>
+                        <div className="flex-1 h-fit max-h-fit min-h-0 sticky top-11 rounded-sm bg-background p-3">
+                            <ActivityLog data={events} />
+                        </div>
+                    </div>
+                    {/* <div className="w-full flex flex-row gap-1">
                         <div className="h-[550px] grow-1 rounded-sm bg-background">
                             <ChartPanel
                                 {...(instrumentSummary ?? {})}
@@ -441,40 +500,45 @@ const TradingPage: FC = () => {
                             <BasicOrderCard />
                         </div>
                     </div>
-                    <div className="w-full bg-background rounded-sm p-1">
-                        {/* Snackbar */}
-                        <div className="w-full mb-2 flex items-center justify-start p-3">
-                            {tableTabs.map((tab) => (
-                                <Button
-                                    type="button"
-                                    className={`bg-transparent hover:bg-transparent rounded-none border-b-2 hover:text-white cursor-pointer ${tableTab == tab ? 'border-b-white text-white' : 'border-b-transparent text-neutral-900'}`}
-                                    onClick={() => setTableTab(tab)}
-                                >
-                                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                                </Button>
-                            ))}
+                    <div className="w-full flex flex-row gap-1">
+                        <div className="w-314 bg-background rounded-sm p-1">
+                            <div className="w-full mb-2 flex items-center justify-start p-3">
+                                {tableTabs.map((tab) => (
+                                    <Button
+                                        type="button"
+                                        className={`bg-transparent hover:bg-transparent rounded-none border-b-2 hover:text-white cursor-pointer ${tableTab == tab ? 'border-b-white text-white' : 'border-b-transparent text-neutral-900'}`}
+                                        onClick={() => setTableTab(tab)}
+                                    >
+                                        {tab.charAt(0).toUpperCase() +
+                                            tab.slice(1)}
+                                    </Button>
+                                ))}
+                            </div>
+                            <div className="w-full p-3">
+                                {tableTab === 'positions' && (
+                                    <PositionsTable
+                                        orders={openPositions}
+                                        onScrollEnd={() => {
+                                            pageNumRef.current += 1
+                                            fetchPositions()
+                                        }}
+                                    />
+                                )}
+                                {tableTab === 'history' && (
+                                    <OrderHistoryTable
+                                        orders={orderHistory}
+                                        onScrollEnd={() => {
+                                            pageNumRef.current += 1
+                                            fetchOrderHistory()
+                                        }}
+                                    />
+                                )}
+                            </div>
                         </div>
-                        <div className="w-full p-3">
-                            {tableTab === 'positions' && (
-                                <PositionsTable
-                                    orders={openPositions}
-                                    onScrollEnd={() => {
-                                        pageNumRef.current += 1
-                                        fetchPositions()
-                                    }}
-                                />
-                            )}
-                            {tableTab === 'history' && (
-                                <OrderHistoryTable
-                                    orders={orderHistory}
-                                    onScrollEnd={() => {
-                                        pageNumRef.current += 1
-                                        fetchOrderHistory()
-                                    }}
-                                />
-                            )}
+                        <div className="flex-1 h-fit min-h-0 sticky top-11 rounded-sm bg-background p-3">
+                            <ActivityLog data={events} />
                         </div>
-                    </div>
+                    </div> */}
                 </main>
 
                 {/* Footer */}

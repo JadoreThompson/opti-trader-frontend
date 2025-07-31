@@ -13,11 +13,3 @@ export enum EventType {
     ORDER_MODIFY_REJECTED = 'order_modify_rejected',
     PAYLOAD_UPDATE = 'payload_update',
 }
-
-// function handleEvent(msg: { event_type: EventType; order_id: string }) {
-//     const title = eventTitles[msg.event_type] ?? "Unknown event";
-
-//     toast(title, {
-//         description: `Order ID: ${msg.order_id}`,
-//     });
-// }

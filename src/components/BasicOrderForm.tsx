@@ -9,7 +9,6 @@ import { Side } from '@/lib/types/side'
 import { cn } from '@/lib/utils'
 import { AssertError, Value } from '@sinclair/typebox/value'
 import { useState, type FC } from 'react'
-import { toast } from 'sonner'
 import Toaster from './Toaster'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
@@ -91,9 +90,9 @@ const BasicOrderCard: FC<{
 
             if (rsp.status != 201) throw new Error(data['error'])
 
-            toast('Order Submitted', {
-                description: `Order ID: ${data['order_id']}`,
-            })
+            // toast('Order Submitted', {
+            //     description: `Order ID: ${data['order_id']}`,
+            // })
         } catch (error) {
             if (error instanceof AssertError) {
                 setErrorMsg('Invalid reqeust')

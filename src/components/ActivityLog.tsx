@@ -1,0 +1,62 @@
+import { EventType } from '@/lib/types/apiTypes/eventType'
+import { formatUnderscore } from '@/lib/utils'
+import type { FC } from 'react'
+
+const ActivityLog: FC<{
+    data: { event_type: EventType; message: string }[]
+}> = ({ data }) => {
+    const getColor = (eventType: EventType) => {
+        switch (eventType) {
+            case EventType.ORDER_CANCELLED:
+                return 'red'
+            case EventType.ORDER_CLOSED:
+                return 'green'
+            case EventType.ORDER_MODIFIED:
+                return 'blue'
+            case EventType.ORDER_NEW:
+                return 'green'
+            case EventType.ORDER_CANCEL_REJECTED:
+                return 'yellow'
+            case EventType.ORDER_FILLED:
+                return 'green'
+            case EventType.ORDER_MODIFY_REJECTED:
+                return 'red'
+            case EventType.ORDER_NEW_REJECTED:
+                return 'red'
+            case EventType.ORDER_PARTIALLY_CANCELLED:
+                return 'blue'
+            case EventType.ORDER_PARTIALLY_CLOSED:
+                return 'green'
+            case EventType.ORDER_PARTIALLY_FILLED:
+                return 'green'
+            case EventType.ORDER_REJECTED:
+                return 'red'
+            default:
+                return 'gray'
+        }
+    }
+
+    return (
+        <div className="w-full min-h-120 max-h-120 flex flex-col gap-2">
+            <h3 className="font-bold mb-2">Activity Log</h3>
+            {data.map((val, i) => (
+                <div
+                    key={i}
+                    className="w-full h-10 flex items-center border-l-2 pl-2"
+                    style={{ borderLeftColor: getColor(val.event_type) }}
+                >
+                    <div className="flex flex-col">
+                        <span className="text-sm font-bold">
+                            {formatUnderscore(val.event_type)}
+                        </span>
+                        <span className="text-xs text-neutral-500 whitespace-nowrap">
+                            {val.message}
+                        </span>
+                    </div>
+                </div>
+            ))}
+        </div>
+    )
+}
+
+export default ActivityLog
