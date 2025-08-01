@@ -3,13 +3,14 @@ import ChartPanel from '@/components/ChartPanel'
 import EventLog, { type Log } from '@/components/EventLog'
 import OrderBook, { type PriceLevel } from '@/components/OrderBook'
 import RecentTrades from '@/components/RecentTrades'
+import StatusBar from '@/components/StatusBar'
 import OrderHistoryTable from '@/components/tables/OrderHistoryTable'
 import PositionsTable from '@/components/tables/PositionsTable'
 import { Button } from '@/components/ui/button'
 import { HTTP_BASE_URL, WS_BASE_URL } from '@/config'
 import type { Event } from '@/lib/types/apiTypes/event'
 import { EventType } from '@/lib/types/apiTypes/eventType'
-import type { InstrumentSummary } from '@/lib/types/apiTypes/instrumentSummary'
+import type { InstrumentSummaryFull } from '@/lib/types/apiTypes/instrumentSummary'
 import type { Order } from '@/lib/types/apiTypes/order'
 import type { PaginatedResponse } from '@/lib/types/apiTypes/paginatedResponse'
 import { MarketType } from '@/lib/types/marketType'
@@ -22,20 +23,17 @@ import {
     type ISeriesApi,
     type Time,
 } from 'lightweight-charts'
-import { Bell, ChevronUp, User, Wifi } from 'lucide-react'
+import { Bell, ChevronUp, User } from 'lucide-react'
 import { useEffect, useRef, useState, type FC } from 'react'
 import { Link } from 'react-router'
 import { Toaster } from 'sonner'
 
 type ConnectionStatus = 'connected' | 'connecting' | 'disconnected'
-type TickerSummary = { ticker: string; pct: number; price: number }
 const tableTabs = ['positions', 'history']
 type Tab = (typeof tableTabs)[number]
 
 const TradingPage: FC = () => {
-    const stylesRef = useRef<CSSStyleDeclaration>(
-        getComputedStyle(document.documentElement)
-    )
+    const instrument = 'BTCUSD-FUTURES'
     const pageNumRef = useRef<number>(0)
     const candleStickSeriesRef = useRef<ISeriesApi<'Candlestick'>>(null)
     const candlesRef = useRef<CandlestickData<Time>[]>([])
@@ -44,9 +42,8 @@ const TradingPage: FC = () => {
     const [currentTimeFrame, setCurrentTimeFrame] = useState<TimeFrame>(
         TimeFrame.H1
     )
-    const instrument = 'BTCUSD-FUTURES'
     const [instrumentSummary, setInstrumentSummary] =
-        useState<InstrumentSummary | null>(null)
+        useState<InstrumentSummaryFull | null>(null)
     const [prices, setPrices] = useState<{
         price: number | null
         prevPrice: number | null
@@ -55,10 +52,6 @@ const TradingPage: FC = () => {
     const [wsToken, setWsToken] = useState<string | undefined>(undefined)
     const [connectionStatus, setConnectionStatus] =
         useState<ConnectionStatus>('disconnected')
-
-    const [simpleTickers, setSimpleTickers] = useState<TickerSummary[]>(
-        Array(10).fill({ ticker: 'SOL/USDT', pct: 24.7, price: 1234.11 })
-    )
 
     const [tableTab, setTableTab] = useState<Tab>('positions')
     const [showScrollToTop, setShowScollToTop] = useState<boolean>(false)
@@ -73,20 +66,6 @@ const TradingPage: FC = () => {
         asks: PriceLevel[]
     }>({} as { bids: PriceLevel[]; asks: PriceLevel[] })
     const [recentTrades, setRecentTrades] = useState<RecentTrade[]>([])
-
-    const connectionColor =
-        connectionStatus === 'connected'
-            ? stylesRef.current.getPropertyValue('--green')
-            : connectionStatus === 'connecting'
-              ? 'orange'
-              : stylesRef.current.getPropertyValue('--red')
-
-    const connectionMsg =
-        connectionStatus === 'connected'
-            ? 'Connected'
-            : connectionStatus === 'connecting'
-              ? 'Connecting...'
-              : 'Disconnected'
 
     useEffect(() => {
         document.addEventListener('scroll', () =>
@@ -116,7 +95,7 @@ const TradingPage: FC = () => {
                 HTTP_BASE_URL + `/instrument/${instrument}/summary`
             )
             if (rsp.ok) {
-                const data: InstrumentSummary = await rsp.json()
+                const data: InstrumentSummaryFull = await rsp.json()
                 setInstrumentSummary(data)
             }
         }
@@ -309,7 +288,6 @@ const TradingPage: FC = () => {
 
         fetchEvents()
     }, [])
-
 
     async function handleWsHeartbeat(ws: WebSocket): Promise<void> {
         while (true) {
@@ -533,46 +511,8 @@ const TradingPage: FC = () => {
                 </main>
 
                 {/* Footer */}
-                <div className="w-full h-7 min-h-0 max-h-10 z-[999] fixed bottom-0 flex items-center border-t-1 border-t-gray bg-background text-xs">
-                    <div className="w-full h-full relative">
-                        <div className="w-fit h-full absolute top-0 left-0 z-2 flex items-center gap-2 px-2 border-r-1 border-r-gray bg-[var(--background)]">
-                            <Wifi className="size-3" color={connectionColor} />
-                            <span style={{ color: connectionColor }}>
-                                {connectionMsg}
-                            </span>
-                        </div>
-                        <div className="w-full h-full flex flex-row">
-                            <div className="w-fit flex">
-                                {simpleTickers.map((st) => (
-                                    <div className="w-[150px] h-full flex items-center gap-1 marquee-item">
-                                        <span>{st.ticker}</span>
-                                        <span
-                                            className={`${st.pct < 0 ? 'text-#c93639' : 'text-green-500'}`}
-                                        >
-                                            {st.pct}%
-                                        </span>
-                                        <span className="text-gray-300">
-                                            {st.price}
-                                        </span>
-                                    </div>
-                                ))}
-
-                                {simpleTickers.map((st) => (
-                                    <div className="w-[150px] h-full flex items-center gap-1 marquee-item">
-                                        <span>{st.ticker}</span>
-                                        <span
-                                            className={`${st.pct < 0 ? 'text-#c93639' : 'text-green-500'}`}
-                                        >
-                                            {st.pct}%
-                                        </span>
-                                        <span className="text-gray-300">
-                                            {st.price}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
+                <div className="w-full h-7 min-h-0 max-h-10 z-[999] fixed bottom-0">
+                    <StatusBar connectionStatus={connectionStatus} />
                 </div>
             </div>
 
