@@ -1,6 +1,7 @@
 import BasicOrderCard from '@/components/BasicOrderForm'
 import ChartPanel from '@/components/ChartPanel'
 import EventLog, { type Log } from '@/components/EventLog'
+import Logo from '@/components/Logo'
 import OrderBook, { type PriceLevel } from '@/components/OrderBook'
 import RecentTrades from '@/components/RecentTrades'
 import StatusBar from '@/components/StatusBar'
@@ -68,9 +69,16 @@ const TradingPage: FC = () => {
     const [recentTrades, setRecentTrades] = useState<RecentTrade[]>([])
 
     useEffect(() => {
-        document.addEventListener('scroll', () =>
+        const scrollEvent = () =>
             setShowScollToTop(window.scrollY > window.innerHeight)
-        )
+
+        document.body.classList.toggle('bg-zinc-900')
+        document.addEventListener('scroll', scrollEvent)
+
+        return () => {
+            document.body.classList.toggle('bg-zinc-900')
+            document.removeEventListener('scroll', () => scrollEvent)
+        }
     }, [])
 
     useEffect(() => {
@@ -87,10 +95,10 @@ const TradingPage: FC = () => {
         }
 
         fetchCandles()
-    }, [])
+    }, [currentTimeFrame])
 
     useEffect(() => {
-        const fetchCandles = async () => {
+        const fetchInstSummary = async () => {
             const rsp = await fetch(
                 HTTP_BASE_URL + `/instrument/${instrument}/summary`
             )
@@ -100,7 +108,7 @@ const TradingPage: FC = () => {
             }
         }
 
-        fetchCandles()
+        fetchInstSummary()
     }, [])
 
     useEffect(() => {
@@ -115,8 +123,7 @@ const TradingPage: FC = () => {
         ws.onmessage = (e) => {
             if (e.data !== 'connected') {
                 const message = JSON.parse(e.data)
-                console.log('Incoming msg', message)
-                console.log(message.data)
+
                 if (message.event_type === 'price_update') {
                     if (candleStickSeriesRef.current) {
                         handleIncomingPrice(Number.parseFloat(message.data))
@@ -414,9 +421,15 @@ const TradingPage: FC = () => {
         <>
             <Toaster />
 
-            <div className="w-full h-auto flex bg-zinc-900 pb-7">
+            <div className="w-full h-auto flex pb-7">
                 <header className="w-full h-10 z-[999] fixed top-0 left-0 flex justify-between items-center border-b border-b-gray bg-background px-7">
-                    <div></div>
+                    <div className="h-full flex items-center py-2">
+                        <Logo
+                            frameClassName="w-10 h-6"
+                            leftLensClassName="w-3 h-3 left-1"
+                            rightLensClassName="w-3 h-3 right-1"
+                        />
+                    </div>
                     <div className="w-fit h-full flex flex-row items-center gap-2 px-2">
                         <Link to="#" className="relative ">
                             <Bell
@@ -445,6 +458,7 @@ const TradingPage: FC = () => {
                                     instrument={instrument}
                                     candles={candles}
                                     seriesRef={candleStickSeriesRef}
+                                    onTimeFrameChange={setCurrentTimeFrame}
                                 />
                             </div>
                             <div className="w-[20%] h-full flex flex-col gap-1 rounded-sm">

@@ -165,3 +165,19 @@ html {
     animation: shakeNotification 2s;
 }
 
+@keyframes shinerKeyframe {
+    0% {
+        top: -300%;
+    }
+    50% {
+        top: 30%;
+    }
+
+    100% {
+        top: 30%;
+    }
+}
+
+.shiner {
+    animation: shinerKeyframe 4s ease-in-out infinite;
+}
