@@ -181,3 +181,19 @@ html {
 .shiner {
     animation: shinerKeyframe 4s ease-in-out infinite;
 }
+
+@keyframes openPositionContainerKeyframe {
+    from {
+        max-height: 3rem;
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+        max-height: 7rem;
+    }
+}
+
+.open-position-container {
+    animation: openPositionContainerKeyframe 0.5s;
+}

@@ -1,5 +1,5 @@
 import { HTTP_BASE_URL } from '@/config'
-import { EventType } from '@/lib/types/apiTypes/eventType'
+import { EventType } from '@/lib/types/eventType'
 import {
     FuturesLimitOrder,
     FuturesMarketOrder,
@@ -9,7 +9,7 @@ import { OrderType } from '@/lib/types/orderType'
 import { Side } from '@/lib/types/side'
 import { cn } from '@/lib/utils'
 import { AssertError, Value } from '@sinclair/typebox/value'
-import { useMemo, useState, type FC } from 'react'
+import { useState, type FC } from 'react'
 import type { Log } from './EventLog'
 import Toaster from './Toaster'
 import { Button } from './ui/button'
@@ -25,20 +25,23 @@ const BasicOrderCard: FC<{
     marketType: MarketType
     instrument: string
     setEventLogs: React.Dispatch<React.SetStateAction<Log[]>>
+    setBalance: React.Dispatch<React.SetStateAction<number>>
 }> = ({
     balance = 89237.0,
     marketType = MarketType.FUTURES,
     instrument = 'BTCUSD-FUTURES',
     setEventLogs,
+    setBalance
 }) => {
     const [side, setSide] = useState<Side>(Side.BID)
     const [orderType, setOrderType] = useState<OrderType>(OrderType.LIMIT)
     const [showTPSL, setShowTPSL] = useState(false)
     const [errorMsg, setErrorMsg] = useState<string | null>(null)
-    const [_balance, _setBalance] = useState<number | null>(null)
-    const realBalance = useMemo(() => {
-        return _balance === null ? balance : _balance
-    }, [balance, _balance])
+    // const [_balance, _setBalance] = useState<number | null>(null)
+    // const realBalance = useMemo(() => {
+    //     console.log("Balance in order form:", balance)
+    //     return _balance === null ? balance : _balance
+    // }, [balance, _balance])
 
     const sideColor =
         side === Side.BID
@@ -107,7 +110,7 @@ const BasicOrderCard: FC<{
                 { event_type: eType, message: `Order ID: ${data['order_id']}` },
                 ...prev,
             ])
-            _setBalance(data['balance'])
+            setBalance(data['balance'])
         } catch (error) {
             if (error instanceof AssertError) {
                 setErrorMsg('Invalid reqeust')
@@ -186,8 +189,8 @@ const BasicOrderCard: FC<{
                                 <span>Quantity</span>
                                 <span>
                                     Available:{' '}
-                                    {typeof realBalance === 'number'
-                                        ? realBalance.toFixed(2)
+                                    {typeof balance === 'number'
+                                        ? balance.toFixed(2)
                                         : '-'}{' '}
                                     USDT
                                 </span>
@@ -250,7 +253,7 @@ const BasicOrderCard: FC<{
                     {/* Submit Button */}
                     <Button
                         type="submit"
-                        disabled={realBalance === null}
+                        disabled={balance === null}
                         className={cn(
                             ' w-full text-white cursor-pointer',
                             sideColor

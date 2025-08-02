@@ -89,8 +89,8 @@ export type FuturesLimitOrderType = Static<typeof FuturesLimitOrder>
 export const ModifyOrder = Type.Object(
     {
         limit_price: Type.Optional(Type.Number()),
-        take_profit: Type.Optional(Type.Number()),
-        stop_loss: Type.Optional(Type.Number()),
+        take_profit: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
+        stop_loss: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
     },
     { additionalProperties: false }
 )

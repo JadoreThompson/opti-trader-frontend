@@ -7,6 +7,7 @@ function App() {
         <BrowserRouter>
             <Routes>
                 <Route path="/" element={<TradingPage />} />
+                {/* <Route path="/" element={<ChartAreaInteractive />} /> */}
                 <Route path="/user" element={<UserOverviewPage />} />
             </Routes>
         </BrowserRouter>

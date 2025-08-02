@@ -1,4 +1,4 @@
-export enum EventType {
+export enum WsEventType {
     ORDER_NEW = 'order_new',
     ORDER_PARTIALLY_CANCELLED = 'order_partially_cancelled',
     ORDER_CANCELLED = 'order_cancelled',
@@ -15,6 +15,4 @@ export enum EventType {
 
     // This isn't emmited by the API but is used
     // internally, we're using it just for UX purposes
-    BID_SUBMITTED = 'bid_submitted',
-    ASK_SUBMITTED = 'ask_submitted'
 }

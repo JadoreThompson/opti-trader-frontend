@@ -1,7 +1,7 @@
 import BasicOrderCard from '@/components/BasicOrderForm'
 import ChartPanel from '@/components/ChartPanel'
 import EventLog, { type Log } from '@/components/EventLog'
-import Logo from '@/components/Logo'
+import Header from '@/components/Header'
 import OrderBook, { type PriceLevel } from '@/components/OrderBook'
 import RecentTrades from '@/components/RecentTrades'
 import StatusBar from '@/components/StatusBar'
@@ -10,7 +10,7 @@ import PositionsTable from '@/components/tables/PositionsTable'
 import { Button } from '@/components/ui/button'
 import { HTTP_BASE_URL, WS_BASE_URL } from '@/config'
 import type { Event } from '@/lib/types/apiTypes/event'
-import { EventType } from '@/lib/types/apiTypes/eventType'
+import { WsEventType } from '@/lib/types/apiTypes/eventType'
 import type { InstrumentSummaryFull } from '@/lib/types/apiTypes/instrumentSummary'
 import type { Order } from '@/lib/types/apiTypes/order'
 import type { PaginatedResponse } from '@/lib/types/apiTypes/paginatedResponse'
@@ -18,15 +18,13 @@ import { MarketType } from '@/lib/types/marketType'
 import { OrderStatus } from '@/lib/types/orderStatus'
 import type { RecentTrade } from '@/lib/types/recentTrade'
 import { TimeFrame } from '@/lib/types/timeframe'
-import { cn } from '@/lib/utils'
 import {
     type CandlestickData,
     type ISeriesApi,
     type Time,
 } from 'lightweight-charts'
-import { Bell, ChevronUp, User } from 'lucide-react'
+import { ChevronUp } from 'lucide-react'
 import { useEffect, useRef, useState, type FC } from 'react'
-import { Link } from 'react-router'
 import { Toaster } from 'sonner'
 
 type ConnectionStatus = 'connected' | 'connecting' | 'disconnected'
@@ -61,7 +59,7 @@ const TradingPage: FC = () => {
     const [orderHistory, setOrderHistory] = useState<Order[]>([])
     const [balance, setBalance] = useState<number | null>(null)
 
-    const [events, setEvents] = useState<Log[]>([])
+    const [events, setEventLogs] = useState<Log[]>([])
     const [orderBook, setOrderBook] = useState<{
         bids: PriceLevel[]
         asks: PriceLevel[]
@@ -192,9 +190,15 @@ const TradingPage: FC = () => {
             }
 
             const msg: Event = JSON.parse(e.data)
+            console.log(msg)
             const payload = msg.data
 
-            if (msg.event_type === EventType.PAYLOAD_UPDATE) {
+            if (typeof msg.balance === 'number') {
+                console.log('Balance:', msg.balance)
+                setBalance(msg.balance)
+            }
+
+            if (msg.event_type === WsEventType.PAYLOAD_UPDATE) {
                 const typedPayload = payload as Order
                 handleTableUpdate(typedPayload, setOrderHistory)
 
@@ -205,11 +209,10 @@ const TradingPage: FC = () => {
                 ) {
                     handleTableUpdate(typedPayload, setOpenPositions)
                 }
-
                 return
             }
 
-            setEvents((prev) => [
+            setEventLogs((prev) => [
                 {
                     event_type: msg.event_type,
                     message: `Order ID: ${msg.order_id}`,
@@ -218,21 +221,21 @@ const TradingPage: FC = () => {
             ])
 
             const orderUpdateEvents = [
-                EventType.ORDER_MODIFIED,
-                EventType.ORDER_PARTIALLY_FILLED,
-                EventType.ORDER_FILLED,
-                EventType.ORDER_PARTIALLY_CLOSED,
+                WsEventType.ORDER_MODIFIED,
+                WsEventType.ORDER_PARTIALLY_FILLED,
+                WsEventType.ORDER_FILLED,
+                WsEventType.ORDER_PARTIALLY_CLOSED,
             ]
 
             const orderRemoveEvents = [
-                EventType.ORDER_CANCELLED,
-                EventType.ORDER_CLOSED,
+                WsEventType.ORDER_CANCELLED,
+                WsEventType.ORDER_CLOSED,
             ]
 
             if (orderUpdateEvents.includes(msg.event_type)) {
                 let obj = { order_id: msg.order_id } as Order
 
-                if (msg.event_type == EventType.ORDER_MODIFIED) {
+                if (msg.event_type == WsEventType.ORDER_MODIFIED) {
                     obj.take_profit = payload.take_profit
                     obj.stop_loss = payload.stop_loss
                 } else {
@@ -266,10 +269,10 @@ const TradingPage: FC = () => {
             if (rsp.ok) {
                 const data: PaginatedResponse<{
                     order_event_id: string
-                    event_type: EventType
+                    event_type: WsEventType
                     order_id: string
                 }> = await rsp.json()
-                setEvents(
+                setEventLogs(
                     data.data.map((val) => ({
                         event_type: val.event_type,
                         message: `Order ID: ${val.order_id}`,
@@ -323,7 +326,7 @@ const TradingPage: FC = () => {
                         : order
                 )
             } else {
-                return [...prev, incomingOrder]
+                return [incomingOrder, ...prev]
             }
         })
     }
@@ -417,36 +420,19 @@ const TradingPage: FC = () => {
         }
     }
 
+    const handleCloseAll = async (action: 'close' | 'cancel') => {
+        await fetch(HTTP_BASE_URL + `/order/${action}/all`, {
+            method: 'DELETE',
+            credentials: 'include',
+        })
+    }
+
     return (
         <>
             <Toaster />
 
             <div className="w-full h-auto flex pb-7">
-                <header className="w-full h-10 z-[999] fixed top-0 left-0 flex justify-between items-center border-b border-b-gray bg-background px-7">
-                    <div className="h-full flex items-center py-2">
-                        <Logo
-                            frameClassName="w-10 h-6"
-                            leftLensClassName="w-3 h-3 left-1"
-                            rightLensClassName="w-3 h-3 right-1"
-                        />
-                    </div>
-                    <div className="w-fit h-full flex flex-row items-center gap-2 px-2">
-                        <Link to="#" className="relative ">
-                            <Bell
-                                className={cn(
-                                    'size-5 hover:text-blue-300 shake-notification'
-                                )}
-                            />
-                            <div className="w-2 h-2 absolute top-0 right-0 rounded-full bg-red-500"></div>
-                        </Link>
-
-                        <Link to="#">
-                            <User
-                                className={cn('size-5 hover:text-blue-300')}
-                            />
-                        </Link>
-                    </div>
-                </header>
+                <Header />
 
                 <main className="w-full min-h-screen mt-10 flex flex-row gap-1 p-1">
                     <div className="w-[80%] flex flex-col gap-1">
@@ -472,20 +458,38 @@ const TradingPage: FC = () => {
                         </div>
                         <div className="w-full flex flex-row gap-1">
                             <div className="w-full bg-background rounded-sm p-1">
-                                <div className="w-full mb-2 flex items-center justify-start p-3">
-                                    {tableTabs.map((tab) => (
+                                <div className="w-full flex justify-between px-3">
+                                    <div className="w-full mb-2 flex items-center justify-start p-3">
+                                        {tableTabs.map((tab) => (
+                                            <Button
+                                                type="button"
+                                                className={`bg-transparent hover:bg-transparent rounded-none border-b-2 hover:text-white cursor-pointer ${tableTab == tab ? 'border-b-white text-white' : 'border-b-transparent text-neutral-900'}`}
+                                                onClick={() => {
+                                                    pageNumRef.current = 1
+                                                    setTableTab(tab)
+                                                }}
+                                            >
+                                                {tab.charAt(0).toUpperCase() +
+                                                    tab.slice(1)}
+                                            </Button>
+                                        ))}
+                                    </div>
+                                    <div className="flex flex-row items-center gap-2">
                                         <Button
                                             type="button"
-                                            className={`bg-transparent hover:bg-transparent rounded-none border-b-2 hover:text-white cursor-pointer ${tableTab == tab ? 'border-b-white text-white' : 'border-b-transparent text-neutral-900'}`}
-                                            onClick={() => {
-                                                pageNumRef.current = 1
-                                                setTableTab(tab)
-                                            }}
+                                            onClick={() => handleCloseAll('cancel')}
+                                            className="w-20 rounded-3xl !bg-neutral-900 text-white text-xs cursor-pointer"
                                         >
-                                            {tab.charAt(0).toUpperCase() +
-                                                tab.slice(1)}
+                                            Cancel All
                                         </Button>
-                                    ))}
+                                        <Button
+                                            type="button"
+                                            onClick={() => handleCloseAll('close')}
+                                            className="w-20 rounded-3xl !bg-neutral-900 text-white text-xs cursor-pointer"
+                                        >
+                                            Close All
+                                        </Button>
+                                    </div>
                                 </div>
                                 <div className="w-full p-3">
                                     {tableTab === 'positions' && (
@@ -495,6 +499,7 @@ const TradingPage: FC = () => {
                                                 pageNumRef.current += 1
                                                 fetchPositions()
                                             }}
+                                            setEventLogs={setEventLogs}
                                         />
                                     )}
                                     {tableTab === 'history' && (
@@ -515,7 +520,12 @@ const TradingPage: FC = () => {
                         <div className="h-150 rounded-sm bg-background">
                             <BasicOrderCard
                                 balance={balance}
-                                setEventLogs={setEvents}
+                                setEventLogs={setEventLogs}
+                                setBalance={
+                                    setBalance as React.Dispatch<
+                                        React.SetStateAction<number>
+                                    >
+                                }
                             />
                         </div>
                         <div className="flex-1 h-auto max-h-fit min-h-0 sticky top-11 rounded-sm bg-background">

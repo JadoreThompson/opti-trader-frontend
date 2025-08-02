@@ -1,37 +1,38 @@
-import { EventType } from '@/lib/types/apiTypes/eventType';
-import { formatUnderscore } from '@/lib/utils';
-import type { FC } from 'react';
+import { WsEventType } from '@/lib/types/apiTypes/eventType'
+import type { EventType } from '@/lib/types/eventType'
+import { formatUnderscore } from '@/lib/utils'
+import type { FC } from 'react'
 
-export type Log = { event_type: EventType; message: string };
+export type Log = { event_type: WsEventType | EventType; message: string }
 
 const EventLog: FC<{
     data: Log[]
 }> = ({ data }) => {
-    const getColor = (eventType: EventType) => {
+    const getColor = (eventType: WsEventType | EventType) => {
         switch (eventType) {
-            case EventType.ORDER_CANCELLED:
+            case WsEventType.ORDER_CANCELLED:
                 return 'red'
-            case EventType.ORDER_CLOSED:
+            case WsEventType.ORDER_CLOSED:
                 return 'green'
-            case EventType.ORDER_MODIFIED:
+            case WsEventType.ORDER_MODIFIED:
                 return 'blue'
-            case EventType.ORDER_NEW:
+            case WsEventType.ORDER_NEW:
                 return 'green'
-            case EventType.ORDER_CANCEL_REJECTED:
+            case WsEventType.ORDER_CANCEL_REJECTED:
                 return 'yellow'
-            case EventType.ORDER_FILLED:
+            case WsEventType.ORDER_FILLED:
                 return 'green'
-            case EventType.ORDER_MODIFY_REJECTED:
+            case WsEventType.ORDER_MODIFY_REJECTED:
                 return 'red'
-            case EventType.ORDER_NEW_REJECTED:
+            case WsEventType.ORDER_NEW_REJECTED:
                 return 'red'
-            case EventType.ORDER_PARTIALLY_CANCELLED:
+            case WsEventType.ORDER_PARTIALLY_CANCELLED:
                 return 'blue'
-            case EventType.ORDER_PARTIALLY_CLOSED:
+            case WsEventType.ORDER_PARTIALLY_CLOSED:
                 return 'green'
-            case EventType.ORDER_PARTIALLY_FILLED:
+            case WsEventType.ORDER_PARTIALLY_FILLED:
                 return 'green'
-            case EventType.ORDER_REJECTED:
+            case WsEventType.ORDER_REJECTED:
                 return 'red'
             default:
                 return 'gray'
