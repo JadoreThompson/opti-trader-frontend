@@ -11,7 +11,6 @@ import { cn } from '@/lib/utils'
 import { AssertError, Value } from '@sinclair/typebox/value'
 import { useState, type FC } from 'react'
 import type { Log } from './EventLog'
-import Toaster from './Toaster'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Tabs, TabsList, TabsTrigger } from './ui/tabs'
@@ -31,17 +30,12 @@ const BasicOrderCard: FC<{
     marketType = MarketType.FUTURES,
     instrument = 'BTCUSD-FUTURES',
     setEventLogs,
-    setBalance
+    setBalance,
 }) => {
     const [side, setSide] = useState<Side>(Side.BID)
     const [orderType, setOrderType] = useState<OrderType>(OrderType.LIMIT)
     const [showTPSL, setShowTPSL] = useState(false)
     const [errorMsg, setErrorMsg] = useState<string | null>(null)
-    // const [_balance, _setBalance] = useState<number | null>(null)
-    // const realBalance = useMemo(() => {
-    //     console.log("Balance in order form:", balance)
-    //     return _balance === null ? balance : _balance
-    // }, [balance, _balance])
 
     const sideColor =
         side === Side.BID
@@ -123,7 +117,6 @@ const BasicOrderCard: FC<{
 
     return (
         <>
-            <Toaster />
             <form onSubmit={handleFormSubmit} className="w-full">
                 <div className="w-full rounded-xl border-none p-4">
                     {/* Side Switch Tabs */}
@@ -179,6 +172,7 @@ const BasicOrderCard: FC<{
                                     name="limit_price"
                                     placeholder="0.00"
                                     className="h-9"
+                                    step={0.01}
                                     required
                                 />
                             </div>

@@ -4,6 +4,6 @@ export interface PaginationMeta {
     size: number
 }
 
-export interface PaginatedResponse<T> {
+export interface PaginatedResponse<T> extends PaginationMeta {
     data: T[]
 }

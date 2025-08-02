@@ -3,12 +3,7 @@ import { Side } from "@/lib/types/side";
 import type { FC } from "react";
 
 const RecentTrades: FC<{ trades: RecentTrade[] }> = ({
-  trades = Array(10).fill({
-    price: 1234.2,
-    size: 0.01,
-    side: Side.BID,
-    time: "19:50",
-  }),
+  trades
 }) => {
   return (
     <div className="p-4 w-full">

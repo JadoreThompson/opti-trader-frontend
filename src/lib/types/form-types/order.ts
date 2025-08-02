@@ -43,7 +43,7 @@ export const SpotLimitOrder = Type.Intersect(
     [
         BaseOrder,
         Type.Object({
-            limit_price: Type.Number({ minimum: 0 }),
+            limit_price: Type.Number({ minimum: 0.0 }),
         }),
     ],
     { additionalProperties: false }

@@ -8,12 +8,101 @@ import type { Order } from '@/lib/types/apiTypes/order'
 import type { PaginatedResponse } from '@/lib/types/apiTypes/paginatedResponse'
 import { MarketType } from '@/lib/types/marketType'
 import { OrderStatus } from '@/lib/types/orderStatus'
+import { AreaSeries, createChart, type ISeriesApi } from 'lightweight-charts'
 import { ChevronUp } from 'lucide-react'
 import { useEffect, useRef, useState, type FC } from 'react'
 
+// Types
 type UserSummary = { balance: number; pnl: number }
 const tableTabs = ['positions', 'history']
 type Tab = (typeof tableTabs)[number]
+interface BalanceItem {
+    time: string
+    balance: number
+}
+
+const BalanceChart: FC = () => {
+    const chartContainerRef = useRef<HTMLDivElement>(null)
+    const chartRef = useRef<ReturnType<typeof createChart> | null>(null)
+    const areaSeriesRef = useRef<ISeriesApi<'Area'> | null>(null)
+
+    const [data, setData] = useState<BalanceItem[]>([])
+
+    useEffect(() => {
+        const fetchBalanceHistory = async () => {
+            const rsp = await fetch(HTTP_BASE_URL + '/user/balance-history', {
+                credentials: 'include',
+            })
+            if (rsp.ok) {
+                const data = await rsp.json()
+                const formattedData = data.map((d: BalanceItem) => ({
+                    time: Math.floor(new Date(d.time).getTime() / 1000),
+                    value: d.balance,
+                }))
+                setData(formattedData)
+            }
+        }
+
+        fetchBalanceHistory()
+    }, [])
+
+    useEffect(() => {
+        if (!chartContainerRef.current) return
+
+        chartRef.current = createChart(chartContainerRef.current, {
+            layout: {
+                background: { color: 'transparent' },
+                textColor: 'white',
+                attributionLogo: false,
+            },
+            grid: {
+                vertLines: { visible: false },
+                horzLines: { visible: false },
+            },
+            timeScale: {
+                timeVisible: true,
+                secondsVisible: false,
+                borderColor: '#ccc',
+            },
+            rightPriceScale: {
+                borderColor: '#ccc',
+            },
+            localization: {
+                priceFormatter: (price: number) =>
+                    `$${price.toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                    })}`,
+            },
+        })
+
+        areaSeriesRef.current = chartRef.current.addSeries(AreaSeries)
+        chartRef.current.timeScale().fitContent()
+    }, [])
+
+    useEffect(() => {
+        if (!data.length)
+            if (areaSeriesRef.current) {
+                areaSeriesRef.current.setData(data)
+            }
+    }, [data])
+
+    return (
+        <div className="w-full h-full flex flex-col bg-transparent border-none">
+            <div className="flex items-center gap-2 space-y-0 sm:flex-row mb-4">
+                <div className="flex-1">
+                    <h2 className="text-lg font-semibold">Balance History</h2>
+                    <p className="text-sm text-gray-500">
+                        Showing balance over time
+                    </p>
+                </div>
+            </div>
+            <div className="flex-1 w-full">
+                <div ref={chartContainerRef} className="w-full h-full" />
+            </div>
+        </div>
+    )
+}
 
 const UserOverviewPage: FC = () => {
     const pageNumRef = useRef<number>(0)
@@ -28,17 +117,15 @@ const UserOverviewPage: FC = () => {
     const [showScrollToTop, setShowScollToTop] = useState<boolean>(false)
     const [isLoading, setIsLoading] = useState<boolean>(false)
 
-    useEffect(() => console.log(isLoading), [isLoading])
-
     useEffect(() => {
         const scrollEvent = () =>
             setShowScollToTop(window.scrollY > window.innerHeight)
 
-        document.body.classList.toggle('bg-zinc-900')
+        document.body.classList.add('bg-zinc-900')
         document.addEventListener('scroll', scrollEvent)
 
         return () => {
-            document.body.classList.toggle('bg-zinc-900')
+            document.body.classList.remove('bg-zinc-900')
             document.removeEventListener('scroll', () => scrollEvent)
         }
     }, [])
@@ -50,11 +137,26 @@ const UserOverviewPage: FC = () => {
             })
             if (rsp.ok) {
                 const data: UserSummary = await rsp.json()
+                console.log('User summary: ', data)
                 setUserSummary(data)
             }
         }
 
         fetchUserSummary()
+    }, [])
+
+    useEffect(() => {
+        const fetchBalanceHistory = async () => {
+            const rsp = await fetch(HTTP_BASE_URL + '/user/balance-history', {
+                credentials: 'include',
+            })
+            if (rsp.ok) {
+                const data = await rsp.json()
+                console.log(data)
+            }
+        }
+
+        fetchBalanceHistory()
     }, [])
 
     async function fetchPositions(): Promise<void> {
@@ -152,7 +254,7 @@ const UserOverviewPage: FC = () => {
                                             className={`w-fit self-end rounded-sm text-md font-semibold p-1 ${
                                                 userSummary.pnl >= 0
                                                     ? 'text-green-400 bg-green-300/10'
-                                                    : 'text-red-400 bg-red-400'
+                                                    : 'text-red-400 bg-red-300/10'
                                             }`}
                                         >
                                             {userSummary.pnl >= 0 ? '+' : '-'}$
@@ -169,14 +271,8 @@ const UserOverviewPage: FC = () => {
                             </div>
 
                             {/* Balance Chart Container */}
-                            <div className="flex-1 flex flex-col h-100 bg-background border border-zinc-800 rounded-xl px-4 py-4 min-h-[130px]">
-                                <div className="text-sm text-zinc-500 mb-2">
-                                    Balance History
-                                </div>
-                                {/* Chart will go here later */}
-                                <div className="w-full max-h-full min-h-0 h-full">
-                                    {/* <ChartAreaInteractive /> */}
-                                </div>
+                            <div className="flex-1 h-100 p-3 bg-background border border-zinc-800 rounded-xl">
+                                <BalanceChart />
                             </div>
                         </div>
                     </section>
@@ -210,6 +306,7 @@ const UserOverviewPage: FC = () => {
                                                 pageNumRef.current += 1
                                                 fetchPositions()
                                             }}
+                                            showActions={false}
                                         />
                                     )}
                                     {tableTab === 'history' && (

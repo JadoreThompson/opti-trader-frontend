@@ -22,7 +22,7 @@ const ChartPanel: FC<{
     volume_24h?: number | null
     candles: CandlestickData<Time>[]
     seriesRef: React.RefObject<ISeriesApi<'Candlestick'> | null>
-    defaultTimeFrame?: TimeFrame,
+    defaultTimeFrame?: TimeFrame
     onTimeFrameChange: (value: TimeFrame) => void
 }> = ({
     instrument,
@@ -39,7 +39,8 @@ const ChartPanel: FC<{
 }) => {
     const containerRef = useRef<HTMLDivElement>(null)
     const chartRef = useRef<IChartApi>(null)
-    const [timeFrame, _setCurrentTimeFrame] = useState<TimeFrame>(defaultTimeFrame)
+    const [timeFrame, _setCurrentTimeFrame] =
+        useState<TimeFrame>(defaultTimeFrame)
     const [isLoading, setIsLoading] = useState<boolean>(true)
 
     useEffect(() => {
