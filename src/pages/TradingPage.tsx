@@ -39,7 +39,7 @@ const TradingPage: FC = () => {
 
     const [candles, setCandles] = useState<CandlestickData<Time>[]>([])
     const [currentTimeFrame, setCurrentTimeFrame] = useState<TimeFrame>(
-        TimeFrame.H1
+        TimeFrame.M5
     )
     const [instrumentSummary, setInstrumentSummary] =
         useState<InstrumentSummaryFull | null>(null)
@@ -444,6 +444,7 @@ const TradingPage: FC = () => {
                                     instrument={instrument}
                                     candles={candles}
                                     seriesRef={candleStickSeriesRef}
+                                    defaultTimeFrame={TimeFrame.M5}
                                     onTimeFrameChange={setCurrentTimeFrame}
                                 />
                             </div>

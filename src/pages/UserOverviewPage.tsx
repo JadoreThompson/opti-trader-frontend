@@ -1,4 +1,3 @@
-import { ChartAreaInteractive } from '@/components/ex'
 import Header from '@/components/Header'
 import OrderHistoryTable from '@/components/tables/OrderHistoryTable'
 import PositionsTable from '@/components/tables/PositionsTable'
@@ -176,7 +175,7 @@ const UserOverviewPage: FC = () => {
                                 </div>
                                 {/* Chart will go here later */}
                                 <div className="w-full max-h-full min-h-0 h-full">
-                                    <ChartAreaInteractive />
+                                    {/* <ChartAreaInteractive /> */}
                                 </div>
                             </div>
                         </div>

@@ -2,7 +2,6 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { HTTP_BASE_URL } from '@/config'
 import type { OrderTableProps } from '@/lib/props/tableProps.'
 import type { Order } from '@/lib/types/apiTypes/order'
-import { EventType } from '@/lib/types/eventType'
 import {
     CancelOrder,
     CloseOrder,
@@ -15,7 +14,6 @@ import { cn, formatUnderscore } from '@/lib/utils'
 import { AssertError, Value } from '@sinclair/typebox/value'
 import { Pencil, X } from 'lucide-react'
 import React, { useEffect, useRef, useState, type FC } from 'react'
-import type { Log } from '../EventLog'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 
@@ -27,11 +25,7 @@ type ModifyData = {
     use_sl: boolean
 }
 
-const PositionsTable: FC<
-    OrderTableProps & {
-        setEventLogs: React.Dispatch<React.SetStateAction<Log[]>>
-    }
-> = ({ orders, onScrollEnd, setEventLogs }) => {
+const PositionsTable: FC<OrderTableProps> = ({ orders, onScrollEnd }) => {
     const tableBottomRef = useRef<HTMLDivElement>(null)
     const cardRef = useRef<HTMLFormElement>(null)
 
@@ -137,16 +131,6 @@ const PositionsTable: FC<
                 const data = await rsp.json()
 
                 if (rsp.ok) {
-                    setEventLogs((prev) => [
-                        {
-                            event_type:
-                                action === 'cancel'
-                                    ? EventType.CANCEL_SUBMITTED
-                                    : EventType.CLOSE_SUBMITTED,
-                            message: `Order ID: ${focusedOrder.order_id}`,
-                        },
-                        ...prev,
-                    ])
                     setShowClose(false)
                     setFocusedOrder(undefined)
                     return

@@ -4,10 +4,12 @@ import {
     ColorType,
     createChart,
     type CandlestickData,
+    type IChartApi,
     type ISeriesApi,
     type Time,
 } from 'lightweight-charts'
 import { useEffect, useRef, useState, type FC } from 'react'
+import Logo from './Logo'
 import { Button } from './ui/button'
 
 const ChartPanel: FC<{
@@ -20,6 +22,7 @@ const ChartPanel: FC<{
     volume_24h?: number | null
     candles: CandlestickData<Time>[]
     seriesRef: React.RefObject<ISeriesApi<'Candlestick'> | null>
+    defaultTimeFrame?: TimeFrame,
     onTimeFrameChange: (value: TimeFrame) => void
 }> = ({
     instrument,
@@ -31,35 +34,46 @@ const ChartPanel: FC<{
     volume_24h,
     candles,
     seriesRef,
+    defaultTimeFrame = TimeFrame.M5,
     onTimeFrameChange = () => {},
 }) => {
     const containerRef = useRef<HTMLDivElement>(null)
-    const [timeFrame, _setCurrentTimeFrame] = useState<TimeFrame>(TimeFrame.M5)
+    const chartRef = useRef<IChartApi>(null)
+    const [timeFrame, _setCurrentTimeFrame] = useState<TimeFrame>(defaultTimeFrame)
+    const [isLoading, setIsLoading] = useState<boolean>(true)
 
     useEffect(() => {
         if (!containerRef.current || !candles.length) return
 
-        const chart = createChart(containerRef.current, {
-            layout: {
-                background: {
-                    type: ColorType.Solid,
-                    color: 'transparent',
+        setIsLoading(true)
+
+        if (!chartRef.current) {
+            chartRef.current = createChart(containerRef.current, {
+                autoSize: true,
+                layout: {
+                    background: {
+                        type: ColorType.Solid,
+                        color: 'transparent',
+                    },
+                    textColor: 'white',
                 },
-                textColor: 'white',
-            },
-            grid: {
-                vertLines: { color: '#151515' },
-                horzLines: { color: '#151515' },
-            },
-            timeScale: {
-                timeVisible: true,
-            },
-        })
-        
-        if (!seriesRef.current) {
-            seriesRef.current = chart.addSeries(CandlestickSeries)
+                grid: {
+                    vertLines: { color: '#151515' },
+                    horzLines: { color: '#151515' },
+                },
+                timeScale: {
+                    timeVisible: true,
+                },
+            })
         }
+
+        if (!seriesRef.current) {
+            seriesRef.current = chartRef.current.addSeries(CandlestickSeries)
+        }
+
         seriesRef.current.setData(candles)
+
+        setIsLoading(false)
     }, [containerRef, candles])
 
     const setTimeFrame = (val: TimeFrame): void => {
@@ -169,7 +183,16 @@ const ChartPanel: FC<{
                     </Button>
                 ))}
             </div>
-            <div ref={containerRef} className="w-full flex-1 text-center"></div>
+            <div
+                ref={containerRef}
+                className="w-full flex-1 relative text-center"
+            >
+                {isLoading && (
+                    <div className="z-[3] absolute top-0 left-0 w-full h-full flex items-center justify-center bg-background">
+                        <Logo />
+                    </div>
+                )}
+            </div>
         </div>
     )
 }
