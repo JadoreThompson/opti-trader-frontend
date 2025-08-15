@@ -1,6 +1,5 @@
 import Header from '@/components/Header'
 import OrderHistoryTable from '@/components/tables/OrderHistoryTable'
-import PositionsTable from '@/components/tables/PositionsTable'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { HTTP_BASE_URL } from '@/config'
@@ -299,25 +298,13 @@ const UserOverviewPage: FC = () => {
                                     ))}
                                 </div>
                                 <div className="w-full p-3">
-                                    {tableTab === 'positions' && (
-                                        <PositionsTable
-                                            orders={openPositions}
-                                            onScrollEnd={() => {
-                                                pageNumRef.current += 1
-                                                fetchPositions()
-                                            }}
-                                            showActions={false}
-                                        />
-                                    )}
-                                    {tableTab === 'history' && (
-                                        <OrderHistoryTable
-                                            orders={orderHistory}
-                                            onScrollEnd={() => {
-                                                pageNumRef.current += 1
-                                                fetchOrderHistory()
-                                            }}
-                                        />
-                                    )}
+                                    <OrderHistoryTable
+                                        orders={orderHistory}
+                                        onScrollEnd={() => {
+                                            pageNumRef.current += 1
+                                            fetchOrderHistory()
+                                        }}
+                                    />
                                 </div>
                             </>
                         )}

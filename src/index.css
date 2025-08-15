@@ -197,3 +197,7 @@ html {
 .open-position-container {
     animation: openPositionContainerKeyframe 0.5s;
 }
+
+.info:hover + .order-type-info {
+    display: flex;
+}

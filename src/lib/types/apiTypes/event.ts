@@ -1,9 +1,7 @@
-import type { WsEventType } from './eventType'
+import type { EventType } from './eventType'
 
 export interface Event {
-    event_type: WsEventType
-    user_id: string
-    order_id: string
-    balance: number | null
+    event_type: EventType
+    available_balance: number
     data: { [key: string]: any }
 }

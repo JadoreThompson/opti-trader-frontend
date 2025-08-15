@@ -1,109 +1,29 @@
-import { Checkbox } from '@/components/ui/checkbox'
 import { HTTP_BASE_URL } from '@/config'
+import useIntersectionObserver from '@/hooks/useIntersectionObserver'
+import useOrderActions from '@/hooks/useOrderAction'
 import type { OrderTableProps } from '@/lib/props/tableProps.'
 import type { Order } from '@/lib/types/apiTypes/order'
-import {
-    CancelOrder,
-    CloseOrder,
-    ModifyOrder,
-} from '@/lib/types/form-types/order'
-import { OrderStatus } from '@/lib/types/orderStatus'
+import type { ModifyData } from '@/lib/types/modifyData'
 import { OrderType } from '@/lib/types/orderType'
 import { Side } from '@/lib/types/side'
 import { cn, formatUnderscore } from '@/lib/utils'
-import { AssertError, Value } from '@sinclair/typebox/value'
-import { Pencil, X } from 'lucide-react'
-import React, { useCallback, useEffect, useRef, useState, type FC } from 'react'
+import { Pencil } from 'lucide-react'
+import React, { useCallback, useState, type FC } from 'react'
+import CancelModal from '../CancelModal'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 
-type ModifyData = {
-    limit_price: number | null
-    take_profit: number | null
-    stop_loss: number | null
-    use_tp: boolean
-    use_sl: boolean
-}
+type ModalType = 'modify' | 'cancel' | null
 
-type ModalType = 'modify' | 'close' | 'cancel' | null
-
-const useIntersectionObserver = (callback: () => void) => {
-    const ref = useRef<HTMLDivElement>(null)
-
-    useEffect(() => {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    callback()
-                }
-            })
-        })
-
-        if (ref.current) {
-            observer.observe(ref.current)
-        }
-
-        return () => observer.disconnect()
-    }, [callback])
-
-    return ref
-}
-
-const useOrderActions = () => {
-    const [error, setError] = useState<string | null>(null)
-
-    const submitAction = useCallback(
-        async (
-            endpoint: string,
-            body: any,
-            method: 'DELETE' | 'PATCH' = 'DELETE'
-        ) => {
-            setError(null)
-            try {
-                const response = await fetch(endpoint, {
-                    method,
-                    credentials: 'include',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body),
-                })
-
-                if (response.ok || response.status === 400) {
-                    const data = await response.json()
-                    if (!response.ok) {
-                        throw new Error(data['error'])
-                    }
-                    return true
-                }
-                throw new Error('An unexpected error occurred.')
-            } catch (err) {
-                const message =
-                    err instanceof AssertError
-                        ? 'Invalid request'
-                        : (err as Error).message
-                setError(message)
-                return false
-            }
-        },
-        []
-    )
-
-    return { error, setError, submitAction }
-}
-
-// Modal Components
 const ModifyModal: FC<{
     order: Order
-    modifyData: ModifyData
+    modifyData: {}
     setModifyData: (data: ModifyData) => void
     onSubmit: (formData: FormData) => Promise<boolean>
     onClose: () => void
     error: string | null
 }> = ({ order, modifyData, setModifyData, onSubmit, onClose, error }) => {
-    const canEditLimit =
-        order.order_type === OrderType.LIMIT &&
-        [OrderStatus.PENDING, OrderStatus.PARTIALLY_FILLED].includes(
-            order.status
-        )
+    const isLimit = order.order_type === OrderType.LIMIT
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -131,35 +51,9 @@ const ModifyModal: FC<{
                             type="number"
                             name="limit_price"
                             defaultValue={modifyData.limit_price ?? ''}
-                            disabled={!canEditLimit}
+                            disabled={!isLimit}
                         />
                     </div>
-
-                    <FormFieldWithToggle
-                        label="Take Profit"
-                        name="take_profit"
-                        value={modifyData.take_profit}
-                        checked={modifyData.use_tp}
-                        onToggle={(checked) =>
-                            setModifyData({
-                                ...modifyData,
-                                use_tp: checked,
-                            })
-                        }
-                    />
-
-                    <FormFieldWithToggle
-                        label="Stop Loss"
-                        name="stop_loss"
-                        value={modifyData.stop_loss}
-                        checked={modifyData.use_sl}
-                        onToggle={(checked) =>
-                            setModifyData({
-                                ...modifyData,
-                                use_sl: checked,
-                            })
-                        }
-                    />
                 </div>
 
                 {error && (
@@ -178,170 +72,20 @@ const ModifyModal: FC<{
         </div>
     )
 }
-
-const CloseModal: FC<{
-    order: Order
-    onSubmit: (formData: FormData) => Promise<boolean>
-    onClose: () => void
-    error: string | null
-}> = ({ order, onSubmit, onClose, error }) => {
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        const formData = new FormData(e.currentTarget)
-
-        if (formData.get('all-quantity') === 'on') {
-            formData.set('quantity', 'ALL')
-        }
-
-        const success = await onSubmit(formData)
-        if (success) onClose()
-    }
-
-    return (
-        <div className="z-10 fixed flex justify-center items-center inset-0">
-            <form
-                onSubmit={handleSubmit}
-                className="p-6 rounded-xl w-[400px] space-y-4 border border-gray-900 shadow-lg bg-background"
-            >
-                <h2 className="text-lg font-semibold">Close Order</h2>
-                <p className="text-sm text-gray-600">
-                    Close <strong>{order.instrument}</strong> order with{' '}
-                    <strong>{order.open_quantity}</strong> open quantity?
-                </p>
-
-                <div>
-                    <label className="block text-sm">Quantity</label>
-                    <Input
-                        type="number"
-                        name="quantity"
-                        min={0}
-                        max={order.open_quantity}
-                    />
-                </div>
-
-                <div className="flex items-center gap-2">
-                    <Checkbox name="all-quantity" />
-                    <label>All?</label>
-                </div>
-
-                {error && (
-                    <div className="text-center text-red-500 text-sm">
-                        {error}
-                    </div>
-                )}
-
-                <div className="flex justify-end gap-2">
-                    <Button type="button" onClick={onClose} variant="ghost">
-                        Cancel
-                    </Button>
-                    <Button type="submit">Close</Button>
-                </div>
-            </form>
-        </div>
-    )
-}
-
-const CancelModal: FC<{
-    order: Order
-    onSubmit: (formData: FormData) => Promise<boolean>
-    onClose: () => void
-    error: string | null
-}> = ({ order, onSubmit, onClose, error }) => {
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        const formData = new FormData(e.currentTarget)
-
-        if (formData.get('all-quantity') === 'on') {
-            formData.set('quantity', 'ALL')
-        }
-
-        const success = await onSubmit(formData)
-        if (success) onClose()
-    }
-
-    return (
-        <div className="z-10 fixed flex justify-center items-center inset-0">
-            <form
-                onSubmit={handleSubmit}
-                className="p-6 rounded-xl w-[400px] space-y-4 border border-gray-900 shadow-lg bg-background"
-            >
-                <h2 className="text-lg font-semibold">Cancel Order</h2>
-                <p className="text-sm text-gray-600">
-                    Cancel <strong>{order.instrument}</strong> order with{' '}
-                    <strong>{order.standing_quantity}</strong> standing
-                    quantity?
-                </p>
-
-                <div>
-                    <label className="block text-sm">Quantity</label>
-                    <Input
-                        type="number"
-                        name="quantity"
-                        defaultValue={order.standing_quantity}
-                        min={0}
-                        max={order.standing_quantity}
-                    />
-                </div>
-
-                <div className="flex items-center gap-2">
-                    <Checkbox name="all-quantity" />
-                    <label>All?</label>
-                </div>
-
-                {error && (
-                    <div className="text-center text-red-500 text-sm">
-                        {error}
-                    </div>
-                )}
-
-                <div className="flex justify-end gap-2">
-                    <Button type="button" onClick={onClose} variant="ghost">
-                        Cancel
-                    </Button>
-                    <Button type="submit">Submit</Button>
-                </div>
-            </form>
-        </div>
-    )
-}
-
-// Helper Components
-const FormFieldWithToggle: FC<{
-    label: string
-    name: string
-    value: number | null
-    checked: boolean
-    onToggle: (checked: boolean) => void
-}> = ({ label, name, value, checked, onToggle }) => (
-    <div className="space-y-1">
-        <div className="flex items-center justify-between">
-            <label className="text-sm">{label}</label>
-            <Checkbox checked={checked} onCheckedChange={onToggle} />
-        </div>
-        <Input
-            type="number"
-            name={name}
-            defaultValue={value ?? ''}
-            step={0.01}
-            disabled={!checked}
-        />
-    </div>
-)
 
 const OrderDetailRow: FC<{
     order: Order
     showActions: boolean
     onModify: () => void
     onCancel: () => void
-    onClose: () => void
-}> = ({ order, showActions, onModify, onCancel, onClose }) => (
+}> = ({ order, showActions, onModify, onCancel }) => (
     <tr className="border-t h-0">
         <td colSpan={showActions ? 11 : 10} className="py-5">
             <div className="open-position-container">
                 <div className="w-full flex justify-between mb-3">
                     <div className="flex flex-col">
                         <span className="w-fit text-md font-bold mb-1">
-                            {order.instrument}
+                            {order.instrument_id}
                         </span>
                         <div className="flex flex-row gap-2">
                             <span
@@ -365,15 +109,17 @@ const OrderDetailRow: FC<{
                     <div className="flex flex-row justify-start gap-10">
                         {[
                             { label: 'Price', value: order.price },
-                            { label: 'Filled Price', value: order.filled_price },
+                            {
+                                label: 'Avg Filled Price',
+                                value: order.avg_fill_price,
+                            },
                             { label: 'Limit Price', value: order.limit_price },
+                            { label: 'Stop Price', value: order.stop_price },
                             { label: 'Quantity', value: order.quantity },
                             {
-                                label: 'Filled Quantity',
-                                value: order.open_quantity,
+                                label: 'Executed Quantity',
+                                value: order.executed_quantity,
                             },
-                            { label: 'Take Profit', value: order.take_profit },
-                            { label: 'Stop Loss', value: order.stop_loss },
                         ].map(({ label, value }) => (
                             <div key={label} className="flex flex-col">
                                 <span className="text-xs font-semibold whitespace-nowrap">
@@ -397,19 +143,10 @@ const OrderDetailRow: FC<{
                             </Button>
                             <Button
                                 type="button"
-                                disabled={order.standing_quantity === 0}
                                 onClick={onCancel}
                                 className="h-8 w-18 rounded-3xl !bg-neutral-900 text-sm text-white font-medium cursor-pointer"
                             >
                                 Cancel
-                            </Button>
-                            <Button
-                                type="button"
-                                onClick={onClose}
-                                disabled={order.open_quantity === 0}
-                                className="h-8 w-17 rounded-3xl !bg-neutral-900 text-sm text-white font-medium cursor-pointer"
-                            >
-                                Close
                             </Button>
                         </div>
                     )}
@@ -420,7 +157,7 @@ const OrderDetailRow: FC<{
 )
 
 // Main Component
-const PositionsTable: FC<OrderTableProps & { showActions: boolean }> = ({
+const OpenOrdersTable: FC<OrderTableProps & { showActions: boolean }> = ({
     orders,
     onScrollEnd,
     showActions = true,
@@ -428,7 +165,7 @@ const PositionsTable: FC<OrderTableProps & { showActions: boolean }> = ({
     const [focusedOrder, setFocusedOrder] = useState<Order>()
     const [activeModal, setActiveModal] = useState<ModalType>(null)
     const [showDetails, setShowDetails] = useState(false)
-    const [modifyData, setModifyData] = useState<ModifyData>({} as ModifyData)
+    const [modifyData, setModifyData] = useState({})
 
     const { error, setError, submitAction } = useOrderActions()
     const tableBottomRef = useIntersectionObserver(onScrollEnd)
@@ -447,10 +184,6 @@ const PositionsTable: FC<OrderTableProps & { showActions: boolean }> = ({
         if (type === 'modify') {
             setModifyData({
                 limit_price: order.limit_price,
-                take_profit: order.take_profit,
-                stop_loss: order.stop_loss,
-                use_tp: typeof order.take_profit === 'number',
-                use_sl: typeof order.stop_loss === 'number',
             })
         }
     }, [])
@@ -470,27 +203,11 @@ const PositionsTable: FC<OrderTableProps & { showActions: boolean }> = ({
                 body.stop_loss = null
             }
 
-            body = Value.Parse(ModifyOrder, body)
+            // body = Value.Parse(ModifyOrder, body)
             return await submitAction(
-                `${HTTP_BASE_URL}/order/${focusedOrder.order_id}/modify`,
+                `${HTTP_BASE_URL}/order/${focusedOrder.order_id}`,
                 body,
                 'PATCH'
-            )
-        },
-        [focusedOrder, submitAction]
-    )
-
-    const handleCloseSubmit = useCallback(
-        async (formData: FormData) => {
-            if (!focusedOrder) return false
-
-            const body = Value.Parse(
-                CloseOrder,
-                Object.fromEntries(formData.entries())
-            )
-            return await submitAction(
-                `${HTTP_BASE_URL}/order/${focusedOrder.order_id}/close`,
-                body
             )
         },
         [focusedOrder, submitAction]
@@ -500,15 +217,16 @@ const PositionsTable: FC<OrderTableProps & { showActions: boolean }> = ({
         async (formData: FormData): Promise<boolean> => {
             if (!focusedOrder) return false
 
-            const body = Value.Parse(
-                CancelOrder,
-                Object.fromEntries(formData.entries())
-            )
+            // const body = Value.Parse(
+            //     CancelOrder,
+            //     Object.fromEntries(formData.entries())
+            // )
 
-            return await submitAction(
-                `${HTTP_BASE_URL}/order/${focusedOrder.order_id}/cancel`,
-                body
-            )
+            // return await submitAction(
+            //     `${HTTP_BASE_URL}/order/${focusedOrder.order_id}/cancel`,
+            //     body
+            // )
+            return true
         },
         [focusedOrder, submitAction]
     )
@@ -532,15 +250,6 @@ const PositionsTable: FC<OrderTableProps & { showActions: boolean }> = ({
                 />
             )}
 
-            {activeModal === 'close' && focusedOrder && (
-                <CloseModal
-                    order={focusedOrder}
-                    onSubmit={handleCloseSubmit}
-                    onClose={closeModal}
-                    error={error}
-                />
-            )}
-
             {activeModal === 'cancel' && focusedOrder && (
                 <CancelModal
                     order={focusedOrder}
@@ -559,10 +268,7 @@ const PositionsTable: FC<OrderTableProps & { showActions: boolean }> = ({
                             <th>Side</th>
                             <th>Type</th>
                             <th>Limit Price</th>
-                            <th>Take Profit</th>
-                            <th>Stop Loss</th>
                             <th>Filled Price</th>
-                            <th>PnL</th>
                             <th>Status</th>
                             {showActions && (
                                 <th className="text-right">Action</th>
@@ -574,7 +280,7 @@ const PositionsTable: FC<OrderTableProps & { showActions: boolean }> = ({
                             <tr>
                                 <td colSpan={11} className="h-20 text-center">
                                     <span className="text-neutral-500">
-                                        No open Positions
+                                        No open orders
                                     </span>
                                 </td>
                             </tr>
@@ -593,9 +299,6 @@ const PositionsTable: FC<OrderTableProps & { showActions: boolean }> = ({
                                             onCancel={() =>
                                                 openModal('cancel', order)
                                             }
-                                            onClose={() =>
-                                                openModal('close', order)
-                                            }
                                         />
                                     ) : (
                                         <tr
@@ -604,7 +307,7 @@ const PositionsTable: FC<OrderTableProps & { showActions: boolean }> = ({
                                                 handleRowClick(order)
                                             }
                                         >
-                                            <td>{order.instrument}</td>
+                                            <td>{order.instrument_id}</td>
                                             <td>{order.quantity}</td>
                                             <td>
                                                 {order.side === Side.BID
@@ -628,46 +331,12 @@ const PositionsTable: FC<OrderTableProps & { showActions: boolean }> = ({
                                             </td>
                                             <td
                                                 className={
-                                                    order.take_profit == null
+                                                    order.avg_fill_price == null
                                                         ? 'text-gray-500'
                                                         : ''
                                                 }
                                             >
-                                                {order.take_profit ?? '--'}
-                                            </td>
-                                            <td
-                                                className={
-                                                    order.stop_loss == null
-                                                        ? 'text-gray-500'
-                                                        : ''
-                                                }
-                                            >
-                                                {order.stop_loss ?? '--'}
-                                            </td>
-                                            <td
-                                                className={
-                                                    order.filled_price == null
-                                                        ? 'text-gray-500'
-                                                        : ''
-                                                }
-                                            >
-                                                {order.filled_price ?? '--'}
-                                            </td>
-                                            <td
-                                                className={
-                                                    order.unrealised_pnl == null
-                                                        ? 'text-gray-500'
-                                                        : order.unrealised_pnl <
-                                                            0
-                                                          ? 'text-[var(--red)]'
-                                                          : 'text-[var(--green)]'
-                                                }
-                                            >
-                                                {order.unrealised_pnl != null
-                                                    ? order.unrealised_pnl.toFixed(
-                                                          2
-                                                      )
-                                                    : '--'}
+                                                {order.avg_fill_price ?? '--'}
                                             </td>
                                             <td>
                                                 {formatUnderscore(order.status)}
@@ -687,7 +356,7 @@ const PositionsTable: FC<OrderTableProps & { showActions: boolean }> = ({
                                                                 )
                                                             }}
                                                         />
-                                                        <X
+                                                        {/* <X
                                                             className={cn(
                                                                 'size-4 cursor-pointer text-gray-500'
                                                             )}
@@ -698,7 +367,7 @@ const PositionsTable: FC<OrderTableProps & { showActions: boolean }> = ({
                                                                     order
                                                                 )
                                                             }}
-                                                        />
+                                                        /> */}
                                                     </div>
                                                 </td>
                                             )}
@@ -715,4 +384,4 @@ const PositionsTable: FC<OrderTableProps & { showActions: boolean }> = ({
     )
 }
 
-export default PositionsTable
+export default OpenOrdersTable

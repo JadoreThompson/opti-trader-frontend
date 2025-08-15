@@ -1,38 +1,25 @@
-import { WsEventType } from '@/lib/types/apiTypes/eventType'
-import type { EventType } from '@/lib/types/eventType'
-import { formatUnderscore } from '@/lib/utils'
-import type { FC } from 'react'
+import { EventType } from '@/lib/types/apiTypes/eventType';
+import { formatUnderscore } from '@/lib/utils';
+import type { FC } from 'react';
 
-export type Log = { event_type: WsEventType | EventType; message: string }
+export type Log = { event_type: EventType; message: string }
 
 const EventLog: FC<{
     data: Log[]
 }> = ({ data }) => {
-    const getColor = (eventType: WsEventType | EventType) => {
+    const getColor = (eventType: EventType) => {
         switch (eventType) {
-            case WsEventType.ORDER_CANCELLED:
+            case EventType.ORDER_CANCELLED:
                 return 'red'
-            case WsEventType.ORDER_CLOSED:
-                return 'green'
-            case WsEventType.ORDER_MODIFIED:
+            case EventType.ORDER_MODIFY_REJECTED:
+                return 'red'
+            case EventType.ORDER_MODIFIED:
                 return 'blue'
-            case WsEventType.ORDER_NEW:
+            case EventType.ORDER_PARTIALLY_FILLED:
                 return 'green'
-            case WsEventType.ORDER_CANCEL_REJECTED:
-                return 'yellow'
-            case WsEventType.ORDER_FILLED:
+            case EventType.ORDER_FILLED:
                 return 'green'
-            case WsEventType.ORDER_MODIFY_REJECTED:
-                return 'red'
-            case WsEventType.ORDER_NEW_REJECTED:
-                return 'red'
-            case WsEventType.ORDER_PARTIALLY_CANCELLED:
-                return 'blue'
-            case WsEventType.ORDER_PARTIALLY_CLOSED:
-                return 'green'
-            case WsEventType.ORDER_PARTIALLY_FILLED:
-                return 'green'
-            case WsEventType.ORDER_REJECTED:
+            case EventType.ORDER_REJECTED:
                 return 'red'
             default:
                 return 'gray'

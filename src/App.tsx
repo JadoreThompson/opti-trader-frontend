@@ -6,9 +6,16 @@ function App() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<TradingPage />} />
-                {/* <Route path="/" element={<ChartAreaInteractive />} /> */}
                 <Route path="/user" element={<UserOverviewPage />} />
+                {/* <Route path="/" element={<TradingPage />} /> */}
+                {/* <Route
+                    path="/futures/:instrument"
+                    element={<TradingPage marketType={MarketType.FUTURES} />}
+                /> */}
+                <Route
+                    path="/spot/:instrument"
+                    element={<TradingPage />}
+                />
             </Routes>
         </BrowserRouter>
     )

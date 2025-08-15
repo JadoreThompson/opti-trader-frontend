@@ -7,8 +7,9 @@ export interface InstrumentSummary extends BaseInstrumentSummary {
     instrument: string
 }
 
-export interface InstrumentSummaryFull extends BaseInstrumentSummary {
-    high_24h?: number
-    low_24h?: number
-    volume_24h?: number
+export interface Instrument24h {
+  h24_volume: number;
+  h24_change: number;
+  h24_high: number;
+  h24_low: number;
 }

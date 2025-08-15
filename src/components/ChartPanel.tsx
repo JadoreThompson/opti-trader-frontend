@@ -16,10 +16,10 @@ const ChartPanel: FC<{
     instrument: string
     price?: number | null
     prevPrice?: number | null
-    change_24h?: number | null
-    high_24h?: number | null
-    low_24h?: number | null
-    volume_24h?: number | null
+    h24_change?: number | null
+    h24_high?: number | null
+    h24_low?: number | null
+    h24_volume?: number | null
     candles: CandlestickData<Time>[]
     seriesRef: React.RefObject<ISeriesApi<'Candlestick'> | null>
     defaultTimeFrame?: TimeFrame
@@ -28,10 +28,10 @@ const ChartPanel: FC<{
     instrument,
     price,
     prevPrice,
-    change_24h,
-    high_24h,
-    low_24h,
-    volume_24h,
+     h24_change,
+    h24_high,
+    h24_low,
+    h24_volume,
     candles,
     seriesRef,
     defaultTimeFrame = TimeFrame.M5,
@@ -44,7 +44,7 @@ const ChartPanel: FC<{
     const [isLoading, setIsLoading] = useState<boolean>(true)
 
     useEffect(() => {
-        if (!containerRef.current || !candles.length) return
+        if (!containerRef.current) return
 
         setIsLoading(true)
 
@@ -119,16 +119,16 @@ const ChartPanel: FC<{
                             font-semibold
                             text-sm
                             ${
-                                typeof change_24h === 'number'
-                                    ? change_24h >= 0
+                                typeof h24_change === 'number'
+                                    ? h24_change >= 0
                                         ? 'text-[var(--green)]'
                                         : 'text-[var(--red)]'
                                     : ''
                             }
                         `}
                         >
-                            {typeof change_24h === 'number'
-                                ? `${change_24h.toFixed(2)}%`
+                            {typeof h24_change === 'number'
+                                ? `${h24_change.toFixed(2)}%`
                                 : '-'}
                         </span>
                     </div>
@@ -140,8 +140,8 @@ const ChartPanel: FC<{
                             24h High
                         </span>
                         <span className="text-right font-semibold text-sm">
-                            {typeof high_24h === 'number'
-                                ? high_24h.toFixed(2)
+                            {typeof h24_high === 'number'
+                                ? h24_high.toFixed(2)
                                 : '-'}
                         </span>
                     </div>
@@ -153,8 +153,8 @@ const ChartPanel: FC<{
                             24h Low
                         </span>
                         <span className="text-right font-semibold text-sm">
-                            {typeof low_24h === 'number'
-                                ? low_24h.toFixed(2)
+                            {typeof h24_low === 'number'
+                                ? h24_low.toFixed(2)
                                 : '-'}
                         </span>
                     </div>
@@ -166,8 +166,8 @@ const ChartPanel: FC<{
                             24h Volume
                         </span>
                         <span className="text-right font-semibold text-sm">
-                            {typeof volume_24h === 'number'
-                                ? volume_24h.toFixed(2)
+                            {typeof h24_volume === 'number'
+                                ? h24_volume.toFixed(2)
                                 : '-'}
                         </span>
                     </div>

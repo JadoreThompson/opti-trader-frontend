@@ -37,7 +37,6 @@ const OrderHistory: FC<OrderTableProps> = ({ orders, onScrollEnd }) => {
                             <th>Side</th>
                             <th>Type</th>
                             <th>Filled Price</th>
-                            <th>PnL</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -47,7 +46,7 @@ const OrderHistory: FC<OrderTableProps> = ({ orders, onScrollEnd }) => {
                                 key={order.order_id}
                                 className={`h-10 ${idx > 0 ? 'border-t' : ''}`}
                             >
-                                <td>{order.instrument}</td>
+                                <td>{order.instrument_id}</td>
                                 <td>{order.quantity}</td>
                                 <td>
                                     {order.side === Side.BID ? 'Buy' : 'Sell'}
@@ -59,26 +58,14 @@ const OrderHistory: FC<OrderTableProps> = ({ orders, onScrollEnd }) => {
 
                                 <td
                                     className={
-                                        order.filled_price == null
+                                        order.avg_fill_price == null
                                             ? 'text-gray-500'
                                             : ''
                                     }
                                 >
-                                    {order.filled_price ?? '--'}
+                                    {order.avg_fill_price ?? '--'}
                                 </td>
-                                <td
-                                    className={
-                                        order.realised_pnl == null
-                                            ? 'text-gray-500'
-                                            : order.realised_pnl < 0
-                                              ? 'text-[var(--red)]'
-                                              : 'text-[var(--green)]'
-                                    }
-                                >
-                                    {order.realised_pnl != null
-                                        ? order.realised_pnl.toFixed(2)
-                                        : '--'}
-                                </td>
+                                
                                 <td>{formatUnderscore(order.status)}</td>
                             </tr>
                         ))}

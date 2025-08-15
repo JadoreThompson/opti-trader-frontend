@@ -1,19 +1,21 @@
-import BasicOrderCard from '@/components/BasicOrderForm'
 import ChartPanel from '@/components/ChartPanel'
 import EventLog, { type Log } from '@/components/EventLog'
+import SpotOrderForm from '@/components/forms/SpotOrderForm'
 import Header from '@/components/Header'
 import OrderBook, { type PriceLevel } from '@/components/OrderBook'
 import RecentTrades from '@/components/RecentTrades'
 import StatusBar from '@/components/StatusBar'
+import OpenOrdersTable from '@/components/tables/OpenOrdersTable'
 import OrderHistoryTable from '@/components/tables/OrderHistoryTable'
-import PositionsTable from '@/components/tables/PositionsTable'
+
 import { Button } from '@/components/ui/button'
 import { HTTP_BASE_URL, WS_BASE_URL } from '@/config'
 import type { Event } from '@/lib/types/apiTypes/event'
-import { WsEventType } from '@/lib/types/apiTypes/eventType'
-import type { InstrumentSummaryFull } from '@/lib/types/apiTypes/instrumentSummary'
+import { EventType } from '@/lib/types/apiTypes/eventType'
+import type { Instrument24h } from '@/lib/types/apiTypes/instrumentSummary'
 import type { Order } from '@/lib/types/apiTypes/order'
 import type { PaginatedResponse } from '@/lib/types/apiTypes/paginatedResponse'
+import type { UserOverviewResponse } from '@/lib/types/apiTypes/userOverviewResponse'
 import { MarketType } from '@/lib/types/marketType'
 import { OrderStatus } from '@/lib/types/orderStatus'
 import type { RecentTrade } from '@/lib/types/recentTrade'
@@ -25,24 +27,28 @@ import {
 } from 'lightweight-charts'
 import { ChevronUp } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState, type FC } from 'react'
-
-// Types
-type ConnectionStatus = 'connected' | 'connecting' | 'disconnected'
-type Tab = 'positions' | 'history'
-type PriceData = { price: number | null; prevPrice: number | null }
-type OrderBookData = { bids: PriceLevel[]; asks: PriceLevel[] }
+import { useParams } from 'react-router'
 
 // Constants
 const INSTRUMENT = 'BTCUSD-FUTURES'
-const TABLE_TABS: Tab[] = ['positions', 'history']
-const TIMEFRAME_SECONDS: Record<TimeFrame, number> = {
-    [TimeFrame.S5]: 5,
-    [TimeFrame.M1]: 60,
+const TIMEFRAME_SECONDS = {
     [TimeFrame.M5]: 5 * 60,
     [TimeFrame.H1]: 60 * 60,
     [TimeFrame.H4]: 4 * 60 * 60,
     [TimeFrame.D1]: 24 * 60 * 60,
 }
+const FUTURES_TABS = ['positions', 'history'] as const
+const SPOT_TABS = ['orders', 'history'] as const
+
+// Types
+type ConnectionStatus = 'connected' | 'connecting' | 'disconnected'
+
+type PriceData = { price: number | null; prevPrice: number | null }
+type OrderBookData = { bids: PriceLevel[]; asks: PriceLevel[] }
+
+type FuturesTab = (typeof FUTURES_TABS)[number]
+type SpotTab = (typeof SPOT_TABS)[number]
+type Tab = FuturesTab | SpotTab
 
 // Hooks
 const useScrollToTop = () => {
@@ -64,19 +70,20 @@ const useScrollToTop = () => {
     return { showScrollToTop, scrollToTop }
 }
 
-const useApiData = () => {
+const useApiData = (instrument: string) => {
     const [instrumentSummary, setInstrumentSummary] =
-        useState<InstrumentSummaryFull | null>(null)
+        useState<Instrument24h | null>(null)
     const [balance, setBalance] = useState<number | null>(null)
     const [events, setEvents] = useState<Log[]>([])
 
-    const fetchInstrumentSummary = useCallback(async () => {
+    const fetchInstrument24h = useCallback(async () => {
         try {
-            const response = await fetch(
-                `${HTTP_BASE_URL}/instrument/${INSTRUMENT}/summary`
+            const rsp = await fetch(
+                `${HTTP_BASE_URL}/instruments/${instrument}/24h`
             )
-            if (response.ok) {
-                const data: InstrumentSummaryFull = await response.json()
+            if (rsp.ok) {
+                const data: Instrument24h = await rsp.json()
+                console.log(data)
                 setInstrumentSummary(data)
             }
         } catch (error) {
@@ -86,13 +93,13 @@ const useApiData = () => {
 
     const fetchUserSummary = useCallback(async () => {
         try {
-            const response = await fetch(`${HTTP_BASE_URL}/user/summary`, {
+            const rsp = await fetch(`${HTTP_BASE_URL}/user/`, {
                 credentials: 'include',
             })
-            if (response.ok) {
-                const data: { balance: number; pnl: number } =
-                    await response.json()
-                setBalance(data.balance)
+
+            if (rsp.ok) {
+                const data: UserOverviewResponse = await rsp.json()
+                setBalance(data.cash_balance)
             }
         } catch (error) {
             console.error('Failed to fetch user summary:', error)
@@ -101,21 +108,21 @@ const useApiData = () => {
 
     const fetchEvents = useCallback(async () => {
         try {
-            const response = await fetch(`${HTTP_BASE_URL}/user/events`, {
+            const rsp = await fetch(`${HTTP_BASE_URL}/user/events`, {
                 credentials: 'include',
             })
-            if (response.ok) {
-                const data: PaginatedResponse<{
-                    order_event_id: string
-                    event_type: WsEventType
-                    order_id: string
-                }> = await response.json()
-                setEvents(
-                    data.data.map((val) => ({
-                        event_type: val.event_type,
-                        message: `Order ID: ${val.order_id}`,
-                    }))
-                )
+            if (rsp.ok) {
+                // const data: PaginatedResponse<{
+                //     order_event_id: string
+                //     event_type: WsEventType
+                //     order_id: string
+                // }> = await rsp.json()
+                // setEvents(
+                //     data.data.map((val) => ({
+                //         event_type: val.event_type,
+                //         message: `Order ID: ${val.order_id}`,
+                //     }))
+                // )
             }
         } catch (error) {
             console.error('Failed to fetch events:', error)
@@ -128,24 +135,25 @@ const useApiData = () => {
         events,
         setBalance,
         setEvents,
-        fetchInstrumentSummary,
+        fetchInstrumentSummary: fetchInstrument24h,
         fetchUserSummary,
         fetchEvents,
     }
 }
 
-const useCandles = (currentTimeFrame: TimeFrame) => {
+const useCandles = (instrument: string, currentTimeFrame: TimeFrame) => {
     const [candles, setCandles] = useState<CandlestickData<Time>[]>([])
     const candlesRef = useRef<CandlestickData<Time>[]>([])
     const candleStickSeriesRef = useRef<ISeriesApi<'Candlestick'>>(null)
 
     const fetchCandles = useCallback(async () => {
         try {
-            const response = await fetch(
-                `${HTTP_BASE_URL}/instrument/${INSTRUMENT}/candles?time_frame=${currentTimeFrame}`
+            const rsp = await fetch(
+                `${HTTP_BASE_URL}/instruments/${instrument}/ohlc?timeframe=${currentTimeFrame}`
             )
-            if (response.ok) {
-                const data = await response.json()
+            if (rsp.ok) {
+                const data = await rsp.json()
+                console.log('OHLCs', data)
                 setCandles(data)
                 candlesRef.current = data
             }
@@ -156,16 +164,30 @@ const useCandles = (currentTimeFrame: TimeFrame) => {
 
     const handleIncomingPrice = useCallback(
         (value: number) => {
-            if (!candleStickSeriesRef.current || !candlesRef.current.length)
-                return
+            if (!candleStickSeriesRef.current) return
 
-            const seconds = TIMEFRAME_SECONDS[currentTimeFrame]
-            const curTime = Date.now() / 1000
+            const curSeconds = Math.round(Date.now() / 1000)
+            const tfSeconds = TIMEFRAME_SECONDS[currentTimeFrame]
+
+            if (!candlesRef.current.length) {
+                const time = curSeconds - (curSeconds % tfSeconds)
+                const newCandle = {
+                    open: value,
+                    high: value,
+                    low: value,
+                    close: value,
+                    time: time as Time,
+                }
+                candleStickSeriesRef.current.update(newCandle)
+                candlesRef.current.push(newCandle)
+                return
+            }
+
             const prevCandle = candlesRef.current[candlesRef.current.length - 1]
             const prevTime = prevCandle.time as number
-            const nextTime = prevTime + seconds
+            const nextTime = prevTime + tfSeconds
 
-            if (nextTime > curTime) {
+            if (nextTime > curSeconds) {
                 const updatedCandle = {
                     open: prevCandle.open,
                     high: Math.max(prevCandle.high, value),
@@ -175,13 +197,15 @@ const useCandles = (currentTimeFrame: TimeFrame) => {
                 }
                 candleStickSeriesRef.current.update(updatedCandle)
             } else {
-                candleStickSeriesRef.current.update({
+                const newCandle = {
                     open: value,
                     high: value,
                     low: value,
                     close: value,
                     time: nextTime as Time,
-                })
+                }
+                candleStickSeriesRef.current.update(newCandle)
+                candlesRef.current.push(newCandle)
             }
         },
         [currentTimeFrame]
@@ -198,7 +222,7 @@ const useCandles = (currentTimeFrame: TimeFrame) => {
     }
 }
 
-const useMarketData = () => {
+const useMarketData = (instrument: string) => {
     const [prices, setPrices] = useState<PriceData>({} as PriceData)
     const [orderBook, setOrderBook] = useState<OrderBookData>(
         {} as OrderBookData
@@ -207,19 +231,19 @@ const useMarketData = () => {
 
     const fetchRecentTrades = useCallback(async () => {
         try {
-            const response = await fetch(
-                `${HTTP_BASE_URL}/instrument/${INSTRUMENT}/recent-trades`
+            const rsp = await fetch(
+                `${HTTP_BASE_URL}/instruments/${instrument}/trades`
             )
-            if (response.ok) {
-                const data = await response.json()
-                setRecentTrades(data)
+            if (rsp.ok) {
+                const data = await rsp.json()
+                setRecentTrades(data.data)
             }
         } catch (error) {
             console.error('Failed to fetch recent trades:', error)
         }
     }, [])
 
-    const handleOrderBookUpdate = useCallback((data: any) => {
+    const handleOrderBookSnapshot = useCallback((data: any) => {
         setOrderBook({
             bids: Object.entries(data.bids)
                 .map(([k, v]) => ({
@@ -234,7 +258,7 @@ const useMarketData = () => {
         })
     }, [])
 
-    const handleRecentTradeUpdate = useCallback((newTrade: RecentTrade) => {
+    const handleNewTradeEvent = useCallback((newTrade: RecentTrade) => {
         setRecentTrades((prev) => {
             const newTrades = [...prev]
             if (newTrades.length === 10) {
@@ -254,18 +278,19 @@ const useMarketData = () => {
         orderBook,
         recentTrades,
         setPrices,
-        handleOrderBookUpdate,
-        handleRecentTradeUpdate,
+        handleOrderBookUpdate: handleOrderBookSnapshot,
+        handleRecentTradeUpdate: handleNewTradeEvent,
     }
 }
 
 const useWebSocket = (
+    instrument: string,
     handleIncomingPrice: (price: number) => void,
     handleOrderBookUpdate: (data: any) => void,
     handleRecentTradeUpdate: (trade: RecentTrade) => void
 ) => {
     useEffect(() => {
-        const ws = new WebSocket(`${WS_BASE_URL}/instrument/${INSTRUMENT}/ws`)
+        const ws = new WebSocket(`${WS_BASE_URL}/ws/instruments/${instrument}`)
 
         const handleWsHeartbeat = async (socket: WebSocket) => {
             while (socket.readyState === WebSocket.OPEN) {
@@ -277,8 +302,8 @@ const useWebSocket = (
         }
 
         ws.onopen = () => {
-            ws.send(JSON.stringify({ subscribe: 'orderbook_update' }))
-            ws.send(JSON.stringify({ subscribe: 'recent_trade' }))
+            ws.send(JSON.stringify({ subscribe: 'orderbook' }))
+            ws.send(JSON.stringify({ subscribe: 'trade' }))
             handleWsHeartbeat(ws)
         }
 
@@ -316,11 +341,12 @@ const useOrderManagement = (
     const [connectionStatus, setConnectionStatus] =
         useState<ConnectionStatus>('disconnected')
     const [openPositions, setOpenPositions] = useState<Order[]>([])
+    const [openOrders, setOpenOrders] = useState<Order[]>([])
     const [orderHistory, setOrderHistory] = useState<Order[]>([])
     const hasNextRef = useRef<boolean>(true)
     const pageNumRef = useRef<number>(0)
 
-    const handleTableUpdate = useCallback(
+    const handleOrderUpdate = useCallback(
         (
             incomingOrder: Order,
             setter: React.Dispatch<React.SetStateAction<Order[]>>
@@ -346,7 +372,7 @@ const useOrderManagement = (
     )
 
     const handleOrderRemoval = useCallback((orderId: string) => {
-        setOpenPositions((prev) =>
+        setOpenOrders((prev) =>
             prev.filter((order) => order.order_id !== orderId)
         )
     }, [])
@@ -365,12 +391,9 @@ const useOrderManagement = (
         }
 
         try {
-            const rsp = await fetch(
-                `${HTTP_BASE_URL}/user/orders?${params}`,
-                {
-                    credentials: 'include',
-                }
-            )
+            const rsp = await fetch(`${HTTP_BASE_URL}/user/orders?${params}`, {
+                credentials: 'include',
+            })
             if (rsp.ok) {
                 const data: PaginatedResponse<Order> = await rsp.json()
                 setOpenPositions((prev) => [...prev, ...data.data])
@@ -384,22 +407,19 @@ const useOrderManagement = (
     const fetchOrderHistory = useCallback(async () => {
         const params = new URLSearchParams()
         params.append('page', pageNumRef.current.toString())
-        params.append('market_type', MarketType.FUTURES)
 
-        for (const status of Object.values(OrderStatus)) {
-            params.append('status', status)
-        }
+        // for (const status of Object.values(OrderStatus)) {
+        //     params.append('status', status)
+        // }
 
         try {
-            const rsp = await fetch(
-                `${HTTP_BASE_URL}/user/orders?${params}`,
-                {
-                    credentials: 'include',
-                }
-            )
-            
+            const rsp = await fetch(`${HTTP_BASE_URL}/orders?${params}`, {
+                credentials: 'include',
+            })
+
             if (rsp.ok) {
                 const data: PaginatedResponse<Order> = await rsp.json()
+                console.log('History:', data)
                 setOrderHistory((prev) => [...prev, ...data.data])
                 hasNextRef.current = data.has_next
             }
@@ -408,9 +428,31 @@ const useOrderManagement = (
         }
     }, [])
 
+    const fetchOpenOrders = useCallback(async () => {
+        const params = new URLSearchParams()
+        params.append('page', pageNumRef.current.toString())
+        params.append('status', OrderStatus.PLACED)
+        params.append('status', OrderStatus.PARTIALLY_FILLED)
+
+        try {
+            const rsp = await fetch(`${HTTP_BASE_URL}/orders?${params}`, {
+                credentials: 'include',
+            })
+            console.log(rsp)
+
+            if (rsp.ok) {
+                const data: PaginatedResponse<Order> = await rsp.json()
+                setOpenOrders((prev) => [...prev, ...data.data])
+                hasNextRef.current = data.has_next
+            }
+        } catch (error) {
+            console.error('Failed to fetch open orders:', error)
+        }
+    }, [])
+
     const handleCloseAll = useCallback(async (action: 'close' | 'cancel') => {
         try {
-            await fetch(`${HTTP_BASE_URL}/order/${action}/all`, {
+            await fetch(`${HTTP_BASE_URL}/order`, {
                 method: 'DELETE',
                 credentials: 'include',
             })
@@ -422,15 +464,13 @@ const useOrderManagement = (
     useEffect(() => {
         const fetchToken = async () => {
             try {
-                const response = await fetch(
-                    `${HTTP_BASE_URL}/order/access-token`,
-                    {
-                        credentials: 'include',
-                    }
-                )
-                if (response.ok) {
-                    const data = await response.json()
-                    setWsToken(data.token)
+                const rsp = await fetch(`${HTTP_BASE_URL}/auth/access-token`, {
+                    credentials: 'include',
+                })
+                if (rsp.ok) {
+                    const data = await rsp.json()
+                    console.log(data)
+                    setWsToken(data.access_token)
                 }
             } catch (error) {
                 console.error('Failed to fetch WebSocket token:', error)
@@ -444,13 +484,13 @@ const useOrderManagement = (
     useEffect(() => {
         if (!wsToken) return
 
-        const ws = new WebSocket(`${WS_BASE_URL}/order/ws`)
+        const ws = new WebSocket(`${WS_BASE_URL}/ws/orders`)
 
-        const handleWsHeartbeat = async (socket: WebSocket) => {
-            while (socket.readyState === WebSocket.OPEN) {
+        const handleWsHeartbeat = async (ws: WebSocket) => {
+            while (ws.readyState === WebSocket.OPEN) {
                 await new Promise((resolve) => setTimeout(resolve, 1000))
-                if (socket.readyState === WebSocket.OPEN) {
-                    socket.send('ping')
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send('ping')
                 }
             }
         }
@@ -467,67 +507,30 @@ const useOrderManagement = (
                 return
             }
 
-            try {
-                const msg: Event = JSON.parse(e.data)
-                const payload = msg.data
+            const msg: Event = JSON.parse(e.data)
+            const order = msg.data
 
-                if (typeof msg.balance === 'number') {
-                    setBalance(msg.balance)
-                }
+            setBalance(msg.available_balance)
+            setEvents((prev) => {
+                const newEvents = [...prev]
+                newEvents.unshift({
+                    event_type: msg.event_type,
+                    message: `Order ID: ${order.order_id}`,
+                })
+                return newEvents
+            })
 
-                if (msg.event_type === WsEventType.PAYLOAD_UPDATE) {
-                    const typedPayload = payload as Order
-                    handleTableUpdate(typedPayload, setOrderHistory)
-
-                    if (
-                        ![OrderStatus.CANCELLED, OrderStatus.CLOSED].includes(
-                            payload.status
-                        )
-                    ) {
-                        handleTableUpdate(typedPayload, setOpenPositions)
-                    }
-                    return
-                }
-
-                setEvents((prev) => [
-                    {
-                        event_type: msg.event_type,
-                        message: `Order ID: ${msg.order_id}`,
-                    },
-                    ...prev,
-                ])
-
-                const orderUpdateEvents = [
-                    WsEventType.ORDER_MODIFIED,
-                    WsEventType.ORDER_PARTIALLY_FILLED,
-                    WsEventType.ORDER_FILLED,
-                    WsEventType.ORDER_PARTIALLY_CLOSED,
-                ]
-
-                const orderRemoveEvents = [
-                    WsEventType.ORDER_CANCELLED,
-                    WsEventType.ORDER_CLOSED,
-                ]
-
-                if (orderUpdateEvents.includes(msg.event_type)) {
-                    let obj = { order_id: msg.order_id } as Order
-
-                    if (msg.event_type === WsEventType.ORDER_MODIFIED) {
-                        obj.take_profit = payload.take_profit
-                        obj.stop_loss = payload.stop_loss
-                    } else {
-                        obj.status = msg.event_type.replace(
-                            'order_',
-                            ''
-                        ) as OrderStatus
-                    }
-
-                    handleTableUpdate(obj, setOpenPositions)
-                } else if (orderRemoveEvents.includes(msg.event_type)) {
-                    handleOrderRemoval(msg.order_id)
-                }
-            } catch (error) {
-                console.error('Failed to parse order WebSocket message:', error)
+            if (
+                (EventType.ORDER_CANCELLED, EventType.ORDER_FILLED).includes(
+                    msg.event_type
+                )
+            ) {
+                handleOrderRemoval(order.order_id)
+                handleOrderUpdate(order as Order, setOrderHistory)
+            } else {
+                handleOrderUpdate(order as Order, setOpenOrders)
+                console.log("Handling for ", order['side'], order['status'])
+                handleOrderUpdate(order as Order, setOrderHistory)
             }
         }
 
@@ -537,26 +540,87 @@ const useOrderManagement = (
         }
 
         return () => ws.close()
-    }, [wsToken, handleTableUpdate, handleOrderRemoval, setEvents, setBalance])
+    }, [wsToken, handleOrderUpdate, handleOrderRemoval, setEvents, setBalance])
 
     return {
         connectionStatus,
         openPositions,
+        openOrders,
         orderHistory,
         pageNumRef,
         hasNextRef,
         fetchPositions,
+        fetchOpenOrders,
         fetchOrderHistory,
         handleCloseAll,
     }
 }
 
+const SpotTableCard: FC<{
+    tab: SpotTab
+    openOrders: Order[]
+    orderHistory: Order[]
+    handleTabChange: (value: SpotTab) => void
+    handleOpenOrdersScrollEnd: () => void
+    handleHistoryScrollEnd: () => void
+}> = ({
+    tab,
+    openOrders,
+    orderHistory,
+    handleTabChange,
+    handleOpenOrdersScrollEnd,
+    handleHistoryScrollEnd,
+}) => {
+    return (
+        <div className="w-full bg-background rounded-sm p-1">
+            <div className="w-full flex justify-between px-3">
+                <div className="w-full mb-2 flex items-center justify-start p-3">
+                    {SPOT_TABS.map((t) => (
+                        <Button
+                            key={t}
+                            type="button"
+                            className={`bg-transparent hover:bg-transparent rounded-none border-b-2 hover:text-white cursor-pointer ${
+                                tab === t
+                                    ? 'border-b-white text-white'
+                                    : 'border-b-transparent text-neutral-900'
+                            }`}
+                            onClick={() => handleTabChange(t)}
+                        >
+                            {t.charAt(0).toUpperCase() + t.slice(1)}
+                        </Button>
+                    ))}
+                </div>
+            </div>
+            <div className="w-full p-3">
+                {tab === 'orders' && (
+                    <OpenOrdersTable
+                        orders={openOrders}
+                        onScrollEnd={handleOpenOrdersScrollEnd}
+                        showActions
+                    />
+                )}
+                {tab === 'history' && (
+                    <OrderHistoryTable
+                        orders={orderHistory}
+                        onScrollEnd={handleHistoryScrollEnd}
+                    />
+                )}
+            </div>
+        </div>
+    )
+}
+
 // Main Component
-const TradingPage: FC = () => {
+const TradingPage: FC<{ marketType?: MarketType }> = ({
+    marketType = MarketType.SPOT,
+}) => {
+    const { instrument } = useParams()
     const [currentTimeFrame, setCurrentTimeFrame] = useState<TimeFrame>(
         TimeFrame.M5
     )
-    const [tableTab, setTableTab] = useState<Tab>('positions')
+    const [tableTab, setTableTab] = useState<Tab>(
+        marketType === MarketType.FUTURES ? 'positions' : 'orders'
+    )
 
     // Custom hooks
     const { showScrollToTop, scrollToTop } = useScrollToTop()
@@ -569,23 +633,29 @@ const TradingPage: FC = () => {
         fetchInstrumentSummary,
         fetchUserSummary,
         fetchEvents,
-    } = useApiData()
+    } = useApiData(instrument!)
 
-    const { candles, candleStickSeriesRef, handleIncomingPrice } =
-        useCandles(currentTimeFrame)
+    const { candles, candleStickSeriesRef, handleIncomingPrice } = useCandles(
+        instrument!,
+        currentTimeFrame
+    )
+
     const {
         prices,
         orderBook,
         recentTrades,
         handleOrderBookUpdate,
         handleRecentTradeUpdate,
-    } = useMarketData()
+    } = useMarketData(instrument!)
+
     const {
         connectionStatus,
         openPositions,
+        openOrders,
         orderHistory,
         pageNumRef,
         fetchPositions,
+        fetchOpenOrders,
         fetchOrderHistory,
         handleCloseAll,
         hasNextRef,
@@ -593,6 +663,7 @@ const TradingPage: FC = () => {
 
     // WebSocket connections
     useWebSocket(
+        instrument!,
         handleIncomingPrice,
         handleOrderBookUpdate,
         handleRecentTradeUpdate
@@ -626,12 +697,32 @@ const TradingPage: FC = () => {
         }
     }, [fetchPositions, pageNumRef])
 
+    const handleOpenOrdersScrollEnd = useCallback(() => {
+        if (hasNextRef.current) {
+            pageNumRef.current += 1
+            fetchOpenOrders()
+        }
+    }, [fetchOpenOrders, pageNumRef])
+
     const handleHistoryScrollEnd = useCallback(() => {
         if (hasNextRef.current) {
             pageNumRef.current += 1
             fetchOrderHistory()
         }
     }, [fetchOrderHistory, pageNumRef])
+
+    const CommonTableProps = {
+        tab: tableTab,
+        handleTabChange,
+        orderHistory,
+        handleHistoryScrollEnd,
+    }
+
+    const CommonFormProps = {
+        balance,
+        setEventLogs: setEvents,
+        setBalance: setBalance as React.Dispatch<React.SetStateAction<number>>,
+    }
 
     return (
         <>
@@ -647,7 +738,7 @@ const TradingPage: FC = () => {
                                 <ChartPanel
                                     {...(instrumentSummary ?? {})}
                                     {...prices}
-                                    instrument={INSTRUMENT}
+                                    instrument={instrument!}
                                     candles={candles}
                                     seriesRef={candleStickSeriesRef}
                                     defaultTimeFrame={TimeFrame.M5}
@@ -666,83 +757,25 @@ const TradingPage: FC = () => {
 
                         {/* Tables Section */}
                         <div className="w-full flex flex-row gap-1">
-                            <div className="w-full bg-background rounded-sm p-1">
-                                <div className="w-full flex justify-between px-3">
-                                    <div className="w-full mb-2 flex items-center justify-start p-3">
-                                        {TABLE_TABS.map((tab) => (
-                                            <Button
-                                                key={tab}
-                                                type="button"
-                                                className={`bg-transparent hover:bg-transparent rounded-none border-b-2 hover:text-white cursor-pointer ${
-                                                    tableTab === tab
-                                                        ? 'border-b-white text-white'
-                                                        : 'border-b-transparent text-neutral-900'
-                                                }`}
-                                                onClick={() =>
-                                                    handleTabChange(tab)
-                                                }
-                                            >
-                                                {tab.charAt(0).toUpperCase() +
-                                                    tab.slice(1)}
-                                            </Button>
-                                        ))}
-                                    </div>
-                                    <div className="flex flex-row items-center gap-2">
-                                        <Button
-                                            type="button"
-                                            onClick={() =>
-                                                handleCloseAll('cancel')
-                                            }
-                                            className="w-20 rounded-3xl !bg-neutral-900 text-white text-xs cursor-pointer"
-                                        >
-                                            Cancel All
-                                        </Button>
-                                        <Button
-                                            type="button"
-                                            onClick={() =>
-                                                handleCloseAll('close')
-                                            }
-                                            className="w-20 rounded-3xl !bg-neutral-900 text-white text-xs cursor-pointer"
-                                        >
-                                            Close All
-                                        </Button>
-                                    </div>
-                                </div>
-                                <div className="w-full p-3">
-                                    {tableTab === 'positions' && (
-                                        <PositionsTable
-                                            orders={openPositions}
-                                            onScrollEnd={
-                                                handlePositionsScrollEnd
-                                            }
-                                            showActions={true}
-                                        />
-                                    )}
-                                    {tableTab === 'history' && (
-                                        <OrderHistoryTable
-                                            orders={orderHistory}
-                                            onScrollEnd={handleHistoryScrollEnd}
-                                        />
-                                    )}
-                                </div>
-                            </div>
+                            <SpotTableCard
+                                {...{
+                                    ...CommonTableProps,
+                                    tab: CommonTableProps.tab as SpotTab,
+                                    openOrders: openOrders,
+                                    handleOpenOrdersScrollEnd,
+                                }}
+                            />
                         </div>
                     </div>
 
                     {/* Sidebar */}
-                    <div className="flex-1 flex flex-col gap-1">
-                        <div className="h-150 rounded-sm bg-background">
-                            <BasicOrderCard
-                                balance={balance}
-                                setEventLogs={setEvents}
-                                setBalance={
-                                    setBalance as React.Dispatch<
-                                        React.SetStateAction<number>
-                                    >
-                                }
+                    <div className="flex-1 flex flex-col">
+                        <div className="min-h-150 rounded-tl-sm rounded-tr-sm border-b-1 border-b-neutral-900 bg-background">
+                            <SpotOrderForm
+                                {...{ ...CommonFormProps, instrument }}
                             />
                         </div>
-                        <div className="flex-1 h-auto max-h-fit min-h-0 sticky top-11 rounded-sm bg-background">
+                        <div className="flex-1 h-auto max-h-fit min-h-0 sticky top-11 bg-background">
                             <EventLog data={events} />
                         </div>
                     </div>
