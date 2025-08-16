@@ -18,8 +18,8 @@ import type { PaginatedResponse } from '@/lib/types/apiTypes/paginatedResponse'
 import type { UserOverviewResponse } from '@/lib/types/apiTypes/userOverviewResponse'
 import { MarketType } from '@/lib/types/marketType'
 import { OrderStatus } from '@/lib/types/orderStatus'
-import type { RecentTrade } from '@/lib/types/recentTrade'
 import { TimeFrame } from '@/lib/types/timeframe'
+import type { TradeEvent as Trade } from '@/lib/types/tradeEvent'
 import {
     type CandlestickData,
     type ISeriesApi,
@@ -227,7 +227,7 @@ const useMarketData = (instrument: string) => {
     const [orderBook, setOrderBook] = useState<OrderBookData>(
         {} as OrderBookData
     )
-    const [recentTrades, setRecentTrades] = useState<RecentTrade[]>([])
+    const [recentTrades, setRecentTrades] = useState<Trade[]>([])
 
     const fetchRecentTrades = useCallback(async () => {
         try {
@@ -258,7 +258,7 @@ const useMarketData = (instrument: string) => {
         })
     }, [])
 
-    const handleNewTradeEvent = useCallback((newTrade: RecentTrade) => {
+    const handleNewTradeEvent = useCallback((newTrade: Trade) => {
         setRecentTrades((prev) => {
             const newTrades = [...prev]
             if (newTrades.length === 10) {
@@ -285,43 +285,46 @@ const useMarketData = (instrument: string) => {
 
 const useWebSocket = (
     instrument: string,
-    handleIncomingPrice: (price: number) => void,
-    handleOrderBookUpdate: (data: any) => void,
-    handleRecentTradeUpdate: (trade: RecentTrade) => void
+    handlePriceEvent: (price: number) => void,
+    handleOrderBookEvent: (data: any) => void,
+    handleTradeEvent: (trade: Trade) => void
 ) => {
     useEffect(() => {
         const ws = new WebSocket(`${WS_BASE_URL}/ws/instruments/${instrument}`)
 
-        const handleWsHeartbeat = async (socket: WebSocket) => {
-            while (socket.readyState === WebSocket.OPEN) {
+        const handleWsHeartbeat = async (ws: WebSocket) => {
+            while (ws.readyState === WebSocket.OPEN) {
+                // Max is 5 seconds.
                 await new Promise((resolve) => setTimeout(resolve, 1000))
-                if (socket.readyState === WebSocket.OPEN) {
-                    socket.send('ping')
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send('ping')
                 }
             }
         }
 
         ws.onopen = () => {
-            ws.send(JSON.stringify({ subscribe: 'orderbook' }))
-            ws.send(JSON.stringify({ subscribe: 'trade' }))
             handleWsHeartbeat(ws)
+            ws.send(JSON.stringify({ type: 'subscribe', channel: 'orderbook' }))
+            ws.send(JSON.stringify({ type: 'subscribe', channel: 'trades' }))
+            ws.send(JSON.stringify({ type: 'subscribe', channel: 'price' }))
         }
 
         ws.onmessage = (e) => {
             if (e.data === 'connected') return
 
             try {
-                const message = JSON.parse(e.data)
+                const msg = JSON.parse(e.data)
+                console.log('Instrument WS message:', msg)
 
-                switch (message.event_type) {
-                    case 'price_update':
-                        handleIncomingPrice(Number.parseFloat(message.data))
+                switch (msg.event_type) {
+                    case 'price':
+                        handlePriceEvent(Number.parseFloat(msg.data.price))
                         break
-                    case 'orderbook_update':
-                        handleOrderBookUpdate(message.data)
+                    case 'orderbook':
+                        handleOrderBookEvent(msg.data)
                         break
-                    case 'recent_trade':
-                        handleRecentTradeUpdate(message.data)
+                    case 'trades':
+                        handleTradeEvent(msg.data)
                         break
                 }
             } catch (error) {
@@ -330,7 +333,7 @@ const useWebSocket = (
         }
 
         return () => ws.close()
-    }, [handleIncomingPrice, handleOrderBookUpdate, handleRecentTradeUpdate])
+    }, [handlePriceEvent, handleOrderBookEvent, handleTradeEvent])
 }
 
 const useOrderManagement = (
@@ -529,7 +532,7 @@ const useOrderManagement = (
                 handleOrderUpdate(order as Order, setOrderHistory)
             } else {
                 handleOrderUpdate(order as Order, setOpenOrders)
-                console.log("Handling for ", order['side'], order['status'])
+                console.log('Handling for ', order['side'], order['status'])
                 handleOrderUpdate(order as Order, setOrderHistory)
             }
         }

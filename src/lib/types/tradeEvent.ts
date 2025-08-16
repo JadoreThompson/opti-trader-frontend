@@ -1,8 +1,8 @@
 import type { Side } from './side'
 
-export interface RecentTrade {
+export interface TradeEvent {
     price: number
     quantity: number
     side: Side
-    executedAt: string
+    executed_at: string
 }
