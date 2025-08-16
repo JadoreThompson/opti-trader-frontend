@@ -1,6 +1,5 @@
-import type { PaginationMeta } from './paginatedResponse'
 
-export interface UserOverviewResponse extends PaginationMeta {
+export interface UserOverviewResponse{
     cash_balance: number
-    data: { [k: number]: number }
+    data: { [k: string]: number }
 }

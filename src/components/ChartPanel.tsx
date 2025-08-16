@@ -8,7 +8,9 @@ import {
     type ISeriesApi,
     type Time,
 } from 'lightweight-charts'
-import { useEffect, useRef, useState, type FC } from 'react'
+import { ChevronDown } from 'lucide-react'
+import { useEffect, useRef, useState, type FC, type RefObject } from 'react'
+import InstrumentSelector from './InstrumentSelector'
 import Logo from './Logo'
 import { Button } from './ui/button'
 
@@ -24,11 +26,12 @@ const ChartPanel: FC<{
     seriesRef: React.RefObject<ISeriesApi<'Candlestick'> | null>
     defaultTimeFrame?: TimeFrame
     onTimeFrameChange: (value: TimeFrame) => void
+    onInstrumentSelect: (instrumentId: string) => void
 }> = ({
     instrument,
     price,
     prevPrice,
-     h24_change,
+    h24_change,
     h24_high,
     h24_low,
     h24_volume,
@@ -36,12 +39,15 @@ const ChartPanel: FC<{
     seriesRef,
     defaultTimeFrame = TimeFrame.M5,
     onTimeFrameChange = () => {},
+    onInstrumentSelect,
 }) => {
     const containerRef = useRef<HTMLDivElement>(null)
     const chartRef = useRef<IChartApi>(null)
     const [timeFrame, _setCurrentTimeFrame] =
         useState<TimeFrame>(defaultTimeFrame)
     const [isLoading, setIsLoading] = useState<boolean>(true)
+    const [isSelectorOpen, setIsSelectorOpen] = useState(false)
+    const triggerRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         if (!containerRef.current) return
@@ -85,8 +91,12 @@ const ChartPanel: FC<{
     return (
         <div className="w-full h-full flex flex-col p-5 gap-1">
             <div className="w-full h-15 flex flex-row items-center justify-start">
-                <div className="w-fit  h-full flex flex-col px-2 text-left border-r border-neutral-800">
-                    <div className="flex flex-col">
+                <div
+                    ref={triggerRef}
+                    onMouseUp={() => setIsSelectorOpen(!isSelectorOpen)}
+                    className="w-fit h-full flex items-center px-2 text-left border-r border-neutral-800 cursor-pointer"
+                >
+                    <div className="flex flex-col pr-2">
                         <span className="font-bold text-sm whitespace-nowrap">
                             {instrument}
                         </span>
@@ -106,7 +116,14 @@ const ChartPanel: FC<{
                             {typeof price === 'number' ? price : '-'}
                         </span>
                     </div>
+                    <ChevronDown className="size-4 text-muted-foreground" />
                 </div>
+                <InstrumentSelector
+                    isOpen={isSelectorOpen}
+                    onClose={() => setIsSelectorOpen(false)}
+                    onSelect={onInstrumentSelect}
+                    triggerRef={triggerRef as RefObject<HTMLDivElement>}
+                />
 
                 <div className="w-30 h-full flex items-center justify-center px-2 ">
                     <div className="flex flex-col">
@@ -176,6 +193,7 @@ const ChartPanel: FC<{
             <div className="w-full h-10 flex flex-row items-center justify-start gap-3">
                 {Object.values(TimeFrame).map((val) => (
                     <Button
+                        key={val}
                         type="button"
                         className={`bg-transparent hover:bg-transparent rounded-none border-b-1 border-b-transparent cursor-pointer transition-border-b duration-300 ${timeFrame === val ? 'border-b-blue-500 text-white' : 'hover:border-b-blue-600 text-neutral-900'}`}
                         onClick={() => setTimeFrame(val as TimeFrame)}

@@ -7,8 +7,8 @@ import RecentTrades from '@/components/RecentTrades'
 import StatusBar from '@/components/StatusBar'
 import OpenOrdersTable from '@/components/tables/OpenOrdersTable'
 import OrderHistoryTable from '@/components/tables/OrderHistoryTable'
-
 import { Button } from '@/components/ui/button'
+
 import { HTTP_BASE_URL, WS_BASE_URL } from '@/config'
 import type { Event } from '@/lib/types/apiTypes/event'
 import { EventType } from '@/lib/types/apiTypes/eventType'
@@ -16,7 +16,6 @@ import type { Instrument24h } from '@/lib/types/apiTypes/instrumentSummary'
 import type { Order } from '@/lib/types/apiTypes/order'
 import type { PaginatedResponse } from '@/lib/types/apiTypes/paginatedResponse'
 import type { UserOverviewResponse } from '@/lib/types/apiTypes/userOverviewResponse'
-import { MarketType } from '@/lib/types/marketType'
 import { OrderStatus } from '@/lib/types/orderStatus'
 import { TimeFrame } from '@/lib/types/timeframe'
 import type { TradeEvent as Trade } from '@/lib/types/tradeEvent'
@@ -30,9 +29,9 @@ import { useCallback, useEffect, useRef, useState, type FC } from 'react'
 import { useParams } from 'react-router'
 
 // Constants
-const INSTRUMENT = 'BTCUSD-FUTURES'
 const TIMEFRAME_SECONDS = {
     [TimeFrame.M5]: 5 * 60,
+    [TimeFrame.M15]: 15 * 60,
     [TimeFrame.H1]: 60 * 60,
     [TimeFrame.H4]: 4 * 60 * 60,
     [TimeFrame.D1]: 24 * 60 * 60,
@@ -74,6 +73,7 @@ const useApiData = (instrument: string) => {
     const [instrumentSummary, setInstrumentSummary] =
         useState<Instrument24h | null>(null)
     const [balance, setBalance] = useState<number | null>(null)
+    const [assetBalance, setAssetBalance] = useState<number | null>(null)
     const [events, setEvents] = useState<Log[]>([])
 
     const fetchInstrument24h = useCallback(async () => {
@@ -83,7 +83,6 @@ const useApiData = (instrument: string) => {
             )
             if (rsp.ok) {
                 const data: Instrument24h = await rsp.json()
-                console.log(data)
                 setInstrumentSummary(data)
             }
         } catch (error) {
@@ -100,6 +99,7 @@ const useApiData = (instrument: string) => {
             if (rsp.ok) {
                 const data: UserOverviewResponse = await rsp.json()
                 setBalance(data.cash_balance)
+                setAssetBalance(data.data[instrument])
             }
         } catch (error) {
             console.error('Failed to fetch user summary:', error)
@@ -111,18 +111,17 @@ const useApiData = (instrument: string) => {
             const rsp = await fetch(`${HTTP_BASE_URL}/user/events`, {
                 credentials: 'include',
             })
+
             if (rsp.ok) {
-                // const data: PaginatedResponse<{
-                //     order_event_id: string
-                //     event_type: WsEventType
-                //     order_id: string
-                // }> = await rsp.json()
-                // setEvents(
-                //     data.data.map((val) => ({
-                //         event_type: val.event_type,
-                //         message: `Order ID: ${val.order_id}`,
-                //     }))
-                // )
+                const data: { event_type: EventType; order_id: string }[] =
+                    await rsp.json()
+
+                setEvents(
+                    data.map((val) => ({
+                        event_type: val.event_type,
+                        message: `Order ID: ${val.order_id}`,
+                    }))
+                )
             }
         } catch (error) {
             console.error('Failed to fetch events:', error)
@@ -132,8 +131,10 @@ const useApiData = (instrument: string) => {
     return {
         instrumentSummary,
         balance,
+        assetBalance,
         events,
         setBalance,
+        setAssetBalance,
         setEvents,
         fetchInstrumentSummary: fetchInstrument24h,
         fetchUserSummary,
@@ -153,7 +154,6 @@ const useCandles = (instrument: string, currentTimeFrame: TimeFrame) => {
             )
             if (rsp.ok) {
                 const data = await rsp.json()
-                console.log('OHLCs', data)
                 setCandles(data)
                 candlesRef.current = data
             }
@@ -314,7 +314,6 @@ const useWebSocket = (
 
             try {
                 const msg = JSON.parse(e.data)
-                console.log('Instrument WS message:', msg)
 
                 switch (msg.event_type) {
                     case 'price':
@@ -337,13 +336,14 @@ const useWebSocket = (
 }
 
 const useOrderManagement = (
+    instrument: string,
     setEvents: (events: Log[]) => void,
-    setBalance: (balance: number) => void
+    setBalance: (balance: number) => void,
+    setAssetBalance: (balance: number) => void
 ) => {
     const [wsToken, setWsToken] = useState<string | undefined>(undefined)
     const [connectionStatus, setConnectionStatus] =
         useState<ConnectionStatus>('disconnected')
-    const [openPositions, setOpenPositions] = useState<Order[]>([])
     const [openOrders, setOpenOrders] = useState<Order[]>([])
     const [orderHistory, setOrderHistory] = useState<Order[]>([])
     const hasNextRef = useRef<boolean>(true)
@@ -380,40 +380,10 @@ const useOrderManagement = (
         )
     }, [])
 
-    const fetchPositions = useCallback(async () => {
-        const params = new URLSearchParams()
-        params.append('page', pageNumRef.current.toString())
-        params.append('market_type', MarketType.FUTURES)
-
-        for (const status of [
-            OrderStatus.PENDING,
-            OrderStatus.PARTIALLY_FILLED,
-            OrderStatus.FILLED,
-        ]) {
-            params.append('status', status)
-        }
-
-        try {
-            const rsp = await fetch(`${HTTP_BASE_URL}/user/orders?${params}`, {
-                credentials: 'include',
-            })
-            if (rsp.ok) {
-                const data: PaginatedResponse<Order> = await rsp.json()
-                setOpenPositions((prev) => [...prev, ...data.data])
-                hasNextRef.current = data.has_next
-            }
-        } catch (error) {
-            console.error('Failed to fetch positions:', error)
-        }
-    }, [])
-
     const fetchOrderHistory = useCallback(async () => {
         const params = new URLSearchParams()
         params.append('page', pageNumRef.current.toString())
-
-        // for (const status of Object.values(OrderStatus)) {
-        //     params.append('status', status)
-        // }
+        params.append('instrument', instrument)
 
         try {
             const rsp = await fetch(`${HTTP_BASE_URL}/orders?${params}`, {
@@ -422,7 +392,6 @@ const useOrderManagement = (
 
             if (rsp.ok) {
                 const data: PaginatedResponse<Order> = await rsp.json()
-                console.log('History:', data)
                 setOrderHistory((prev) => [...prev, ...data.data])
                 hasNextRef.current = data.has_next
             }
@@ -436,12 +405,12 @@ const useOrderManagement = (
         params.append('page', pageNumRef.current.toString())
         params.append('status', OrderStatus.PLACED)
         params.append('status', OrderStatus.PARTIALLY_FILLED)
+        params.append('instrument', instrument)
 
         try {
             const rsp = await fetch(`${HTTP_BASE_URL}/orders?${params}`, {
                 credentials: 'include',
             })
-            console.log(rsp)
 
             if (rsp.ok) {
                 const data: PaginatedResponse<Order> = await rsp.json()
@@ -472,7 +441,6 @@ const useOrderManagement = (
                 })
                 if (rsp.ok) {
                     const data = await rsp.json()
-                    console.log(data)
                     setWsToken(data.access_token)
                 }
             } catch (error) {
@@ -512,8 +480,9 @@ const useOrderManagement = (
 
             const msg: Event = JSON.parse(e.data)
             const order = msg.data
-
             setBalance(msg.available_balance)
+            setAssetBalance(msg.available_asset_balance)
+
             setEvents((prev) => {
                 const newEvents = [...prev]
                 newEvents.unshift({
@@ -524,7 +493,7 @@ const useOrderManagement = (
             })
 
             if (
-                (EventType.ORDER_CANCELLED, EventType.ORDER_FILLED).includes(
+                [EventType.ORDER_CANCELLED, EventType.ORDER_FILLED].includes(
                     msg.event_type
                 )
             ) {
@@ -532,27 +501,21 @@ const useOrderManagement = (
                 handleOrderUpdate(order as Order, setOrderHistory)
             } else {
                 handleOrderUpdate(order as Order, setOpenOrders)
-                console.log('Handling for ', order['side'], order['status'])
                 handleOrderUpdate(order as Order, setOrderHistory)
             }
         }
 
-        ws.onclose = (e) => {
-            console.log('Order WebSocket closed:', e)
-            setConnectionStatus('disconnected')
-        }
+        ws.onclose = () => setConnectionStatus('disconnected')
 
         return () => ws.close()
     }, [wsToken, handleOrderUpdate, handleOrderRemoval, setEvents, setBalance])
 
     return {
         connectionStatus,
-        openPositions,
         openOrders,
         orderHistory,
         pageNumRef,
         hasNextRef,
-        fetchPositions,
         fetchOpenOrders,
         fetchOrderHistory,
         handleCloseAll,
@@ -614,24 +577,22 @@ const SpotTableCard: FC<{
 }
 
 // Main Component
-const TradingPage: FC<{ marketType?: MarketType }> = ({
-    marketType = MarketType.SPOT,
-}) => {
+const TradingPage: FC = () => {
     const { instrument } = useParams()
     const [currentTimeFrame, setCurrentTimeFrame] = useState<TimeFrame>(
         TimeFrame.M5
     )
-    const [tableTab, setTableTab] = useState<Tab>(
-        marketType === MarketType.FUTURES ? 'positions' : 'orders'
-    )
+    const [tableTab, setTableTab] = useState<Tab>('orders')
 
     // Custom hooks
     const { showScrollToTop, scrollToTop } = useScrollToTop()
     const {
         instrumentSummary,
         balance,
+        assetBalance,
         events,
         setBalance,
+        setAssetBalance,
         setEvents,
         fetchInstrumentSummary,
         fetchUserSummary,
@@ -653,16 +614,13 @@ const TradingPage: FC<{ marketType?: MarketType }> = ({
 
     const {
         connectionStatus,
-        openPositions,
         openOrders,
         orderHistory,
         pageNumRef,
-        fetchPositions,
+        hasNextRef,
         fetchOpenOrders,
         fetchOrderHistory,
-        handleCloseAll,
-        hasNextRef,
-    } = useOrderManagement(setEvents, setBalance)
+    } = useOrderManagement(instrument!, setEvents, setBalance, setAssetBalance)
 
     // WebSocket connections
     useWebSocket(
@@ -693,13 +651,6 @@ const TradingPage: FC<{ marketType?: MarketType }> = ({
         [pageNumRef]
     )
 
-    const handlePositionsScrollEnd = useCallback(() => {
-        if (hasNextRef.current) {
-            pageNumRef.current += 1
-            fetchPositions()
-        }
-    }, [fetchPositions, pageNumRef])
-
     const handleOpenOrdersScrollEnd = useCallback(() => {
         if (hasNextRef.current) {
             pageNumRef.current += 1
@@ -714,18 +665,6 @@ const TradingPage: FC<{ marketType?: MarketType }> = ({
         }
     }, [fetchOrderHistory, pageNumRef])
 
-    const CommonTableProps = {
-        tab: tableTab,
-        handleTabChange,
-        orderHistory,
-        handleHistoryScrollEnd,
-    }
-
-    const CommonFormProps = {
-        balance,
-        setEventLogs: setEvents,
-        setBalance: setBalance as React.Dispatch<React.SetStateAction<number>>,
-    }
 
     return (
         <>
@@ -746,6 +685,11 @@ const TradingPage: FC<{ marketType?: MarketType }> = ({
                                     seriesRef={candleStickSeriesRef}
                                     defaultTimeFrame={TimeFrame.M5}
                                     onTimeFrameChange={setCurrentTimeFrame}
+                                    onInstrumentSelect={(
+                                        instrument: string
+                                    ) => {
+                                        window.location.href = `/spot/${instrument}`
+                                    }}
                                 />
                             </div>
                             <div className="w-[20%] h-full flex flex-col gap-1 rounded-sm">
@@ -761,12 +705,14 @@ const TradingPage: FC<{ marketType?: MarketType }> = ({
                         {/* Tables Section */}
                         <div className="w-full flex flex-row gap-1">
                             <SpotTableCard
-                                {...{
-                                    ...CommonTableProps,
-                                    tab: CommonTableProps.tab as SpotTab,
-                                    openOrders: openOrders,
-                                    handleOpenOrdersScrollEnd,
-                                }}
+                                tab={tableTab as SpotTab}
+                                openOrders={openOrders}
+                                orderHistory={orderHistory}
+                                handleTabChange={handleTabChange}
+                                handleOpenOrdersScrollEnd={
+                                    handleOpenOrdersScrollEnd
+                                }
+                                handleHistoryScrollEnd={handleHistoryScrollEnd}
                             />
                         </div>
                     </div>
@@ -775,7 +721,14 @@ const TradingPage: FC<{ marketType?: MarketType }> = ({
                     <div className="flex-1 flex flex-col">
                         <div className="min-h-150 rounded-tl-sm rounded-tr-sm border-b-1 border-b-neutral-900 bg-background">
                             <SpotOrderForm
-                                {...{ ...CommonFormProps, instrument }}
+                                balance={balance}
+                                assetBalance={assetBalance}
+                                instrument={instrument!}
+                                setBalance={
+                                    setBalance as React.Dispatch<
+                                        React.SetStateAction<number>
+                                    >
+                                }
                             />
                         </div>
                         <div className="flex-1 h-auto max-h-fit min-h-0 sticky top-11 bg-background">

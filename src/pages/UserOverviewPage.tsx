@@ -5,19 +5,21 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { HTTP_BASE_URL } from '@/config'
 import type { Order } from '@/lib/types/apiTypes/order'
 import type { PaginatedResponse } from '@/lib/types/apiTypes/paginatedResponse'
-import { MarketType } from '@/lib/types/marketType'
-import { OrderStatus } from '@/lib/types/orderStatus'
 import { AreaSeries, createChart, type ISeriesApi } from 'lightweight-charts'
 import { ChevronUp } from 'lucide-react'
 import { useEffect, useRef, useState, type FC } from 'react'
 
 // Types
-type UserSummary = { balance: number; pnl: number }
-const tableTabs = ['positions', 'history']
+type UserOverview = {
+    cash_balance: number
+    portfolio_balance: number
+    data: { [key: string]: number }
+}
+const tableTabs = ['history']
 type Tab = (typeof tableTabs)[number]
 interface BalanceItem {
     time: string
-    balance: number
+    value: number
 }
 
 const BalanceChart: FC = () => {
@@ -29,14 +31,17 @@ const BalanceChart: FC = () => {
 
     useEffect(() => {
         const fetchBalanceHistory = async () => {
-            const rsp = await fetch(HTTP_BASE_URL + '/user/balance-history', {
-                credentials: 'include',
-            })
+            const rsp = await fetch(
+                HTTP_BASE_URL + '/user/history?interval=1d',
+                {
+                    credentials: 'include',
+                }
+            )
             if (rsp.ok) {
                 const data = await rsp.json()
                 const formattedData = data.map((d: BalanceItem) => ({
                     time: Math.floor(new Date(d.time).getTime() / 1000),
-                    value: d.balance,
+                    value: d.value,
                 }))
                 setData(formattedData)
             }
@@ -80,10 +85,9 @@ const BalanceChart: FC = () => {
     }, [])
 
     useEffect(() => {
-        if (!data.length)
-            if (areaSeriesRef.current) {
-                areaSeriesRef.current.setData(data)
-            }
+        if (data.length && areaSeriesRef.current) {
+            areaSeriesRef.current.setData(data)
+        }
     }, [data])
 
     return (
@@ -106,12 +110,11 @@ const BalanceChart: FC = () => {
 const UserOverviewPage: FC = () => {
     const pageNumRef = useRef<number>(0)
 
-    const [userSummary, setUserSummary] = useState<UserSummary | undefined>(
+    const [userOverview, setUserOverview] = useState<UserOverview | undefined>(
         undefined
     )
 
-    const [tableTab, setTableTab] = useState<Tab>('positions')
-    const [openPositions, setOpenPositions] = useState<Order[]>([])
+    const [tableTab, setTableTab] = useState<Tab>('history')
     const [orderHistory, setOrderHistory] = useState<Order[]>([])
     const [showScrollToTop, setShowScollToTop] = useState<boolean>(false)
     const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -131,64 +134,20 @@ const UserOverviewPage: FC = () => {
 
     useEffect(() => {
         const fetchUserSummary = async () => {
-            const rsp = await fetch(HTTP_BASE_URL + '/user/summary', {
+            const rsp = await fetch(HTTP_BASE_URL + '/user', {
                 credentials: 'include',
             })
+
             if (rsp.ok) {
-                const data: UserSummary = await rsp.json()
-                console.log('User summary: ', data)
-                setUserSummary(data)
+                const data: UserOverview = await rsp.json()
+                setUserOverview(data)
+            } else {
+                console.error("Error fetching user summary.", rsp)
             }
         }
 
         fetchUserSummary()
     }, [])
-
-    useEffect(() => {
-        const fetchBalanceHistory = async () => {
-            const rsp = await fetch(HTTP_BASE_URL + '/user/balance-history', {
-                credentials: 'include',
-            })
-            if (rsp.ok) {
-                const data = await rsp.json()
-                console.log(data)
-            }
-        }
-
-        fetchBalanceHistory()
-    }, [])
-
-    async function fetchPositions(): Promise<void> {
-        if (pageNumRef.current == 1) {
-            setIsLoading(true)
-        }
-
-        const params = new URLSearchParams()
-
-        params.append('page', pageNumRef.current.toString())
-        params.append('market_type', MarketType.FUTURES)
-
-        for (const status of [
-            OrderStatus.PENDING,
-            OrderStatus.PARTIALLY_FILLED,
-            OrderStatus.FILLED,
-        ]) {
-            params.append('status', status)
-        }
-
-        const rsp = await fetch(HTTP_BASE_URL + `/user/orders?${params}`, {
-            credentials: 'include',
-        })
-
-        if (rsp.ok) {
-            const data: PaginatedResponse<Order> = await rsp.json()
-            setOpenPositions((prev) => [...prev, ...data.data])
-        }
-
-        if (pageNumRef.current == 1) {
-            setIsLoading(false)
-        }
-    }
 
     async function fetchOrderHistory(): Promise<void> {
         if (pageNumRef.current == 1) {
@@ -198,13 +157,8 @@ const UserOverviewPage: FC = () => {
         const params = new URLSearchParams()
 
         params.append('page', pageNumRef.current.toString())
-        params.append('market_type', MarketType.FUTURES)
 
-        for (const status of Object.values(OrderStatus)) {
-            params.append('status', status)
-        }
-
-        const rsp = await fetch(HTTP_BASE_URL + `/user/orders?${params}`, {
+        const rsp = await fetch(HTTP_BASE_URL + `/orders?${params}`, {
             credentials: 'include',
         })
         if (rsp.ok) {
@@ -230,41 +184,16 @@ const UserOverviewPage: FC = () => {
                                     <span className="text-xs text-zinc-400 uppercase tracking-wide">
                                         Portfolio Balance
                                     </span>
-                                    {userSummary ? (
+                                    {userOverview ? (
                                         <span className="text-2xl font-bold text-white">
                                             $
-                                            {userSummary.balance.toLocaleString(
+                                            {userOverview.portfolio_balance.toLocaleString(
                                                 undefined,
                                                 { minimumFractionDigits: 2 }
                                             )}
                                         </span>
                                     ) : (
                                         <Skeleton className="w-32 h-10 mt-2" />
-                                    )}
-                                </div>
-
-                                {/* PnL */}
-                                <div className="flex flex-col text-right">
-                                    <span className="text-xs text-zinc-400 uppercase tracking-wide">
-                                        Net PnL
-                                    </span>
-                                    {userSummary ? (
-                                        <span
-                                            className={`w-fit self-end rounded-sm text-md font-semibold p-1 ${
-                                                userSummary.pnl >= 0
-                                                    ? 'text-green-400 bg-green-300/10'
-                                                    : 'text-red-400 bg-red-300/10'
-                                            }`}
-                                        >
-                                            {userSummary.pnl >= 0 ? '+' : '-'}$
-                                            {Math.abs(
-                                                userSummary.pnl
-                                            ).toLocaleString(undefined, {
-                                                minimumFractionDigits: 2,
-                                            })}
-                                        </span>
-                                    ) : (
-                                        <Skeleton className="w-24 h-8 mt-2 self-end" />
                                     )}
                                 </div>
                             </div>

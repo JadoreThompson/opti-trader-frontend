@@ -7,7 +7,6 @@ const useIntersectionObserver = (callback: () => void) => {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
-                    console.log("Hi")
                     callback()
                 }
             })

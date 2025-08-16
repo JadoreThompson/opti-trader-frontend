@@ -11,7 +11,6 @@ import { cn } from '@/lib/utils'
 import { AssertError, Value } from '@sinclair/typebox/value'
 import { Info } from 'lucide-react'
 import { useState, type FC } from 'react'
-import type { Log } from '../EventLog'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
@@ -24,7 +23,6 @@ import {
 } from '../ui/select'
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
 
-// --- OCO/OTO Components remain unchanged ---
 const OCOFields = () => {
     const [firstOrderType, setFirstOrderType] = useState<OrderType>(
         OrderType.LIMIT
@@ -71,7 +69,7 @@ const OCOFields = () => {
                                 <SelectItem value={OrderType.LIMIT}>
                                     Limit
                                 </SelectItem>
-                                
+
                                 <SelectItem value={OrderType.STOP}>
                                     Stop
                                 </SelectItem>
@@ -82,8 +80,7 @@ const OCOFields = () => {
                         <label className="text-xs text-muted-foreground">
                             {firstOrderType === OrderType.LIMIT
                                 ? 'Limit Price'
-                                : 'Stop Price'
-                                  }
+                                : 'Stop Price'}
                         </label>
                         <Input
                             type="number"
@@ -117,7 +114,7 @@ const OCOFields = () => {
                                 <SelectItem value={OrderType.LIMIT}>
                                     Limit
                                 </SelectItem>
-                               
+
                                 <SelectItem value={OrderType.STOP}>
                                     Stop
                                 </SelectItem>
@@ -269,8 +266,6 @@ const OTOFields = () => {
     )
 }
 
-// --- Payload Builder Functions ---
-
 type FormDataMap = Record<string, FormDataEntryValue>
 type CommonOrderProperties = {
     instrument_id: string
@@ -278,7 +273,6 @@ type CommonOrderProperties = {
     quantity: number
 }
 
-/** Helper to construct a single order object (a leg or a simple order) */
 const createOrderLeg = (
     type: OrderType,
     priceStr: string | undefined,
@@ -288,12 +282,12 @@ const createOrderLeg = (
 
     if (priceStr) {
         if (type === OrderType.LIMIT) order.limit_price = parseFloat(priceStr)
-        else if (type === OrderType.STOP) order.stop_price = parseFloat(priceStr)
+        else if (type === OrderType.STOP)
+            order.stop_price = parseFloat(priceStr)
     }
     return order
 }
 
-/** Builds the request body for standard Market, Limit, and Stop orders. */
 const buildStandardOrderBody = (
     formData: FormDataMap,
     common: CommonOrderProperties,
@@ -306,8 +300,10 @@ const buildStandardOrderBody = (
     )
 }
 
-/** Builds the request body for OCO orders. */
-const buildOcoOrderBody = (formData: FormDataMap, common: CommonOrderProperties) => {
+const buildOcoOrderBody = (
+    formData: FormDataMap,
+    common: CommonOrderProperties
+) => {
     return {
         legs: [
             createOrderLeg(
@@ -324,8 +320,10 @@ const buildOcoOrderBody = (formData: FormDataMap, common: CommonOrderProperties)
     }
 }
 
-/** Builds the request body for OTO orders. */
-const buildOtoOrderBody = (formData: FormDataMap, common: CommonOrderProperties) => {
+const buildOtoOrderBody = (
+    formData: FormDataMap,
+    common: CommonOrderProperties
+) => {
     return {
         parent: createOrderLeg(
             formData.first_order_type as OrderType,
@@ -345,14 +343,14 @@ const buildOtoOrderBody = (formData: FormDataMap, common: CommonOrderProperties)
  */
 const SpotOrderForm: FC<{
     balance?: number | null
+    assetBalance?: number | null
     instrument: string
-    setEventLogs: React.Dispatch<React.SetStateAction<Log[]>>
     setBalance: React.Dispatch<React.SetStateAction<number>>
 }> = ({
-    balance = 89237.0,
-    instrument = 'BTCUSD',
-    setEventLogs,
-    setBalance: setCashBalance,
+    balance,
+    assetBalance: asset_balance,
+    instrument,
+    setBalance,
 }) => {
     const [side, setSide] = useState<Side>(Side.BID)
     const [orderType, setOrderType] = useState<OrderType>(OrderType.LIMIT)
@@ -429,11 +427,8 @@ const SpotOrderForm: FC<{
                 )
             }
 
-            // The Value.Parse function will convert types and throw an AssertError
-            // if the structure or types are incorrect, centralizing our validation.
             const schema = getSchemaForOrderType()
             const body = Value.Parse(schema, rawBody)
-            console.log('Validated Request Body:', body)
 
             let suffix = ''
             if (orderType === OrderType.OCO) {
@@ -452,18 +447,27 @@ const SpotOrderForm: FC<{
             const data = await rsp.json()
 
             if (!rsp.ok) {
-                const errorDetail = data.detail || data.error || 'An unknown error occurred'
-                throw new Error(typeof errorDetail === 'string' ? errorDetail : JSON.stringify(errorDetail))
+                const errorDetail =
+                    data.detail || data.error || 'An unknown error occurred'
+                throw new Error(
+                    typeof errorDetail === 'string'
+                        ? errorDetail
+                        : JSON.stringify(errorDetail)
+                )
             }
 
-            setCashBalance(data['available_balance'])
+            setBalance(data['available_balance'])
         } catch (error) {
             if (error instanceof AssertError) {
                 // Validation error from TypeBox
                 const firstError = error.errors[0]
-                const fieldName = firstError.path.substring(1).replace(/\//g, ' -> ')
+                const fieldName = firstError.path
+                    .substring(1)
+                    .replace(/\//g, ' -> ')
                 console.error('Validation Errors:', Array.from(error.errors))
-                setErrorMsg(`Invalid input for '${fieldName}': ${firstError.message}`)
+                setErrorMsg(
+                    `Invalid input for '${fieldName}': ${firstError.message}`
+                )
             } else {
                 // Error from fetch or other issues
                 setErrorMsg((error as Error).message)
@@ -593,13 +597,23 @@ const SpotOrderForm: FC<{
                         <div>
                             <div className="flex justify-between text-xs text-muted-foreground mb-1">
                                 <span>Quantity</span>
-                                <span>
-                                    Available:{' '}
-                                    {typeof balance === 'number'
-                                        ? balance.toFixed(2)
-                                        : '-'}{' '}
-                                    USDT
-                                </span>
+                                {side === Side.BID ? (
+                                    <span>
+                                        Available:{' '}
+                                        {typeof balance === 'number'
+                                            ? balance.toFixed(2)
+                                            : '-'}{' '}
+                                        USDT
+                                    </span>
+                                ) : (
+                                    <span>
+                                        Available:{' '}
+                                        {typeof asset_balance === 'number'
+                                            ? asset_balance.toFixed(2)
+                                            : '-'}{' '}
+                                        {instrument}
+                                    </span>
+                                )}
                             </div>
                             <Input
                                 type="number"
