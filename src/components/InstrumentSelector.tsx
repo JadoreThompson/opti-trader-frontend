@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils'
 import { Search } from 'lucide-react'
 import { type FC, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { Link, useNavigate } from 'react-router'
 import { Input } from './ui/input'
 
 interface InstrumentListItem {
@@ -24,6 +25,7 @@ const InstrumentSelector: FC<InstrumentSelectorProps> = ({
     onSelect,
     triggerRef,
 }) => {
+    const navigate = useNavigate()
     const [instruments, setInstruments] = useState<InstrumentListItem[]>([])
     const [searchTerm, setSearchTerm] = useState('')
     const [isLoading, setIsLoading] = useState(true)
@@ -95,7 +97,15 @@ const InstrumentSelector: FC<InstrumentSelectorProps> = ({
             style={style}
             className="absolute z-50 w-[450px] h-[500px] bg-background border border-neutral-800 rounded-md shadow-lg flex flex-col p-4"
         >
-            <h3 className="text-lg font-semibold mb-3">Select Market</h3>
+            <div className="w-full flex justify-between mb-1">
+                <h3 className="text-lg font-semibold mb-3">Select Market</h3>
+                <Link
+                    to="/instrument/"
+                    className="h-fit p-1 rounded-sm font-semibold bg-background text-white hover:bg-neutral-800 cursor-pointer"
+                >
+                    Create Coin
+                </Link>
+            </div>
             <div className="relative mb-3">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
